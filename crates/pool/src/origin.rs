@@ -41,9 +41,9 @@ struct H1State {
     total: usize,
 }
 
-struct H2Entry {
+pub(crate) struct H2Entry {
     id: u64,
-    handle: H2Handle,
+    pub(crate) handle: H2Handle,
     /// Not selectable for new streams (scale-down in progress); retired once it has no streams.
     draining: AtomicBool,
 }
@@ -59,6 +59,8 @@ const NEVER: u64 = u64::MAX;
 
 /// Reaper-owned bookkeeping.
 struct Reap {
+    /// Since when a connection has advertised MAX_CONCURRENT_STREAMS = 0.
+    zero: HashMap<u64, Instant>,
     /// Per connection: `streams_opened` at the last tick and since when it has had no streams.
     idle: HashMap<u64, (u32, Option<Instant>)>,
     /// Since when every selectable connection has been under-used.
@@ -444,23 +446,43 @@ impl OriginPool {
             .min(self.shared.cfg.h2_target_streams_per_conn)
     }
 
-    fn h2_try(&self, e: &H2Entry) -> Option<(H2Handle, StreamSlot)> {
+    fn h2_try<'g>(&self, e: &'g H2Entry) -> Option<(&'g H2Handle, StreamSlot)> {
         let h = &e.handle;
         if e.is_draining() || !h.is_accepting() || h.in_flight() >= self.h2_limit(h) {
             return None;
         }
-        h.try_reserve().map(|s| (h.clone(), s))
+        // Zero-capacity connections never count (`in_flight >= limit` covers it; stated for clarity).
+        h.try_reserve().map(|s| (h, s))
     }
 
     /// Power-of-two-choices pick, then the autoscaling check on the chosen connection.
     fn h2_pick(&self) -> Option<(H2Handle, StreamSlot)> {
-        let r = self.h2_select()?;
-        self.h2_scale_check(&r.0);
-        Some(r)
+        let snap = self.h2.handles.load();
+        let (h, s) = self.h2_select(&snap)?;
+        self.h2_scale_check(h);
+        Some((h.clone(), s))
     }
 
-    fn h2_select(&self) -> Option<(H2Handle, StreamSlot)> {
-        let snap = self.h2.handles.load();
+    /// Hot path: pick a connection and reserve a stream without cloning the handle (the caller sends the
+    /// request while `snap` is borrowed).
+    pub(crate) fn h2_pick_in<'g>(
+        &self,
+        snap: &'g [Arc<H2Entry>],
+    ) -> Option<(&'g H2Handle, StreamSlot)> {
+        let (h, s) = self.h2_select(snap)?;
+        self.h2_scale_check(h);
+        Some((h, s))
+    }
+
+    pub(crate) fn h2_snapshot(&self) -> arc_swap::Guard<Arc<Vec<Arc<H2Entry>>>> {
+        self.h2.handles.load()
+    }
+
+    pub(crate) fn is_h2(&self) -> bool {
+        self.proto.load(Ordering::Acquire) == P_H2
+    }
+
+    fn h2_select<'g>(&self, snap: &'g [Arc<H2Entry>]) -> Option<(&'g H2Handle, StreamSlot)> {
         let n = snap.len();
         match n {
             0 => return None,
@@ -551,6 +573,18 @@ impl OriginPool {
             .div_ceil(self.shared.cfg.h2_target_streams_per_conn.max(1))
             .max(1);
         if self.h2_undrain_one() {
+            return;
+        }
+        // Connections that advertise zero stream capacity are not capacity: do not dial up to the maximum
+        // on their account (at most one extra connection in total, retired again by the reaper if it is no better).
+        let zero = self
+            .h2
+            .handles
+            .load()
+            .iter()
+            .filter(|e| e.handle.is_accepting() && e.handle.max_concurrent_streams() == 0)
+            .count();
+        if zero > 0 && live + dialing >= 2 {
             return;
         }
         if live + dialing < self.h2_max() && dialing < want {
@@ -736,6 +770,7 @@ impl OriginPool {
         let tick = scale::reap_tick(self.shared.cfg.idle_timeout);
         tokio::spawn(async move {
             let mut st = Reap {
+                zero: HashMap::new(),
                 idle: HashMap::new(),
                 low_since: None,
             };
@@ -783,15 +818,22 @@ impl OriginPool {
             s.0 = opened;
         }
 
-        if std::env::var_os("MATIER_DBG").is_some() {
-            for e in snap.iter() {
-                eprintln!(
-                    "DBG id={} inflight={} load={:?}",
-                    e.id,
-                    e.handle.in_flight(),
-                    e.handle.load_unchecked()
-                );
+        // Zero-capacity connections (peer MAX_CONCURRENT_STREAMS = 0) are retired after a grace period.
+        st.zero.retain(|id, _| snap.iter().any(|e| e.id == *id));
+        let mut zero_retired = false;
+        for e in snap.iter() {
+            if e.handle.max_concurrent_streams() == 0 {
+                let since = *st.zero.entry(e.id).or_insert(now);
+                if now.duration_since(since) >= self.shared.cfg.h2_zero_capacity_drain {
+                    self.h2_remove(e.id);
+                    zero_retired = true;
+                }
+            } else {
+                st.zero.remove(&e.id);
             }
+        }
+        if zero_retired {
+            return true;
         }
         let mut n = snap.len();
         let mut retired = false;

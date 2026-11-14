@@ -8,7 +8,7 @@ use std::io;
 use std::pin::Pin;
 use std::sync::atomic::AtomicU64;
 use std::task::{Context, Poll};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use bytes::{Bytes, BytesMut};
 use http::HeaderMap;
@@ -24,11 +24,12 @@ use matier_h2::{H2Error, Reason};
 use slab::Slab;
 use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt, ReadBuf};
 use tokio::sync::mpsc;
-use tokio::time::Sleep;
+use tokio::time::{Instant as TInstant, Sleep};
 
 use super::load::LoadMeter;
 use super::shared::{
-    CANCELED, Command, ConnShared, OpenBody, OpenStream, RecvEvent, SendEvent, StreamShared,
+    CANCELED, CONSUMED_BLOCKED, Command, ConnShared, Dirty, EVENT_OVERHEAD, MAX_RECV_EVENTS,
+    OpenBody, OpenStream, RecvEvent, SendEvent, StreamShared,
 };
 use super::sync::{Arc, Ordering};
 use super::write::WriteQueue;
@@ -46,14 +47,46 @@ const WRITE_HIGH_WATER: usize = 256 * 1024;
 const READ_PAUSE_PENDING: usize = 1 << 20;
 /// Stop pulling new commands beyond this much queued output.
 const INBOX_PAUSE_PENDING: usize = 4 << 20;
+/// Small-write deferral: only when fewer than this many bytes are queued ...
+const DEFER_MAX_PENDING: usize = 1024;
+/// ... and more than this many streams are in flight.
+const DEFER_MIN_IN_FLIGHT: usize = 8;
+
 const READ_BLOCK: usize = 64 * 1024;
 const MIN_READ_TAIL: usize = 4096;
 const MAX_CONTINUATION_FRAMES: u32 = 32;
 /// Consumers report consumption to the actor at least this often (bytes), bounding unreported buffered bytes.
 const CONSUMED_REPORT_MAX: u32 = 32 * 1024;
+/// Interim (1xx) responses tolerated per request.
+const MAX_INFORMATIONAL: u8 = 16;
 const MAX_STREAM_ID: u32 = 0x7fff_ffff;
 
 static NEXT_CONN_ID: AtomicU64 = AtomicU64::new(1);
+
+/// The body length a response announces: `content-length` unless the response cannot carry a body (HEAD, 204,
+/// 304). `Err` for malformed or conflicting values (RFC 9110 8.6).
+fn declared_length(
+    h: &HeaderMap,
+    is_head: bool,
+    status: http::StatusCode,
+) -> std::result::Result<Option<u64>, ()> {
+    if is_head || status == http::StatusCode::NO_CONTENT || status == http::StatusCode::NOT_MODIFIED
+    {
+        return Ok(None);
+    }
+    let mut len = None;
+    for v in h.get_all(http::header::CONTENT_LENGTH) {
+        let n: u64 = std::str::from_utf8(v.as_bytes())
+            .ok()
+            .and_then(|s| s.trim().parse().ok())
+            .ok_or(())?;
+        if len.is_some_and(|l| l != n) {
+            return Err(());
+        }
+        len = Some(n);
+    }
+    Ok(len)
+}
 
 fn conn_err(r: Reason, m: &'static str) -> H2Error {
     H2Error::Connection(r, m)
@@ -173,18 +206,24 @@ impl Reader {
         v
     }
 
+    /// Reads more bytes into the first unfilled block.
+    ///
+    /// `want` (bytes still missing from the current frame) does not need to be contiguous, so it never
+    /// justifies reserving more than one block: extra capacity reserved here was dropped unused by the re-wrap
+    /// below once the first block filled (pool churn for every frame larger than a block). A vectored `readv`
+    /// over several blocks was measured and rejected (1 MiB bodies: -20% req/s, +25% CPU/req).
     pub(crate) fn poll_fill<T: AsyncRead + Unpin>(
         &mut self,
         io: &mut T,
         cx: &mut Context<'_>,
-        want: usize,
+        _want: usize,
     ) -> Poll<io::Result<usize>> {
         self.flush_skip();
         if self.rbuf.first_unfilled_slice().len() < MIN_READ_TAIL {
             let rest = self.rbuf.consume_all();
             self.rbuf = BytesBuf::from(rest);
             let mem = matier_core::buf::memory();
-            self.rbuf.reserve(READ_BLOCK.max(want), &mem);
+            self.rbuf.reserve(READ_BLOCK, &mem);
         }
         let n = {
             let dst = self.rbuf.first_unfilled_slice();
@@ -197,13 +236,78 @@ impl Reader {
         };
         if n > 0 {
             // SAFETY: tokio's `ReadBuf::filled()` reports exactly the bytes `poll_read` initialized at the
-            // start of `first_unfilled_slice()`.
+            // start of `first_unfilled_slice()`, which is the span `advance` extends over.
             unsafe { self.rbuf.advance(n) };
             self.cur = self.rbuf.peek();
         }
         Poll::Ready(Ok(n))
     }
 }
+
+// ---------------------------------------------------------------------------------------------------------
+// Flood limits.
+
+/// Leaky bucket in milli-units: each event adds its cost, the level drains at `rate` units per second, and
+/// exceeding `burst` units is a flood.
+struct Leaky {
+    level: u64,
+    last: Option<TInstant>,
+    burst: u64,
+    rate: u64,
+}
+
+impl Leaky {
+    const fn new(burst: u32, rate: u32) -> Self {
+        Self {
+            level: 0,
+            last: None,
+            burst: burst as u64 * 1000,
+            rate: rate as u64,
+        }
+    }
+
+    /// Records one event of `cost` units after crediting `extra` units; false when the bucket overflows.
+    fn hit(&mut self, now: TInstant, cost: u32, extra: u64) -> bool {
+        if let Some(last) = self.last {
+            let ms =
+                u64::try_from(now.saturating_duration_since(last).as_millis()).unwrap_or(u64::MAX);
+            self.level = self
+                .level
+                .saturating_sub(ms.saturating_mul(self.rate))
+                .saturating_sub(extra.saturating_mul(1000));
+        }
+        self.last = Some(now);
+        self.level += u64::from(cost) * 1000;
+        self.level <= self.burst
+    }
+}
+
+/// Per-connection flood limits for frames whose cost to us far exceeds their cost to the peer.
+struct Floods {
+    settings: Leaky,
+    ping: Leaky,
+    rst: Leaky,
+    window_update: Leaky,
+    tiny_data: Leaky,
+    /// `written_total` at the last WINDOW_UPDATE (legit updates track our outbound bytes).
+    wu_written: u64,
+}
+
+impl Floods {
+    fn new() -> Self {
+        Self {
+            settings: Leaky::new(100, 10),
+            ping: Leaky::new(100, 10),
+            rst: Leaky::new(200, 100),
+            window_update: Leaky::new(1000, 1000),
+            tiny_data: Leaky::new(1000, 1000),
+            wu_written: 0,
+        }
+    }
+}
+
+/// DATA payloads shorter than this (without END_STREAM) count against the tiny-DATA bucket.
+const TINY_DATA: usize = 16;
 
 // ---------------------------------------------------------------------------------------------------------
 // Stream table entries.
@@ -243,6 +347,22 @@ struct StreamEntry {
     /// Absolute write offset just past this stream's HEADERS.
     hdr_end: u64,
     stall_since: Option<Instant>,
+    /// Last request/response progress on this stream (tick time).
+    activity: TInstant,
+    /// Absolute response-head deadline (from a `ResponseTimeout` extension).
+    head_abs: Option<TInstant>,
+    /// Max time without progress while waiting for the response head.
+    head_idle: Option<Duration>,
+    /// Max time without progress between body events.
+    body_idle: Option<Duration>,
+    /// The request was HEAD (a `content-length` response header does not announce a body).
+    is_head: bool,
+    /// Declared response body length (`content-length`), when one applies.
+    expect_len: Option<u64>,
+    /// Response body bytes received so far.
+    recv_len: u64,
+    /// Interim (1xx) responses seen.
+    info_count: u8,
 }
 
 impl StreamEntry {
@@ -256,6 +376,7 @@ impl StreamEntry {
 }
 
 struct HeaderAsm {
+    started: TInstant,
     stream_id: u32,
     end_stream: bool,
     frames: u32,
@@ -297,9 +418,14 @@ pub(crate) struct Core {
     asm: Option<HeaderAsm>,
     asm_buf: Vec<u8>,
     hdr_scratch: BytesMut,
-    /// Bytes delivered to stream queues and not yet consumed by the application.
-    buffered: u64,
+    /// Flow-controlled bytes plus per-event overhead delivered to stream queues; the application's matching
+    /// total is `ConnShared::consumed`, and `delivered - consumed` is the buffered amount.
+    delivered: u64,
     buffered_budget: u64,
+    /// `CONSUMED_BLOCKED` is currently set in `ConnShared::consumed`.
+    recv_blocked: bool,
+    /// Streams owed a wake, delivered in batches (see `StreamShared::owe_wake`).
+    dirty: Dirty,
     goaway: Option<u32>,
     state: ConnState,
     policy: WindowUpdatePolicy,
@@ -311,6 +437,13 @@ pub(crate) struct Core {
     conn_stall: Option<Instant>,
     goaway_queued: bool,
     opened_any: bool,
+    floods: Floods,
+    /// Tick time (one clock read per actor poll).
+    now: TInstant,
+    /// Earliest instant at which the timeout scan must run next (`None`: nothing to watch).
+    timer_at: Option<TInstant>,
+    /// `timer_at` moved earlier; the actor must re-arm its single timer.
+    timer_dirty: bool,
 }
 
 impl Core {
@@ -347,7 +480,9 @@ impl Core {
             asm: None,
             asm_buf: Vec::new(),
             hdr_scratch: BytesMut::new(),
-            buffered: 0,
+            delivered: 0,
+            recv_blocked: false,
+            dirty: Vec::new(),
             buffered_budget: u64::from(conn_target),
             goaway: None,
             state: ConnState::Open,
@@ -360,6 +495,10 @@ impl Core {
             conn_stall: None,
             goaway_queued: false,
             opened_any: false,
+            floods: Floods::new(),
+            now: TInstant::now(),
+            timer_at: None,
+            timer_dirty: false,
             cfg,
         }
     }
@@ -431,7 +570,91 @@ impl Core {
         if matches!(st.recv, RecvState::Done) {
             st.shared.close_send();
         } else {
-            st.shared.fail(err);
+            StreamShared::fail(&st.shared, err, &mut self.dirty);
+        }
+    }
+
+    /// Ask for a timeout scan no later than `d`.
+    fn want_timer(&mut self, d: TInstant) {
+        if self.timer_at.is_none_or(|t| d < t) {
+            self.timer_at = Some(d);
+            self.timer_dirty = true;
+        }
+    }
+
+    /// The timer fired: fail streams (and a header block) that exceeded their deadlines and compute the next
+    /// scan time. O(streams), but only runs when the earliest known deadline passes.
+    fn scan_timeouts(&mut self) -> std::result::Result<(), H2Error> {
+        let now = self.now;
+        let mut next: Option<TInstant> = None;
+        let mut expired: Vec<(usize, bool)> = Vec::new();
+        for (k, st) in &self.streams {
+            let d = match st.recv {
+                RecvState::AwaitHead => {
+                    let idle = st.head_idle.map(|d| st.activity + d);
+                    match (idle, st.head_abs) {
+                        (Some(a), Some(b)) => Some(a.min(b)),
+                        (a, b) => a.or(b),
+                    }
+                }
+                RecvState::Body => st.body_idle.map(|d| st.activity + d),
+                RecvState::Done => None,
+            };
+            if let Some(d) = d {
+                if d <= now {
+                    expired.push((k, matches!(st.recv, RecvState::AwaitHead)));
+                } else {
+                    next = Some(next.map_or(d, |n| n.min(d)));
+                }
+            }
+        }
+        if let Some(a) = &self.asm {
+            let d = a.started + self.cfg.header_block_timeout;
+            if d <= now {
+                return Err(conn_err(
+                    Reason::ENHANCE_YOUR_CALM,
+                    "header block (CONTINUATION) timed out",
+                ));
+            }
+            next = Some(next.map_or(d, |n| n.min(d)));
+        }
+        for (k, head) in expired {
+            self.stream_timeout(k, head);
+        }
+        if let Some(n) = next {
+            self.timer_at = Some(n.max(now + Duration::from_millis(1)));
+            self.timer_dirty = true;
+        }
+        Ok(())
+    }
+
+    fn stream_timeout(&mut self, k: usize, head: bool) {
+        let (id, hdr_end) = {
+            let st = &self.streams[k];
+            (st.id, st.hdr_end)
+        };
+        self.ctrl_rst(id, Reason::CANCEL, true);
+        let err = if head {
+            Self::err_for(
+                self.wq.written_total(),
+                hdr_end,
+                ErrorKind::Timeout,
+                "timed out waiting for the response head",
+            )
+        } else {
+            Error::with_source(
+                ErrorKind::Timeout,
+                Recovery::Never,
+                "response body idle timeout",
+            )
+        };
+        self.remove_with_error(k, err);
+    }
+
+    /// Deliver every wake owed by this tick (one per stream, however many events it received).
+    fn drain_dirty(&mut self) {
+        for s in self.dirty.drain(..) {
+            s.wake_now();
         }
     }
 
@@ -480,8 +703,11 @@ impl Core {
             if matches!(st.recv, RecvState::Done) {
                 st.shared.close_send();
             } else {
-                st.shared
-                    .fail(Self::err_for(written, st.hdr_end, kind, msg.to_owned()));
+                StreamShared::fail(
+                    &st.shared,
+                    Self::err_for(written, st.hdr_end, kind, msg.to_owned()),
+                    &mut self.dirty,
+                );
             }
         }
     }
@@ -543,6 +769,24 @@ impl Core {
             OpenBody::Full(v) => SendState::Full(v),
             OpenBody::Streaming => SendState::Stream(Box::default()),
         };
+        let now = self.now;
+        let head_abs = parts
+            .extensions
+            .get::<matier_core::ResponseTimeout>()
+            .map(|t| now + t.0);
+        let head_idle = if head_abs.is_some() {
+            None
+        } else {
+            self.cfg.response_head_timeout
+        };
+        let body_idle = parts
+            .extensions
+            .get::<matier_core::BodyTimeout>()
+            .map(|t| t.0)
+            .or(self.cfg.body_idle_timeout);
+        if let Some(d) = head_abs.or_else(|| head_idle.map(|d| now + d)) {
+            self.want_timer(d);
+        }
         let entry = StreamEntry {
             id,
             shared,
@@ -556,6 +800,14 @@ impl Core {
             in_ready: false,
             hdr_end,
             stall_since: None,
+            activity: now,
+            head_abs,
+            head_idle,
+            body_idle,
+            is_head: parts.method == http::Method::HEAD,
+            expect_len: None,
+            recv_len: 0,
+            info_count: 0,
         };
         self.opened_any = true;
         let has_full = matches!(entry.send, SendState::Full(_));
@@ -603,7 +855,8 @@ impl Core {
     fn on_ready(&mut self, shared: &Arc<StreamShared>) {
         let f = shared.begin_ready();
         let consumed = shared.take_consumed();
-        self.buffered = self.buffered.saturating_sub(u64::from(consumed));
+        // Consumption may have unblocked connection-window credit (no stream needed for that).
+        self.release_conn();
         let Some(&k) = self.by_id.get(&shared.id()) else {
             return;
         };
@@ -628,14 +881,14 @@ impl Core {
         if !(st.local_closed && st.remote_closed) {
             self.ctrl_rst(st.id, Reason::CANCEL, true);
         }
-        let mut n = 0u64;
         while let Some(ev) = st.shared.pop_recv() {
-            if let RecvEvent::Data(d) = ev {
-                n += d.len() as u64;
+            if let RecvEvent::Data { flow, .. } = ev {
+                st.shared.account_consumed(flow);
             }
         }
-        self.buffered = self.buffered.saturating_sub(n);
         st.shared.close_send();
+        // The queue may have held the bytes that kept connection-window credit parked.
+        self.release_conn();
     }
 
     fn drain_send_events(&mut self, k: usize) {
@@ -708,6 +961,11 @@ impl Core {
                 self.encode_block(id, true, max_frame, |enc, out| {
                     enc.begin_block(out);
                     for (n, v) in t.iter() {
+                        if matier_h2::hpack::is_connection_specific(n.as_str(), v.as_bytes())
+                            || n.as_str().starts_with(':')
+                        {
+                            continue;
+                        }
                         enc.encode_field(
                             n.as_str().as_bytes(),
                             v.as_bytes(),
@@ -756,6 +1014,7 @@ impl Core {
     fn emit_data(&mut self, k: usize, budget: usize) -> usize {
         let initial = self.initial_send_window;
         let max_frame = self.peer.max_frame_size;
+        let now = self.now;
         let st = &mut self.streams[k];
         let win = st.send_win.available(initial);
         if win == 0 {
@@ -764,6 +1023,7 @@ impl Core {
             }
             return 0;
         }
+        st.activity = now;
         let cap = win
             .min(self.conn_send.available())
             .min(max_frame)
@@ -858,7 +1118,10 @@ impl Core {
                     let mut buf = std::mem::take(&mut self.asm_buf);
                     buf.clear();
                     buf.extend_from_slice(fragment);
+                    let now = self.now;
+                    self.want_timer(now + self.cfg.header_block_timeout);
                     self.asm = Some(HeaderAsm {
+                        started: now,
                         stream_id,
                         end_stream,
                         frames: 1,
@@ -895,11 +1158,15 @@ impl Core {
                 }
             }
             Frame::Priority { .. } | Frame::PriorityUpdate { .. } | Frame::Unknown { .. } => Ok(()),
-            Frame::RstStream { stream_id, code } => self.on_rst(stream_id, code),
+            Frame::RstStream { stream_id, code } => {
+                self.flood(|f| &mut f.rst, 1, 0, "RST_STREAM flood")?;
+                self.on_rst(stream_id, code)
+            }
             Frame::Settings { ack, params } => {
                 if ack {
                     Ok(())
                 } else {
+                    self.flood(|f| &mut f.settings, 1, 0, "SETTINGS flood")?;
                     self.on_settings(params)
                 }
             }
@@ -914,6 +1181,7 @@ impl Core {
                         self.ping_acked = true;
                     }
                 } else {
+                    self.flood(|f| &mut f.ping, 1, 0, "PING flood")?;
                     self.ctrl(|a| frame::encode_ping(a, true, data));
                 }
                 Ok(())
@@ -929,7 +1197,32 @@ impl Core {
             Frame::WindowUpdate {
                 stream_id,
                 increment,
-            } => self.on_window_update(stream_id, increment),
+            } => {
+                let written = self.wq.written_total();
+                // Every 16 KiB we have written legitimately earns the peer one update.
+                let credit = written.saturating_sub(self.floods.wu_written) / 16_384;
+                if credit > 0 {
+                    self.floods.wu_written = written;
+                }
+                self.flood(|f| &mut f.window_update, 1, credit, "WINDOW_UPDATE flood")?;
+                self.on_window_update(stream_id, increment)
+            }
+        }
+    }
+
+    /// Charges one event to a flood bucket; a flood is a connection error (ENHANCE_YOUR_CALM).
+    fn flood(
+        &mut self,
+        pick: impl FnOnce(&mut Floods) -> &mut Leaky,
+        cost: u32,
+        extra: u64,
+        why: &'static str,
+    ) -> std::result::Result<(), H2Error> {
+        let now = self.now;
+        if pick(&mut self.floods).hit(now, cost, extra) {
+            Ok(())
+        } else {
+            Err(conn_err(Reason::ENHANCE_YOUR_CALM, why))
         }
     }
 
@@ -957,7 +1250,9 @@ impl Core {
                 .decode(block, |_, _, _| {})
                 .map_err(|e| e.into_h2());
         };
+        let now = self.now;
         let st = &mut self.streams[k];
+        st.activity = now;
         match st.recv {
             RecvState::AwaitHead => {
                 let head = match self.dec.decode_head(block, BlockKind::Response, id) {
@@ -972,8 +1267,20 @@ impl Core {
                 if status.is_informational() {
                     if end_stream {
                         self.stream_error(k, Reason::PROTOCOL_ERROR, "1xx with END_STREAM");
+                    } else {
+                        st.info_count += 1;
+                        if st.info_count > MAX_INFORMATIONAL {
+                            self.stream_error(k, Reason::PROTOCOL_ERROR, "too many 1xx responses");
+                        }
                     }
                     return Ok(());
+                }
+                match declared_length(&head.headers, st.is_head, status) {
+                    Ok(l) => st.expect_len = l,
+                    Err(()) => {
+                        self.stream_error(k, Reason::PROTOCOL_ERROR, "invalid content-length");
+                        return Ok(());
+                    }
                 }
                 let (mut parts, ()) = http::Response::new(()).into_parts();
                 parts.status = status;
@@ -987,9 +1294,13 @@ impl Core {
                     });
                 }
                 st.recv = RecvState::Body;
-                st.shared.publish_head(Ok(parts));
+                if let Some(d) = st.body_idle {
+                    self.want_timer(now + d);
+                }
+                let st = &self.streams[k];
+                StreamShared::publish_head_deferred(&st.shared, Ok(parts), &mut self.dirty);
                 if end_stream {
-                    self.remote_end(k);
+                    self.remote_end(k, true);
                 }
                 Ok(())
             }
@@ -1001,10 +1312,13 @@ impl Core {
                     }
                     let st = &self.streams[k];
                     if !h.headers.is_empty() {
-                        st.shared
-                            .push_recv(RecvEvent::Trailers(Box::new(h.headers)));
+                        StreamShared::push_recv(
+                            &st.shared,
+                            RecvEvent::Trailers(Box::new(h.headers)),
+                            &mut self.dirty,
+                        );
                     }
-                    self.remote_end(k);
+                    self.remote_end(k, true);
                     Ok(())
                 }
                 Err(H2Error::Stream { reason, .. }) => {
@@ -1023,10 +1337,21 @@ impl Core {
         }
     }
 
-    /// The server finished its response on stream `k`.
-    fn remote_end(&mut self, k: usize) {
+    /// The server finished its response on stream `k`. `push_end`: queue a separate `End` event (false when
+    /// END_STREAM was folded into the last DATA event).
+    fn remote_end(&mut self, k: usize, push_end: bool) {
         let st = &mut self.streams[k];
-        st.shared.push_recv(RecvEvent::End);
+        if st.expect_len.is_some_and(|l| l != st.recv_len) {
+            self.stream_error(
+                k,
+                Reason::PROTOCOL_ERROR,
+                "response body shorter than content-length",
+            );
+            return;
+        }
+        if push_end {
+            StreamShared::push_recv(&st.shared, RecvEvent::End, &mut self.dirty);
+        }
         st.recv = RecvState::Done;
         st.remote_closed = true;
         if st.local_closed {
@@ -1056,7 +1381,9 @@ impl Core {
             }
             return Ok(()); // closed stream: bytes already credited to the connection window
         };
+        let now = self.now;
         let st = &mut self.streams[k];
+        st.activity = now;
         match st.recv {
             RecvState::AwaitHead => {
                 self.stream_error(k, Reason::PROTOCOL_ERROR, "DATA before response headers");
@@ -1074,15 +1401,69 @@ impl Core {
         }
         let n = data.len();
         let pad = flow_len as usize - n;
-        if pad > 0 {
-            st.recv_win.release(pad as u32);
+        let st = &mut self.streams[k];
+        st.recv_len += n as u64;
+        if st.expect_len.is_some_and(|l| st.recv_len > l) {
+            self.stream_error(
+                k,
+                Reason::PROTOCOL_ERROR,
+                "response body longer than content-length",
+            );
+            return Ok(());
         }
-        if n > 0 {
-            self.buffered += n as u64;
-            st.shared.push_recv(RecvEvent::Data(Box::new(data)));
+        // Checked before the (END-folded) last event is queued, so the consumer never sees a clean end.
+        if end_stream && st.expect_len.is_some_and(|l| l != st.recv_len) {
+            self.stream_error(
+                k,
+                Reason::PROTOCOL_ERROR,
+                "response body shorter than content-length",
+            );
+            return Ok(());
         }
+        if n < TINY_DATA && !end_stream {
+            self.flood(|f| &mut f.tiny_data, 1, 0, "tiny DATA flood")?;
+        }
+        let st = &mut self.streams[k];
+        if st.shared.pending_events() >= MAX_RECV_EVENTS {
+            self.stream_error(
+                k,
+                Reason::ENHANCE_YOUR_CALM,
+                "too many unconsumed receive events",
+            );
+            return Ok(());
+        }
+        if n == 0 {
+            // Nothing is buffered for the application: return the (padding-only) credit right away.
+            if flow_len > 0 && !end_stream {
+                st.recv_win.release(flow_len);
+                if let Some(inc) = st.recv_win.poll_update(&self.policy) {
+                    self.ctrl_window_update(id, inc);
+                }
+            }
+            if end_stream {
+                self.remote_end(k, true);
+            }
+            return Ok(());
+        }
+        // Tiny or padded payloads are copied out of the read block so a flood of them cannot pin 64 KiB
+        // blocks one byte at a time. Everything else stays a zero-copy slice.
+        let data = if n < 16 || (pad > 0 && n < 256) {
+            matier_core::buf::from_bytes(Bytes::copy_from_slice(&data.to_vec()))
+        } else {
+            data
+        };
+        self.delivered += u64::from(flow_len) + EVENT_OVERHEAD;
+        StreamShared::push_recv(
+            &st.shared,
+            RecvEvent::Data {
+                view: data,
+                flow: flow_len,
+                end: end_stream,
+            },
+            &mut self.dirty,
+        );
         if end_stream {
-            self.remote_end(k);
+            self.remote_end(k, false);
         }
         Ok(())
     }
@@ -1145,9 +1526,10 @@ impl Core {
                             )
                         })?;
                 }
-                let keys: Vec<usize> = self.streams.iter().map(|(k, _)| k).collect();
-                for k in keys {
-                    self.rearm(k);
+                for k in 0..self.streams.capacity() {
+                    if self.streams.contains(k) {
+                        self.rearm(k);
+                    }
                 }
             }
         }
@@ -1216,10 +1598,36 @@ impl Core {
         self.release_conn();
     }
 
+    fn buffered_given(&self, consumed_word: u64) -> u64 {
+        self.delivered
+            .saturating_sub(consumed_word & !CONSUMED_BLOCKED)
+    }
+
+    /// Credit the connection window once the buffered bytes are within budget. When they are not, publish
+    /// `recv_blocked` (set state) and re-check (then look), so a consumer that raced past us still triggers a
+    /// `Ready`.
     fn release_conn(&mut self) {
-        if self.conn_unreleased > 0 && self.buffered <= self.buffered_budget {
-            let n = std::mem::take(&mut self.conn_unreleased).min(u64::from(u32::MAX)) as u32;
-            self.conn_recv.release(n);
+        if self.conn_unreleased > 0 {
+            let mut word = self.shared.consumed.load(Ordering::Acquire);
+            let mut ok = self.buffered_given(word) <= self.buffered_budget;
+            if !ok && !self.recv_blocked {
+                self.recv_blocked = true;
+                word = self
+                    .shared
+                    .consumed
+                    .fetch_or(CONSUMED_BLOCKED, Ordering::AcqRel);
+                ok = self.buffered_given(word) <= self.buffered_budget;
+            }
+            if ok {
+                if self.recv_blocked {
+                    self.recv_blocked = false;
+                    self.shared
+                        .consumed
+                        .fetch_and(!CONSUMED_BLOCKED, Ordering::AcqRel);
+                }
+                let n = std::mem::take(&mut self.conn_unreleased).min(u64::from(u32::MAX)) as u32;
+                self.conn_recv.release(n);
+            }
         }
         if let Some(inc) = self.conn_recv.poll_update(&self.policy) {
             self.ctrl_window_update(0, inc);
@@ -1269,6 +1677,12 @@ pub(crate) struct Actor<T> {
     eof: bool,
     inbox_closed: bool,
     keepalive: Option<Keepalive>,
+    /// Requests opened in the current tick (input to the small-write deferral).
+    opened_this_tick: u32,
+    /// The previous tick's write was deferred (never defer twice in a row).
+    deferred: bool,
+    /// The one timer for all stream/header-block deadlines (see `Core::scan_timeouts`).
+    timer: Pin<Box<Sleep>>,
     torn_down: bool,
 }
 
@@ -1338,6 +1752,7 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
         }
         self.rd.flush_skip();
         self.core.after_read();
+        self.core.drain_dirty();
         Ok(yielded)
     }
 
@@ -1391,9 +1806,9 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
                 }
                 if let Some(&k) = self.core.by_id.get(&id) {
                     self.core.stream_error(k, reason, "invalid frame");
-                } else if id != 0 {
-                    self.core.ctrl_rst(id, reason, true);
                 }
+                // Unknown streams (idle or long closed) are ignored: an RST_STREAM for an idle stream is
+                // itself a protocol violation (RFC 9113 5.1).
             }
             Err(e) => return Err(e.into()),
         }
@@ -1408,7 +1823,10 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
                 return false;
             }
             match self.rx.poll_recv(cx) {
-                Poll::Ready(Some(Command::Open(o))) => self.core.open(o),
+                Poll::Ready(Some(Command::Open(o))) => {
+                    self.opened_this_tick += 1;
+                    self.core.open(o);
+                }
                 Poll::Ready(Some(Command::Ready(s))) => self.core.on_ready(&s),
                 Poll::Ready(None) => {
                     self.inbox_closed = true;
@@ -1490,6 +1908,32 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
         Ok(())
     }
 
+    /// Arms/polls the single deadline timer and runs the deadline scan when it fires.
+    fn poll_deadlines(&mut self, cx: &mut Context<'_>) {
+        loop {
+            if self.core.timer_dirty {
+                self.core.timer_dirty = false;
+                if let Some(t) = self.core.timer_at {
+                    self.timer.as_mut().reset(t);
+                }
+            }
+            if self.core.timer_at.is_none() {
+                return;
+            }
+            if self.timer.as_mut().poll(cx).is_pending() {
+                return;
+            }
+            self.core.timer_at = None;
+            if let Err(e) = self.core.scan_timeouts() {
+                self.core.ctrl_goaway(Reason::ENHANCE_YOUR_CALM, "timeout");
+                self.core.state = ConnState::Closing;
+                self.core
+                    .fail_all(ErrorKind::Timeout, &format!("HTTP/2 {e}"));
+                return;
+            }
+        }
+    }
+
     /// Fail everything, stop accepting and wake waiters. Idempotent.
     fn teardown(&mut self, kind: ErrorKind, msg: &str) {
         self.core.fail_all(kind, msg);
@@ -1520,6 +1964,7 @@ impl<T> Drop for Actor<T> {
             self.core.stop_accepting();
             self.core
                 .fail_all(ErrorKind::Closed, "HTTP/2 connection task dropped");
+            self.core.drain_dirty();
             self.rx.close();
             while let Ok(c) = self.rx.try_recv() {
                 if let Command::Open(o) = c {
@@ -1541,7 +1986,18 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Future for Actor<T> {
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<()> {
         let this = self.get_mut();
+        let r = this.poll_tick(cx);
+        // Every exit path (teardown, fail_connection, Closing, Pending) delivers the wakes it owes.
+        this.core.drain_dirty();
+        r
+    }
+}
+
+impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
+    fn poll_tick(&mut self, cx: &mut Context<'_>) -> Poll<()> {
+        let this = self;
         let t0 = Instant::now();
+        this.core.now = TInstant::now();
         let mut again = false;
 
         if this.core.state == ConnState::Open {
@@ -1564,6 +2020,7 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Future for Actor<T> {
         if this.core.state == ConnState::Open {
             // 2. INBOX
             again |= this.inbox_phase(cx);
+            this.poll_deadlines(cx);
             // keepalive
             if let Err(Fail::Io(e)) = this.poll_keepalive(cx) {
                 this.teardown(ErrorKind::Io, &e.to_string());
@@ -1581,12 +2038,29 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Future for Actor<T> {
             }
         }
 
-        // 4. WRITE
-        match this.write_phase(cx) {
-            Ok(y) => again |= y,
-            Err(e) => {
-                this.teardown(ErrorKind::Io, &format!("write error: {e}"));
-                return Poll::Ready(());
+        // 4. WRITE. A tick that only produced a few small request frames while many streams are in flight
+        // yields once before writing: the submitters that run meanwhile add their requests to the same
+        // `writev` instead of paying one syscall each. Bounded (once per tick pair) and never when
+        // control traffic is queued beyond a few KiB.
+        let pending = this.core.wq.pending();
+        let defer = this.core.cfg.coalesce_small_writes
+            && !this.deferred
+            && this.core.state == ConnState::Open
+            && this.opened_this_tick > 0
+            && pending > 0
+            && pending < DEFER_MAX_PENDING
+            && this.core.shared.in_flight.load(Ordering::Relaxed) > DEFER_MIN_IN_FLIGHT;
+        this.opened_this_tick = 0;
+        this.deferred = defer;
+        if defer {
+            again = true;
+        } else {
+            match this.write_phase(cx) {
+                Ok(y) => again |= y,
+                Err(e) => {
+                    this.teardown(ErrorKind::Io, &format!("write error: {e}"));
+                    return Poll::Ready(());
+                }
             }
         }
         again |= this.core.can_schedule() && this.core.state == ConnState::Open;
@@ -1740,8 +2214,13 @@ where
         eof: false,
         inbox_closed: false,
         keepalive,
+        opened_this_tick: 0,
+        deferred: false,
+        timer: Box::pin(tokio::time::sleep(Duration::from_secs(86_400))),
         torn_down: false,
     };
-    tokio::spawn(actor);
+    // The actor bounds its own per-tick work (frames, bytes, commands). tokio's cooperative budget would
+    // only make a busy actor read `Pending` from its inbox/socket as "empty"/"not ready" and re-wake.
+    tokio::spawn(tokio::task::unconstrained(actor));
     Ok(H2Handle::new(shared, tx))
 }

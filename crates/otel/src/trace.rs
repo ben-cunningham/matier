@@ -16,6 +16,49 @@ use pin_project_lite::pin_project;
 use crate::attrs::{DEFAULT_ERROR_STATUS_THRESHOLD, proto_str};
 use crate::metrics::method_str;
 
+/// What the `url.full` span attribute carries. URLs often embed credentials in the query string (presigned
+/// S3/GCS URLs, API tokens), so the default redacts the values of well-known sensitive parameters.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum UrlFullPolicy {
+    /// The whole URL (userinfo is still removed).
+    Full,
+    /// The whole URL with the values of well-known sensitive query parameters replaced by `REDACTED`
+    /// (`AWSAccessKeyId`, `Signature`, `sig`, `X-Goog-Signature`, `X-Amz-Signature`, `X-Amz-Credential`,
+    /// `X-Amz-Security-Token`, `token`, `access_token`; names match case-insensitively).
+    #[default]
+    Redacted,
+    /// Scheme, host, port and path only; the query is dropped.
+    PathOnly,
+    /// No `url.full` attribute.
+    Off,
+}
+
+/// Which requests get `traceparent`/`tracestate` headers injected. Injection leaks the trace id (and, with
+/// baggage propagators, application data) to whichever server the request goes to.
+#[derive(Clone, Debug, Default)]
+pub enum Propagation {
+    /// Inject on every request (default).
+    #[default]
+    Everywhere,
+    /// Only inject when the request host equals an entry, or ends with `.entry` (case-insensitive).
+    Hosts(std::sync::Arc<[String]>),
+}
+
+impl Propagation {
+    fn allows(&self, uri: &http::Uri) -> bool {
+        match self {
+            Self::Everywhere => true,
+            Self::Hosts(list) => uri.host().is_some_and(|h| {
+                let h = h.trim_matches(['[', ']']).to_ascii_lowercase();
+                list.iter().any(|e| {
+                    let e = e.to_ascii_lowercase();
+                    h == e || h.ends_with(&format!(".{e}"))
+                })
+            }),
+        }
+    }
+}
+
 /// Request extension: do not create a span (nor inject trace headers) for this request.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct NoTrace;
@@ -41,6 +84,8 @@ impl Injector for HeaderInjector<'_> {
 pub struct TracingLayer<T = BoxedTracer> {
     tracer: T,
     err_threshold: u16,
+    url_policy: UrlFullPolicy,
+    propagation: Propagation,
 }
 
 impl Default for TracingLayer {
@@ -63,7 +108,21 @@ impl<T> TracingLayer<T> {
         Self {
             tracer,
             err_threshold: DEFAULT_ERROR_STATUS_THRESHOLD,
+            url_policy: UrlFullPolicy::default(),
+            propagation: Propagation::default(),
         }
+    }
+    /// How `url.full` is recorded (default: [`UrlFullPolicy::Redacted`]).
+    #[must_use]
+    pub fn url_full(mut self, p: UrlFullPolicy) -> Self {
+        self.url_policy = p;
+        self
+    }
+    /// Restricts trace-context injection (default: every request).
+    #[must_use]
+    pub fn propagation(mut self, p: Propagation) -> Self {
+        self.propagation = p;
+        self
     }
     /// Responses with status >= `t` mark the span as errored (default 400).
     #[must_use]
@@ -80,6 +139,8 @@ impl<S, T: Clone> layered::Layer<S> for TracingLayer<T> {
             svc: inner,
             tracer: self.tracer.clone(),
             err_threshold: self.err_threshold,
+            url_policy: self.url_policy,
+            propagation: self.propagation.clone(),
         }
     }
 }
@@ -89,18 +150,53 @@ pub struct Tracing<S, T = BoxedTracer> {
     svc: S,
     tracer: T,
     err_threshold: u16,
+    url_policy: UrlFullPolicy,
+    propagation: Propagation,
 }
 
-fn sanitized_url(uri: &http::Uri) -> String {
-    match uri.authority() {
-        Some(a) if a.as_str().contains('@') => {
-            let host = a.host();
-            let port = a.port().map(|p| format!(":{p}")).unwrap_or_default();
-            let pq = uri.path_and_query().map_or("", |p| p.as_str());
-            format!("{}://{host}{port}{pq}", uri.scheme_str().unwrap_or("http"))
-        }
-        _ => uri.to_string(),
+const SENSITIVE_PARAMS: &[&str] = &[
+    "awsaccesskeyid",
+    "signature",
+    "sig",
+    "x-goog-signature",
+    "x-amz-signature",
+    "x-amz-credential",
+    "x-amz-security-token",
+    "token",
+    "access_token",
+];
+
+/// The `url.full` value for `policy` (`None` for [`UrlFullPolicy::Off`]). Userinfo is never included.
+fn url_full(uri: &http::Uri, policy: UrlFullPolicy) -> Option<String> {
+    if policy == UrlFullPolicy::Off {
+        return None;
     }
+    let scheme = uri.scheme_str().unwrap_or("http");
+    let Some(a) = uri.authority() else {
+        return Some(uri.to_string());
+    };
+    let port = a.port().map(|p| format!(":{p}")).unwrap_or_default();
+    // `a.host()` keeps IPv6 brackets.
+    let mut out = format!("{scheme}://{}{port}{}", a.host(), uri.path());
+    if let (Some(q), UrlFullPolicy::Full | UrlFullPolicy::Redacted) = (uri.query(), policy) {
+        out.push('?');
+        for (i, pair) in q.split('&').enumerate() {
+            if i > 0 {
+                out.push('&');
+            }
+            match pair.split_once('=') {
+                Some((k, _))
+                    if policy == UrlFullPolicy::Redacted
+                        && SENSITIVE_PARAMS.iter().any(|s| k.eq_ignore_ascii_case(s)) =>
+                {
+                    out.push_str(k);
+                    out.push_str("=REDACTED");
+                }
+                _ => out.push_str(pair),
+            }
+        }
+    }
+    Some(out)
 }
 
 impl<S, T, B, RB> Service<Request<B>> for Tracing<S, T>
@@ -124,10 +220,10 @@ where
                 format!("HTTP {m}")
             };
             let uri = req.uri();
-            let mut attrs = vec![
-                KeyValue::new("http.request.method", m),
-                KeyValue::new("url.full", sanitized_url(uri)),
-            ];
+            let mut attrs = vec![KeyValue::new("http.request.method", m)];
+            if let Some(u) = url_full(uri, self.url_policy) {
+                attrs.push(KeyValue::new("url.full", u));
+            }
             if let Some(h) = uri.host() {
                 attrs.push(KeyValue::new(
                     "server.address",
@@ -151,9 +247,11 @@ where
                 .with_attributes(attrs)
                 .start_with_context(&self.tracer, &parent);
             let cx = parent.with_span(span);
-            global::get_text_map_propagator(|p| {
-                p.inject_context(&cx, &mut HeaderInjector(req.headers_mut()))
-            });
+            if self.propagation.allows(req.uri()) {
+                global::get_text_map_propagator(|p| {
+                    p.inject_context(&cx, &mut HeaderInjector(req.headers_mut()))
+                });
+            }
             Some(cx)
         };
         TracingFuture {
@@ -321,5 +419,56 @@ impl<B: Body> Body for TracedBody<B> {
     }
     fn size_hint(&self) -> SizeHint {
         self.inner.size_hint()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn u(s: &str) -> http::Uri {
+        s.parse().unwrap()
+    }
+
+    #[test]
+    fn redacts_sensitive_query_values_and_strips_userinfo() {
+        let uri = u(
+            "https://user:pw@b.s3.amazonaws.com:8443/k?AWSAccessKeyId=AKIA&Signature=abc&x=1&X-Amz-Signature=zz&token",
+        );
+        let want = "https://b.s3.amazonaws.com:8443/k?AWSAccessKeyId=REDACTED&Signature=REDACTED&x=1&X-Amz-Signature=REDACTED&token";
+        assert_eq!(url_full(&uri, UrlFullPolicy::Redacted).unwrap(), want);
+        let r = url_full(
+            &u("http://h/p?access_token=s&sig=1&TOKEN=2&keep=3"),
+            UrlFullPolicy::Redacted,
+        )
+        .unwrap();
+        assert_eq!(
+            r,
+            "http://h/p?access_token=REDACTED&sig=REDACTED&TOKEN=REDACTED&keep=3"
+        );
+    }
+
+    #[test]
+    fn policies() {
+        let uri = u("http://u@h/p?sig=1&a=b");
+        assert_eq!(
+            url_full(&uri, UrlFullPolicy::Full).unwrap(),
+            "http://h/p?sig=1&a=b"
+        );
+        assert_eq!(
+            url_full(&uri, UrlFullPolicy::PathOnly).unwrap(),
+            "http://h/p"
+        );
+        assert!(url_full(&uri, UrlFullPolicy::Off).is_none());
+    }
+
+    #[test]
+    fn propagation_allowlist() {
+        let p = Propagation::Hosts(vec!["internal.example".to_owned()].into());
+        assert!(p.allows(&u("https://internal.example/x")));
+        assert!(p.allows(&u("https://api.Internal.example/x")));
+        assert!(!p.allows(&u("https://evil-internal.example/x")));
+        assert!(!p.allows(&u("https://other.com/x")));
+        assert!(Propagation::Everywhere.allows(&u("https://other.com/x")));
     }
 }

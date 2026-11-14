@@ -31,6 +31,15 @@ pub const INBOX_SATURATED: usize = 256;
 /// a connection carrying one or two requests cannot be helped by a second one (nothing to split), however
 /// slow its actor or its peer is.
 pub const SCALE_MIN_IN_FLIGHT: usize = 4;
+/// A connection this deep is saturated at a much lower busy fraction: with this many streams multiplexed on one
+/// actor, a second connection splits the per-request actor work even though the actor is not close to
+/// saturation (it alternates between small bursts and waiting on the peer). Measured at c=64 / 1 KiB after the
+/// receive-path work: one connection sits at 45-50 % busy (just under [`BUSY_SATURATED_PERMILLE`]) and carries
+/// 114k req/s, while two carry ~200k. Strictly deeper than half of c=64 so two balanced connections do not
+/// trigger a third, and far above anything a light workload reaches.
+pub const SCALE_DEEP_IN_FLIGHT: usize = 40;
+/// Busy fraction (permille) above which a connection with [`SCALE_DEEP_IN_FLIGHT`] streams is saturated.
+pub const SCALE_DEEP_BUSY_PERMILLE: u32 = 250;
 /// Minimum spacing between scale-up dials for one origin. Roughly the time the busy EWMA needs to reflect the
 /// new connection (a few 10 ms windows), so a burst does not overshoot to the maximum.
 pub const SCALE_UP_COOLDOWN: Duration = Duration::from_millis(50);
@@ -87,6 +96,7 @@ impl ScaleThresholds {
     #[must_use]
     pub fn is_saturated(&self, load: LoadSnapshot, in_flight: usize, limit: usize) -> bool {
         in_flight >= limit
+            || (in_flight >= SCALE_DEEP_IN_FLIGHT && load.busy_permille > SCALE_DEEP_BUSY_PERMILLE)
             || (in_flight >= SCALE_MIN_IN_FLIGHT
                 && (load.busy_permille > self.busy_permille
                     || load.dispatch_delay > self.dispatch_delay
@@ -134,7 +144,7 @@ mod tests {
     #[test]
     fn saturation_signals() {
         assert!(!is_saturated(load(0, 0, 0), 3, 128));
-        assert!(!is_saturated(load(500, 100, 256), 127, 128)); // boundaries are exclusive
+        assert!(!is_saturated(load(500, 100, 256), 39, 128)); // boundaries are exclusive
         assert!(is_saturated(load(501, 0, 0), 8, 128));
         assert!(is_saturated(load(10, 101, 0), 8, 128));
         assert!(is_saturated(load(10, 0, 257), 8, 128));
@@ -148,6 +158,22 @@ mod tests {
         assert!(is_saturated(load(1000, 0, 0), SCALE_MIN_IN_FLIGHT, 128));
         assert!(is_saturated(load(0, 0, 0), 128, 128));
         assert!(is_saturated(load(0, 0, 0), 5, 4));
+    }
+
+    #[test]
+    fn deep_connections_saturate_at_a_lower_busy_fraction() {
+        // c=64 on one connection at ~47 % busy: a second connection helps.
+        assert!(is_saturated(load(470, 20, 6), 64, 128));
+        assert!(is_saturated(load(251, 0, 0), SCALE_DEEP_IN_FLIGHT, 128));
+        // Light or balanced load never dials extra connections.
+        assert!(!is_saturated(load(250, 0, 0), 64, 128));
+        assert!(!is_saturated(
+            load(470, 20, 6),
+            SCALE_DEEP_IN_FLIGHT - 1,
+            128
+        ));
+        assert!(!is_saturated(load(470, 20, 6), 1, 128));
+        assert!(!is_saturated(load(470, 20, 6), 32, 128)); // two balanced c=64 connections
     }
 
     #[test]

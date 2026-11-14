@@ -398,10 +398,14 @@ async fn single_get() {
     let resp = resp.unwrap();
     assert_eq!(resp.status(), 200);
     assert_eq!(resp.version(), http::Version::HTTP_2);
-    let info = resp
-        .extensions()
-        .get::<matier_core::ConnectionInfo>()
-        .unwrap();
+    let info = resp.body().connection_info().unwrap();
+    assert_eq!(
+        resp.extensions()
+            .get::<matier_core::ConnectionInfo>()
+            .copied(),
+        None,
+        "the extension is opt-in"
+    );
     assert_eq!(info.protocol, matier_core::Protocol::Http2);
     assert_eq!(collect_body(resp).await.unwrap(), b"world");
     // Slot freed once the stream completed.
@@ -1148,4 +1152,334 @@ async fn many_small_responses_never_stall_the_connection_window() {
     })
     .await
     .expect("stalled");
+}
+
+/// Sum of connection-level WINDOW_UPDATE credit the peer receives within `quiet` of silence.
+async fn conn_credit(peer: &mut Peer, quiet: Duration) -> (u64, Vec<F>) {
+    let mut sum = 0u64;
+    let mut other = Vec::new();
+    while let Ok(Some(f)) = tokio::time::timeout(quiet, peer.try_frame()).await {
+        match f {
+            F::WindowUpdate { id: 0, inc } => sum += u64::from(inc),
+            f => other.push(f),
+        }
+    }
+    (sum, other)
+}
+
+fn padded_data(id: u32, data: &[u8], pad: u8, end: bool) -> Vec<u8> {
+    let len = 1 + data.len() + usize::from(pad);
+    let mut v = FrameHeader {
+        len: len as u32,
+        kind: kind::DATA,
+        flags: flags::PADDED | if end { flags::END_STREAM } else { 0 },
+        stream_id: id,
+    }
+    .encode()
+    .to_vec();
+    v.push(pad);
+    v.extend_from_slice(data);
+    v.extend(std::iter::repeat_n(0u8, usize::from(pad)));
+    v
+}
+
+/// S1: a flood of padded 1-byte DATA frames to a stream nobody reads must stop earning connection credit
+/// once ~budget (wire bytes + per-event overhead) is outstanding.
+#[tokio::test]
+async fn padded_tiny_data_flood_is_charged_and_stops_connection_credit() {
+    let cfg = H2Config {
+        initial_conn_window: 65_535,
+        ..H2Config::default()
+    };
+    let (h, mut peer) = connect(cfg, &[]).await;
+    let resp = h.send(h.try_reserve().unwrap(), get("/"));
+    let (id, _, _) = peer.request().await;
+    peer.send_headers(id, 200, &[], false).await;
+    let resp = resp.await.unwrap(); // the consumer never polls the body
+    let frame = padded_data(id, b"x", 200, false);
+    let n = 300usize;
+    let mut wire = Vec::new();
+    for _ in 0..n {
+        wire.extend_from_slice(&frame);
+    }
+    peer.send_raw(&wire).await;
+    let flow_total = (n * 202) as u64;
+    let (credit, other) = conn_credit(&mut peer, Duration::from_millis(200)).await;
+    assert!(other.iter().all(|f| matches!(f, F::WindowUpdate { .. })));
+    // 65_535 / (202 + 64) = 246 frames fit the budget; the remainder must be withheld.
+    assert!(credit <= 246 * 202, "credit {credit} of {flow_total}");
+    assert!(
+        credit < flow_total - 5_000,
+        "credit {credit} of {flow_total}"
+    );
+    drop(resp);
+    drop(h);
+}
+
+/// Per-stream cap on unconsumed receive events: ENHANCE_YOUR_CALM on that stream.
+#[tokio::test]
+async fn too_many_unconsumed_events_reset_the_stream() {
+    let (h, mut peer) = connect(H2Config::default(), &[]).await;
+    let resp = h.send(h.try_reserve().unwrap(), get("/"));
+    let (id, _, _) = peer.request().await;
+    peer.send_headers(id, 200, &[], false).await;
+    let resp = resp.await.unwrap();
+    let mut wire = Vec::new();
+    for _ in 0..1100 {
+        wire.extend_from_slice(&frame::data_frame_header(id, 100, false));
+        wire.extend_from_slice(&[7u8; 100]);
+    }
+    peer.send_raw(&wire).await;
+    let mut got = None;
+    while let Ok(Some(f)) = tokio::time::timeout(Duration::from_secs(2), peer.try_frame()).await {
+        if let F::Rst { id: i, code } = f {
+            got = Some((i, code));
+            break;
+        }
+    }
+    assert_eq!(got, Some((id, Reason::ENHANCE_YOUR_CALM)));
+    drop(resp);
+}
+
+/// P2: consumption of a *finished* stream (no stream-level credit, no per-response `Ready`) still releases
+/// connection-window credit that was parked behind the buffered budget.
+#[tokio::test]
+async fn consumption_without_ready_still_credits_the_connection_window() {
+    let cfg = H2Config {
+        initial_conn_window: 65_535,
+        ..H2Config::default()
+    };
+    let (h, mut peer) = connect(cfg, &[]).await;
+    let r1 = h.send(h.try_reserve().unwrap(), get("/a"));
+    let r2 = h.send(h.try_reserve().unwrap(), get("/b"));
+    let (id1, _, _) = peer.request().await;
+    let (id2, _, _) = peer.request().await;
+    peer.send_headers(id1, 200, &[], false).await;
+    peer.send_headers(id2, 200, &[], false).await;
+    let big = vec![1u8; 16_384];
+    for _ in 0..3 {
+        peer.send_data(id1, &big, false).await;
+    }
+    peer.send_data(id1, &big[..10_000], true).await;
+    for i in 0..100 {
+        peer.send_data(id2, &big[..50], i == 99).await;
+    }
+    let (r1, r2) = (r1.await.unwrap(), r2.await.unwrap());
+    let (before, _) = conn_credit(&mut peer, Duration::from_millis(200)).await;
+    assert_eq!(before, 0, "credit must be parked behind the budget");
+    assert_eq!(collect_body(r1).await.unwrap().len(), 3 * 16_384 + 10_000);
+    let (after, _) = conn_credit(&mut peer, Duration::from_millis(300)).await;
+    assert!(
+        after > 0,
+        "consumption never released the connection window"
+    );
+    drop(r2);
+}
+
+fn timeouts_cfg() -> H2Config {
+    H2Config {
+        response_head_timeout: Some(Duration::from_secs(2)),
+        body_idle_timeout: Some(Duration::from_secs(3)),
+        header_block_timeout: Duration::from_secs(2),
+        keepalive_interval: None,
+        ..H2Config::default()
+    }
+}
+
+#[tokio::test(start_paused = true)]
+async fn silent_peer_hits_the_response_head_timeout() {
+    let (h, mut peer) = connect(timeouts_cfg(), &[]).await;
+    let t0 = tokio::time::Instant::now();
+    let resp = h.send(h.try_reserve().unwrap(), get("/"));
+    let (id, _, _) = peer.request().await;
+    let e = resp.await.unwrap_err();
+    assert_eq!(e.kind(), ErrorKind::Timeout, "{e:?}");
+    assert_eq!(e.recovery(), Recovery::Retryable);
+    assert!(t0.elapsed() >= Duration::from_secs(2));
+    assert!(t0.elapsed() < Duration::from_secs(5));
+    loop {
+        if let F::Rst { id: i, code } = peer.frame_skip_noise().await {
+            assert_eq!((i, code), (id, Reason::CANCEL));
+            break;
+        }
+    }
+    assert_eq!(h.in_flight(), 0);
+}
+
+#[tokio::test(start_paused = true)]
+async fn response_timeout_extension_overrides_the_config() {
+    let (h, mut peer) = connect(H2Config::default(), &[]).await;
+    let t0 = tokio::time::Instant::now();
+    let mut req = get("/");
+    req.extensions_mut()
+        .insert(matier_core::ResponseTimeout(Duration::from_secs(1)));
+    let resp = h.send(h.try_reserve().unwrap(), req);
+    let _ = peer.request().await;
+    let e = resp.await.unwrap_err();
+    assert_eq!(e.kind(), ErrorKind::Timeout, "{e:?}");
+    assert!(t0.elapsed() < Duration::from_secs(5), "{:?}", t0.elapsed());
+}
+
+#[tokio::test(start_paused = true)]
+async fn stalled_body_hits_the_idle_timeout() {
+    let (h, mut peer) = connect(timeouts_cfg(), &[]).await;
+    let resp = h.send(h.try_reserve().unwrap(), get("/"));
+    let (id, _, _) = peer.request().await;
+    peer.send_headers(id, 200, &[], false).await;
+    peer.send_data(id, b"abc", false).await;
+    let resp = resp.await.unwrap();
+    let t0 = tokio::time::Instant::now();
+    let e = collect_body(resp).await.unwrap_err();
+    assert_eq!(e.kind(), ErrorKind::Timeout, "{e:?}");
+    assert_eq!(e.recovery(), Recovery::Never);
+    assert!(t0.elapsed() >= Duration::from_secs(3));
+}
+
+#[tokio::test(start_paused = true)]
+async fn unfinished_header_block_times_out_the_connection() {
+    let (h, mut peer) = connect(timeouts_cfg(), &[]).await;
+    let resp = h.send(h.try_reserve().unwrap(), get("/"));
+    let (id, _, _) = peer.request().await;
+    // HEADERS without END_HEADERS, then silence.
+    let mut block = Vec::new();
+    peer.enc.begin_block(&mut block);
+    peer.enc.encode_field(b":status", b"200", false, &mut block);
+    let mut v = FrameHeader {
+        len: block.len() as u32,
+        kind: kind::HEADERS,
+        flags: 0,
+        stream_id: id,
+    }
+    .encode()
+    .to_vec();
+    v.extend_from_slice(&block);
+    peer.send_raw(&v).await;
+    let e = resp.await.unwrap_err();
+    assert_eq!(e.kind(), ErrorKind::Timeout, "{e:?}");
+    expect_goaway(&mut peer, Reason::ENHANCE_YOUR_CALM).await;
+}
+
+async fn flood_case(wire: Vec<u8>) {
+    let (h, mut peer) = connect(H2Config::default(), &[]).await;
+    let resp = h.send(h.try_reserve().unwrap(), get("/"));
+    let (id, _, _) = peer.request().await;
+    peer.send_headers(id, 200, &[], false).await;
+    let resp = resp.await.unwrap();
+    peer.send_raw(&wire).await;
+    expect_goaway(&mut peer, Reason::ENHANCE_YOUR_CALM).await;
+    drop(resp);
+}
+
+#[tokio::test]
+async fn settings_flood_gets_enhance_your_calm() {
+    let mut wire = Vec::new();
+    for _ in 0..150 {
+        frame::encode_settings(&mut wire, &[(settings::ENABLE_PUSH, 0)]);
+    }
+    flood_case(wire).await;
+}
+
+#[tokio::test]
+async fn ping_flood_gets_enhance_your_calm() {
+    let mut wire = Vec::new();
+    for _ in 0..150 {
+        frame::encode_ping(&mut wire, false, [1; 8]);
+    }
+    flood_case(wire).await;
+}
+
+#[tokio::test]
+async fn rst_stream_flood_gets_enhance_your_calm() {
+    let mut wire = Vec::new();
+    for _ in 0..300 {
+        frame::encode_rst_stream(&mut wire, 1, Reason::CANCEL);
+    }
+    // The first one resets the stream; later ones hit a closed stream but still count.
+    flood_case(wire).await;
+}
+
+#[tokio::test]
+async fn window_update_flood_gets_enhance_your_calm() {
+    let mut wire = Vec::new();
+    for _ in 0..1200 {
+        frame::encode_window_update(&mut wire, 0, 1);
+    }
+    flood_case(wire).await;
+}
+
+#[tokio::test]
+async fn empty_data_flood_gets_enhance_your_calm() {
+    let mut wire = Vec::new();
+    for _ in 0..1200 {
+        wire.extend_from_slice(&frame::data_frame_header(1, 0, false));
+    }
+    flood_case(wire).await;
+}
+
+#[tokio::test]
+async fn content_length_mismatch_is_a_stream_error() {
+    for (declared, sent) in [(10usize, 5usize), (5, 10)] {
+        let (h, mut peer) = connect(H2Config::default(), &[]).await;
+        let f = h.send(h.try_reserve().unwrap(), get("/"));
+        let (id, _, _) = peer.request().await;
+        peer.send_headers(id, 200, &[("content-length", &declared.to_string())], false)
+            .await;
+        peer.send_data(id, &vec![b'x'; sent], true).await;
+        let r = f.await.unwrap();
+        let e = collect_body(r).await.unwrap_err();
+        assert_eq!(e.kind(), ErrorKind::Protocol, "{e:?}");
+        loop {
+            if let F::Rst { id: i, code } = peer.frame_skip_noise().await {
+                assert_eq!((i, code), (id, Reason::PROTOCOL_ERROR));
+                break;
+            }
+        }
+    }
+}
+
+#[tokio::test]
+async fn head_and_204_may_carry_content_length_without_body() {
+    let (h, mut peer) = connect(H2Config::default(), &[]).await;
+    let mut req = get("/");
+    *req.method_mut() = http::Method::HEAD;
+    let f = h.send(h.try_reserve().unwrap(), req);
+    let (id, _, _) = peer.request().await;
+    peer.send_headers(id, 200, &[("content-length", "1000")], true)
+        .await;
+    assert!(collect_body(f.await.unwrap()).await.unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn too_many_interim_responses_fail_the_stream() {
+    let (h, mut peer) = connect(H2Config::default(), &[]).await;
+    let f = h.send(h.try_reserve().unwrap(), get("/"));
+    let (id, _, _) = peer.request().await;
+    for _ in 0..20 {
+        peer.send_headers(id, 103, &[], false).await;
+    }
+    let e = f.await.unwrap_err();
+    assert_eq!(e.kind(), ErrorKind::Protocol, "{e:?}");
+}
+
+#[tokio::test]
+async fn invalid_frame_on_unknown_stream_is_not_answered_with_rst() {
+    let (h, mut peer) = connect(H2Config::default(), &[]).await;
+    // WINDOW_UPDATE with increment 0 on a never-opened (idle) odd stream: the connection survives.
+    let mut v = FrameHeader {
+        len: 4,
+        kind: kind::WINDOW_UPDATE,
+        flags: 0,
+        stream_id: 99,
+    }
+    .encode()
+    .to_vec();
+    v.extend_from_slice(&[0, 0, 0, 0]);
+    peer.send_raw(&v).await;
+    let mut saw_rst = false;
+    while let Ok(Some(f)) = tokio::time::timeout(Duration::from_millis(200), peer.try_frame()).await
+    {
+        saw_rst |= matches!(f, F::Rst { .. });
+    }
+    assert!(!saw_rst);
+    drop(h);
 }

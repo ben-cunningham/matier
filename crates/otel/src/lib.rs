@@ -101,12 +101,23 @@
 //!   semconv attributes. Prefer `&'static str`/`Arc<str>`/integer values; owned `String`s allocate when
 //!   cloned.
 //!
+//! `MetricsLayer` and `TracingLayer` read the protocol/reuse of a response from the [`matier_core::ConnectionInfo`]
+//! extension, which the client no longer inserts by default (it costs three allocations per response): enable it
+//! with `ClientBuilder::connection_info(true)` (or `H1Config`/`H2Config::connection_info`) when those attributes
+//! are wanted; without it `network.protocol.name` is simply absent.
+//!
 //! # Tracing
 //!
 //! `TracingLayer` starts a `Client` span `HTTP {METHOD}`, injects `traceparent`/`tracestate` through the global
 //! text-map propagator (install one, e.g. `TraceContextPropagator`), sets error status on failures and
 //! statuses over the threshold, and adds the events `matier.response.headers` and `matier.response.body`.
 //! The span ends when the response body finishes or is dropped. Insert [`NoTrace`] to suppress it per request.
+//!
+//! Two privacy knobs matter when URLs or destinations are not fully trusted. `url.full` defaults to
+//! [`UrlFullPolicy::Redacted`] (values of well-known credential query parameters such as `Signature` or
+//! `X-Amz-Credential` are replaced; userinfo is always dropped); `Full`, `PathOnly` and `Off` are available.
+//! Trace-context injection defaults to every request (so the trace id reaches every upstream, including
+//! third parties); restrict it with [`Propagation::Hosts`].
 pub mod attrs;
 pub mod metrics;
 pub mod observer;
@@ -117,4 +128,4 @@ pub use attrs::{OriginAttrCache, TelemetryAttributes};
 pub use metrics::{MeteredBody, Metrics, MetricsLayer, MetricsLayerBuilder};
 pub use observer::OtelObserver;
 #[cfg(feature = "tracing")]
-pub use trace::{NoTrace, TracedBody, Tracing, TracingLayer};
+pub use trace::{NoTrace, Propagation, TracedBody, Tracing, TracingLayer, UrlFullPolicy};

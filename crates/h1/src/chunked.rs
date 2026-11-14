@@ -119,6 +119,14 @@ impl ChunkedDecoder {
         for h in n {
             let name = http::HeaderName::from_bytes(h.name.as_bytes())
                 .map_err(|_| ChunkedError::InvalidTrailer)?;
+            // Fields that must not be honoured in trailers (RFC 9110 6.5.2): framing, routing, pseudo.
+            if matches!(
+                name.as_str(),
+                "content-length" | "transfer-encoding" | "host"
+            ) || name.as_str().starts_with(':')
+            {
+                continue;
+            }
             let value =
                 http::HeaderValue::from_bytes(h.value).map_err(|_| ChunkedError::InvalidTrailer)?;
             map.append(name, value);
@@ -149,6 +157,10 @@ impl ChunkedDecoder {
                             value: (value << 4) | u64::from(d),
                         };
                     } else if digits == 0 {
+                        return Err(ChunkedError::InvalidChunkSize);
+                    } else if !matches!(b, b';' | b' ' | b'\t' | b'\r' | b'\n') {
+                        // Only an extension, BWS or the line end may follow the size digits (so `0x10`
+                        // or `1g` are errors, not a size of 0/1 with a bogus extension).
                         return Err(ChunkedError::InvalidChunkSize);
                     } else {
                         // Terminator or extension: reprocess this byte in Ext.
@@ -446,5 +458,29 @@ mod tests {
         let r = d.decode(b"defgh");
         assert_eq!((r.consumed, r.data, r.done), (2, Some(0..2), true));
         assert_eq!(LengthDecoder::new(0).decode(b"x").data, None);
+    }
+
+    #[test]
+    fn junk_right_after_the_size_digits_is_rejected() {
+        for bad in [&b"0x10\r\n"[..], b"1g\r\n", b"5!\r\nhello\r\n"] {
+            let mut d = ChunkedDecoder::new();
+            assert_eq!(d.decode(bad).unwrap_err(), ChunkedError::InvalidChunkSize);
+        }
+        for ok in [
+            &b"5;a=b\r\nhello\r\n0\r\n\r\n"[..],
+            b"5 \r\nhello\r\n0\r\n\r\n",
+        ] {
+            assert!(ChunkedDecoder::new().decode(ok).is_ok());
+        }
+    }
+
+    #[test]
+    fn forbidden_trailer_fields_are_dropped() {
+        let mut d = ChunkedDecoder::new().collect_trailers();
+        let wire = b"0\r\nContent-Length: 5\r\nTransfer-Encoding: chunked\r\nHost: evil\r\nX-Ok: 1\r\n\r\n";
+        d.decode(wire).unwrap();
+        let t = d.take_trailers().unwrap().unwrap();
+        assert_eq!(t.len(), 1);
+        assert_eq!(t["x-ok"], "1");
     }
 }

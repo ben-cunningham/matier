@@ -33,4 +33,4 @@ pub use encode::{
 };
 pub use error::{ChunkedError, EncodeError, FramingError, ParseError};
 pub use framing::{BodyKind, Framing, keep_alive, response_body_kind};
-pub use parse::{Limits, ParseStatus, ResponseHead, parse_response_head};
+pub use parse::{Limits, ParseStatus, ResponseHead, parse_response_head, parse_response_head_in};

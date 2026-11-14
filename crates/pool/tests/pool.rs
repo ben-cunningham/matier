@@ -3,7 +3,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use std::time::Duration;
 
 use http_body::Body as _;
-use matier_core::{Body, ConnectionInfo, ErrorKind, NoopObserver};
+use matier_core::{Body, ErrorKind, NoopObserver};
 use matier_pool::{Pool, PoolConfig};
 use matier_transport::h1::H1Config;
 use matier_transport::h2::H2Config;
@@ -98,7 +98,7 @@ fn get(port: u16, method: &str) -> http::Request<Body> {
 async fn fetch(p: &Pool, req: http::Request<Body>) -> matier_core::Result<(u16, usize, u64)> {
     let resp = p.send(req).await?;
     let status = resp.status().as_u16();
-    let info = *resp.extensions().get::<ConnectionInfo>().unwrap();
+    let info = resp.body().connection_info().unwrap();
     let mut body: Incoming = resp.into_body();
     let mut n = 0;
     while let Some(f) =

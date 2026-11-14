@@ -14,7 +14,7 @@ mod huffman_table;
 pub mod static_table;
 
 pub use decoder::{BlockKind, DecodeError, DecodedHead, Decoder};
-pub use encoder::{Encoder, SensitivePolicy};
+pub use encoder::{Encoder, SensitivePolicy, is_connection_specific};
 
 /// Per-entry overhead in dynamic-table size accounting (RFC 7541 §4.1).
 pub const ENTRY_OVERHEAD: usize = 32;

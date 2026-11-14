@@ -11,12 +11,35 @@ use loom::thread;
 use matier_core::Error;
 use tokio::sync::mpsc;
 
-use super::shared::{Command, RecvEvent, StreamShared};
+use super::shared::{Command, ConnShared, Dirty, EVENT_OVERHEAD, RecvEvent, StreamShared};
 use super::sync::{Arc, Ordering};
 
 fn stream(threshold: u32, credit: i64) -> (Arc<StreamShared>, mpsc::UnboundedReceiver<Command>) {
     let (tx, rx) = mpsc::unbounded_channel();
-    (Arc::new(StreamShared::new(tx, threshold, credit)), rx)
+    let origin = matier_core::OriginKey::from_uri(&"http://x/".parse().unwrap()).unwrap();
+    let conn = Arc::new(ConnShared::new(origin, 1, 100, 1, false));
+    (Arc::new(StreamShared::new(tx, conn, threshold, credit)), rx)
+}
+
+/// Bounded-preemption model for the larger state spaces (loom's default is unbounded).
+fn bounded(f: impl Fn() + Sync + Send + 'static) {
+    let mut b = loom::model::Builder::new();
+    b.preemption_bound = Some(3);
+    b.check(f);
+}
+
+fn drain(dirty: &mut Dirty) {
+    for d in dirty.drain(..) {
+        d.wake_now();
+    }
+}
+
+fn data(len: usize, end: bool) -> RecvEvent {
+    RecvEvent::Data {
+        view: matier_core::buf::copy_from_slice(&vec![0u8; len]),
+        flow: len as u32,
+        end,
+    }
 }
 
 fn parts() -> http::response::Parts {
@@ -29,7 +52,11 @@ fn loom_head_slot_handoff() {
     loom::model(|| {
         let (s, _rx) = stream(1, 0);
         let s2 = Arc::clone(&s);
-        let t = thread::spawn(move || s2.publish_head(Ok(parts())));
+        let t = thread::spawn(move || {
+            let mut dirty = Dirty::new();
+            StreamShared::publish_head_deferred(&s2, Ok(parts()), &mut dirty);
+            drain(&mut dirty);
+        });
         let r = block_on(poll_fn(|cx| s.poll_head(cx)));
         assert!(r.is_ok());
         t.join().unwrap();
@@ -42,7 +69,11 @@ fn loom_head_error_handoff() {
     loom::model(|| {
         let (s, _rx) = stream(1, 0);
         let s2 = Arc::clone(&s);
-        let t = thread::spawn(move || s2.fail(Error::closed()));
+        let t = thread::spawn(move || {
+            let mut dirty = Dirty::new();
+            StreamShared::fail(&s2, Error::closed(), &mut dirty);
+            drain(&mut dirty);
+        });
         let r = block_on(poll_fn(|cx| s.poll_head(cx)));
         assert!(r.is_err());
         t.join().unwrap();
@@ -56,8 +87,12 @@ fn loom_recv_queue_and_waker() {
         let (s, _rx) = stream(1, 0);
         let s2 = Arc::clone(&s);
         let t = thread::spawn(move || {
-            s2.push_recv(RecvEvent::Trailers(Box::default()));
-            s2.push_recv(RecvEvent::End);
+            let mut dirty = Dirty::new();
+            StreamShared::push_recv(&s2, RecvEvent::Trailers(Box::default()), &mut dirty);
+            StreamShared::push_recv(&s2, RecvEvent::End, &mut dirty);
+            // One deferred wake covers both events.
+            assert_eq!(dirty.len(), 1);
+            drain(&mut dirty);
         });
         let mut seen = 0;
         block_on(poll_fn(|cx| {
@@ -79,7 +114,7 @@ fn loom_recv_queue_and_waker() {
 /// state may be left behind without a pending `Ready`.
 #[test]
 fn loom_queued_flag_dedup_never_loses_updates() {
-    loom::model(|| {
+    bounded(|| {
         let (s, rx) = stream(1, 0);
         let p1 = {
             let s = Arc::clone(&s);
@@ -115,19 +150,20 @@ fn loom_queued_flag_dedup_never_loses_updates() {
     });
 }
 
-/// Cancel racing with the actor pushing data: queued bytes are accounted exactly once between the consumer's
-/// drain and the actor's own drain.
+/// Cancel racing with the actor pushing data: every pushed byte is accounted to the connection's `consumed`
+/// counter exactly once between the consumer's drain and the actor's own drain.
 #[test]
 fn loom_cancel_vs_push() {
     loom::model(|| {
         let (s, rx) = stream(1 << 20, 0);
+        let conn = Arc::clone(&s.conn);
         let s2 = Arc::clone(&s);
         let pusher = thread::spawn(move || {
+            let mut dirty = Dirty::new();
             for _ in 0..2 {
-                s2.push_recv(RecvEvent::Data(Box::new(
-                    matier_core::buf::copy_from_slice(&[0u8; 10]),
-                )));
+                StreamShared::push_recv(&s2, data(10, false), &mut dirty);
             }
+            drain(&mut dirty);
         });
         let s3 = Arc::clone(&s);
         let canceller = thread::spawn(move || StreamShared::cancel(&s3));
@@ -135,19 +171,138 @@ fn loom_cancel_vs_push() {
         canceller.join().unwrap();
         // Actor side: handle the Ready, then drain whatever the consumer's drain missed.
         let mut rx = rx;
-        let mut accounted = 0u64;
         while let Ok(Command::Ready(sh)) = rx.try_recv() {
             let f = sh.begin_ready();
             assert!(f & super::shared::CANCELED != 0);
-            accounted += u64::from(sh.take_consumed());
             while let Some(ev) = sh.pop_recv() {
-                if let RecvEvent::Data(d) = ev {
-                    accounted += d.len() as u64;
+                if let RecvEvent::Data { flow, .. } = ev {
+                    sh.account_consumed(flow);
                 }
             }
         }
-        assert_eq!(accounted, 20);
+        assert_eq!(
+            conn.consumed.load(Ordering::SeqCst),
+            2 * (10 + EVENT_OVERHEAD)
+        );
         assert_eq!(s.flags() & super::shared::CANCELED, super::shared::CANCELED);
+    });
+}
+
+/// FIFO across the inline ring and the spill queue (ring of 2, three events), with the consumer racing the
+/// producer; END is folded into the last DATA event and seen last.
+#[test]
+fn loom_ring_spill_fifo_and_end() {
+    bounded(|| {
+        let (s, _rx) = stream(1 << 20, 0);
+        let s2 = Arc::clone(&s);
+        let t = thread::spawn(move || {
+            let mut dirty = Dirty::new();
+            for i in 0..3usize {
+                StreamShared::push_recv(&s2, data(i + 1, i == 2), &mut dirty);
+            }
+            drain(&mut dirty);
+        });
+        let mut next = 1usize;
+        block_on(poll_fn(|cx| {
+            loop {
+                match s.poll_recv(cx) {
+                    Poll::Ready(RecvEvent::Data { view, end, .. }) => {
+                        assert_eq!(view.len(), next, "out of order");
+                        next += 1;
+                        if end {
+                            return Poll::Ready(());
+                        }
+                    }
+                    Poll::Ready(_) => panic!("unexpected event"),
+                    Poll::Pending => return Poll::Pending,
+                }
+            }
+        }));
+        assert_eq!(next, 4);
+        t.join().unwrap();
+    });
+}
+
+/// Dropping a stream with events still queued (ring and spill) drops them and charges the connection counter.
+#[test]
+fn loom_drop_with_queued_events() {
+    loom::model(|| {
+        let (s, _rx) = stream(1 << 20, 0);
+        let conn = Arc::clone(&s.conn);
+        let s2 = Arc::clone(&s);
+        let t = thread::spawn(move || {
+            let mut dirty = Dirty::new();
+            for _ in 0..3 {
+                StreamShared::push_recv(&s2, data(1, false), &mut dirty);
+            }
+            drain(&mut dirty);
+        });
+        t.join().unwrap();
+        drop(s);
+        assert_eq!(
+            conn.consumed.load(Ordering::SeqCst),
+            3 * (1 + EVENT_OVERHEAD)
+        );
+    });
+}
+
+/// Deferred wake dedup: two pushes before a drain owe one wake; a push after the drain owes another, and the
+/// consumer is never left sleeping with an event queued.
+#[test]
+fn loom_deferred_wake_vs_register_then_check() {
+    bounded(|| {
+        let (s, _rx) = stream(1 << 20, 0);
+        let s2 = Arc::clone(&s);
+        let t = thread::spawn(move || {
+            let mut dirty = Dirty::new();
+            StreamShared::push_recv(&s2, data(1, false), &mut dirty);
+            StreamShared::push_recv(&s2, data(2, false), &mut dirty);
+            assert_eq!(dirty.len(), 1);
+            drain(&mut dirty);
+            StreamShared::push_recv(&s2, data(3, true), &mut dirty);
+            assert_eq!(dirty.len(), 1);
+            drain(&mut dirty);
+        });
+        let mut got = 0;
+        block_on(poll_fn(|cx| {
+            loop {
+                match s.poll_recv(cx) {
+                    Poll::Ready(RecvEvent::Data { end, .. }) => {
+                        got += 1;
+                        if end {
+                            return Poll::Ready(());
+                        }
+                    }
+                    Poll::Ready(_) => panic!("unexpected event"),
+                    Poll::Pending => return Poll::Pending,
+                }
+            }
+        }));
+        assert_eq!(got, 3);
+        t.join().unwrap();
+    });
+}
+
+/// Handshake between the actor parking connection-window credit (`CONSUMED_BLOCKED`, an RMW on the consumed
+/// word) and a consumer reporting consumption: either the actor's RMW result includes the consumption, or the
+/// consumer's `fetch_add` sees the bit and sends a `Ready`.
+#[test]
+fn loom_recv_blocked_handshake() {
+    use super::shared::CONSUMED_BLOCKED;
+    loom::model(|| {
+        let (s, rx) = stream(1 << 20, 0);
+        let conn = Arc::clone(&s.conn);
+        let c2 = Arc::clone(&s);
+        let consumer = thread::spawn(move || StreamShared::consumed(&c2, 10));
+        // Actor: publish "blocked" and look at the consumption in the same RMW.
+        let word = conn.consumed.fetch_or(CONSUMED_BLOCKED, Ordering::AcqRel);
+        consumer.join().unwrap();
+        let mut rx = rx;
+        let readied = rx.try_recv().is_ok();
+        assert!(
+            (word & !CONSUMED_BLOCKED) >= 10 + EVENT_OVERHEAD || readied,
+            "consumption was neither seen nor signalled"
+        );
     });
 }
 

@@ -691,3 +691,26 @@ proptest! {
         let _ = d.decode(&b, |_, _, _| {});
     }
 }
+
+#[test]
+fn authority_never_carries_userinfo() {
+    let uri: Uri = "https://user:pa%40ss@example.com:8443/p".parse().unwrap();
+    let mut e = Encoder::new(4096);
+    let mut out = Vec::new();
+    e.encode_request(&Method::GET, &uri, &HeaderMap::new(), &mut out);
+    let mut d = Decoder::new(4096);
+    let r = decode_all(&mut d, &Bytes::from(out)).unwrap();
+    assert!(
+        r.iter()
+            .any(|x| x.0 == ":authority" && x.1 == "example.com:8443"),
+        "{r:?}"
+    );
+    assert!(!r.iter().any(|x| x.1.contains('@')));
+}
+
+#[test]
+fn connection_specific_fields_are_recognised() {
+    use crate::hpack::is_connection_specific as c;
+    assert!(c("connection", b"close") && c("transfer-encoding", b"chunked") && c("host", b"x"));
+    assert!(c("te", b"gzip") && !c("te", b"trailers") && !c("x-ok", b"1"));
+}

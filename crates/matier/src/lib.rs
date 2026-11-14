@@ -51,7 +51,9 @@ impl Default for Client {
 }
 
 impl Client {
-    /// A client with default settings (platform TLS roots are loaded lazily on first `https`).
+    /// A client with default settings. `https` trusts the operating system's roots (via the platform
+    /// verifier); if that cannot be initialised, `https` requests fail with `InvalidRequest` until a
+    /// [`TlsConfig`] is supplied through [`ClientBuilder::tls`].
     ///
     /// # Panics
     /// Never in practice; use [`Client::builder`] to handle configuration errors.
@@ -146,7 +148,7 @@ impl ClientBuilder {
         self
     }
 
-    /// TLS configuration for `https` origins.
+    /// TLS configuration for `https` origins (default: the platform verifier, see [`Client::new`]).
     #[must_use]
     pub fn tls(mut self, tls: TlsConfig) -> Self {
         self.connect.tls = Some(tls);
@@ -157,6 +159,16 @@ impl ClientBuilder {
     #[must_use]
     pub fn http2_prior_knowledge(mut self) -> Self {
         self.connect.http2_prior_knowledge = true;
+        self
+    }
+
+    /// Attach [`ConnectionInfo`] to every response's `http::Extensions` (default off: three allocations per
+    /// response). Prefer [`Incoming::connection_info`]. Turn this on when a layer that only sees
+    /// `http::Response<B>` needs it, e.g. the OpenTelemetry metrics layer's `network.protocol.name`.
+    #[must_use]
+    pub fn connection_info(mut self, on: bool) -> Self {
+        self.h1.connection_info = on;
+        self.h2.connection_info = on;
         self
     }
 
@@ -180,8 +192,14 @@ impl ClientBuilder {
                 "h2_max_conns_per_origin must be > 0",
             ));
         }
+        let mut connect = self.connect;
+        if connect.tls.is_none() {
+            // Secure by default: trust the operating system's roots. If they cannot be loaded (e.g. a
+            // minimal container) `https` requests fail with `InvalidRequest` until `tls(..)` is set.
+            connect.tls = TlsConfig::with_platform_verifier().ok();
+        }
         Ok(Client {
-            pool: Pool::new(self.pool, self.connect, self.h1, self.h2, self.observer),
+            pool: Pool::new(self.pool, connect, self.h1, self.h2, self.observer),
         })
     }
 }

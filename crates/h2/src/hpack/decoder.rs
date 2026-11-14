@@ -81,6 +81,9 @@ impl core::fmt::Display for DecodeError {
 }
 impl std::error::Error for DecodeError {}
 
+/// Capacity added to the Huffman scratch arena when it runs out.
+const SCRATCH_CHUNK: usize = 4096;
+
 /// One dynamic-table entry: `name || value` in a single buffer.
 struct Entry {
     data: Bytes,
@@ -104,6 +107,8 @@ pub struct Decoder {
     limit: usize,
     max_header_list_size: usize,
     max_string_len: usize,
+    /// Huffman output arena: strings are `split().freeze()`d off it, so they share chunk allocations.
+    scratch: BytesMut,
 }
 
 /// Which kind of header block [`Decoder::decode_head`] validates.
@@ -168,6 +173,7 @@ impl Decoder {
             limit: table_size,
             max_header_list_size: 64 * 1024,
             max_string_len: 16 * 1024,
+            scratch: BytesMut::new(),
         }
     }
 
@@ -338,7 +344,7 @@ impl Decoder {
     }
 
     fn read_string(
-        &self,
+        &mut self,
         c: &mut Cursor<'_>,
         block: &Bytes,
         budget: usize,
@@ -367,12 +373,18 @@ impl Decoder {
             return Ok(block.slice(c.pos - len..c.pos));
         }
         // Huffman output is at most 8/5 of the input; reserve exactly what could be needed.
-        let mut out = Vec::with_capacity((len * 8 / 5).min(cap));
-        huffman::decode(raw, &mut out, cap).map_err(|e| match e {
-            huffman::HuffmanError::Invalid => DecodeError::InvalidHuffman,
-            huffman::HuffmanError::TooLong => too_long(budget),
-        })?;
-        Ok(Bytes::from(out))
+        let need = (len * 8 / 5).min(cap);
+        if self.scratch.capacity() < need {
+            self.scratch.reserve(need.max(SCRATCH_CHUNK));
+        }
+        if let Err(e) = huffman::decode(raw, &mut self.scratch, cap) {
+            self.scratch.clear();
+            return Err(match e {
+                huffman::HuffmanError::Invalid => DecodeError::InvalidHuffman,
+                huffman::HuffmanError::TooLong => too_long(budget),
+            });
+        }
+        Ok(self.scratch.split().freeze())
     }
 
     /// Decode a block and build a validated head: `HeaderMap` plus `:status` (RFC 9113 §8.1-8.3).

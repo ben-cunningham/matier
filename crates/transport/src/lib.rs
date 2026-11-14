@@ -37,6 +37,19 @@ impl std::fmt::Debug for Incoming {
     }
 }
 
+impl Incoming {
+    /// The connection that served this response (protocol, whether it was reused, its id), or `None` for a
+    /// response without a body (`Incoming::Empty`; the body-less case never needed the connection).
+    #[must_use]
+    pub fn connection_info(&self) -> Option<matier_core::ConnectionInfo> {
+        match self {
+            Self::Empty => None,
+            Self::H1(b) => Some(b.connection_info()),
+            Self::H2(b) => Some(b.connection_info()),
+        }
+    }
+}
+
 impl http_body::Body for Incoming {
     type Data = BytesView;
     type Error = Error;

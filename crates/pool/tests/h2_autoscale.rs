@@ -312,3 +312,61 @@ async fn underused_connections_are_drained_with_hysteresis() {
     assert!(log.iter().all(|(n, _)| *n >= 1));
     assert_eq!(conns(&p, &u), 1);
 }
+
+/// POOL-01: a peer advertising MAX_CONCURRENT_STREAMS = 0 must not make the pool dial up to the maximum; the
+/// request fails `Unprocessed` after the checkout timeout, and the dead-weight connection is retired.
+#[tokio::test]
+async fn zero_max_concurrent_streams_does_not_wedge_or_overdial() {
+    let _g = SERIAL.lock().await;
+    let l = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = l.local_addr().unwrap().port();
+    let accepted = Arc::new(AtomicUsize::new(0));
+    let acc = Arc::clone(&accepted);
+    tokio::spawn(async move {
+        loop {
+            let Ok((s, _)) = l.accept().await else { return };
+            acc.fetch_add(1, Ordering::SeqCst);
+            tokio::spawn(async move {
+                let _ = hyper::server::conn::http2::Builder::new(TokioExecutor::new())
+                    .max_concurrent_streams(0)
+                    .serve_connection(TokioIo::new(s), service_fn(handle))
+                    .await;
+            });
+        }
+    });
+    let p = Pool::new(
+        PoolConfig {
+            h2_max_conns_per_origin: MAX_CONNS,
+            checkout_timeout: Some(Duration::from_millis(400)),
+            idle_timeout: Duration::from_secs(60),
+            h2_zero_capacity_drain: Duration::from_millis(300),
+            ..PoolConfig::default()
+        },
+        ConnectConfig {
+            http2_prior_knowledge: true,
+            ..ConnectConfig::default()
+        },
+        H1Config::default(),
+        H2Config::default(),
+        Arc::new(Events::default()),
+    );
+    let u = uri(port);
+    let mut tasks = Vec::new();
+    for _ in 0..16 {
+        let (p, u) = (p.clone(), u.clone());
+        tasks.push(tokio::spawn(async move {
+            let req = http::Request::get(u).body(Body::empty()).unwrap();
+            p.send(req).await.err().map(|e| (e.kind(), e.recovery()))
+        }));
+    }
+    for t in tasks {
+        let (kind, rec) = t.await.unwrap().expect("must fail, not hang");
+        assert_eq!(kind, matier_core::ErrorKind::PoolTimeout);
+        assert_eq!(rec, matier_core::Recovery::Unprocessed);
+    }
+    assert!(
+        accepted.load(Ordering::SeqCst) <= 2,
+        "dialed {} connections",
+        accepted.load(Ordering::SeqCst)
+    );
+}

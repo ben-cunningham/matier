@@ -52,8 +52,12 @@ pub struct PoolConfig {
     pub h2_max_conns_per_origin: usize,
     /// HTTP/2 scale-up thresholds (defaults: the constants in [`scale`]).
     pub h2_scale: scale::ScaleThresholds,
-    /// Maximum time a request waits for a connection or stream slot (default none).
+    /// Maximum time a request waits for a connection or stream slot (default 30 s; `None` waits forever).
+    /// Failure is `PoolTimeout` with `Recovery::Unprocessed`.
     pub checkout_timeout: Option<Duration>,
+    /// An HTTP/2 connection whose peer advertises `SETTINGS_MAX_CONCURRENT_STREAMS = 0` is retired after
+    /// this long (default 10 s). Such a connection never counts as capacity and never triggers scale-up.
+    pub h2_zero_capacity_drain: Duration,
 }
 
 impl Default for PoolConfig {
@@ -66,7 +70,8 @@ impl Default for PoolConfig {
             h2_min_conns_per_origin: 1,
             h2_max_conns_per_origin: scale::default_h2_max_conns(),
             h2_scale: scale::ScaleThresholds::default(),
-            checkout_timeout: None,
+            checkout_timeout: Some(Duration::from_secs(30)),
+            h2_zero_capacity_drain: Duration::from_secs(10),
         }
     }
 }
@@ -149,7 +154,33 @@ struct PoolInner {
     shared: Arc<Shared>,
 }
 
+type MapGuard<'g> = papaya::HashMapRef<
+    'g,
+    Key,
+    Arc<OriginPool>,
+    BuildHasherDefault<FxHasher>,
+    papaya::LocalGuard<'g>,
+>;
+
 impl PoolInner {
+    /// Allocation-free lookup of an existing origin; `None` for anything unusual or unknown.
+    fn lookup<'g>(&self, map: &'g MapGuard<'g>, uri: &http::Uri) -> Option<&'g Arc<OriginPool>> {
+        let (scheme, host) = (uri.scheme_str()?, uri.host()?);
+        let sch = if scheme.eq_ignore_ascii_case("http") {
+            Scheme::Http
+        } else if scheme.eq_ignore_ascii_case("https") {
+            Scheme::Https
+        } else {
+            return None;
+        };
+        if host.bytes().any(|b| b.is_ascii_uppercase()) {
+            return None;
+        }
+        let port = uri.port_u16().unwrap_or_else(|| sch.default_port());
+        let probe = Probe(sch, host, port);
+        map.get(&probe as &dyn KeyParts)
+    }
+
     fn origin_pool(&self, uri: &http::Uri) -> Result<Arc<OriginPool>> {
         let map = self.map.pin();
         // Fast path: no allocation. Falls back to the full (allocating) parse for anything unusual.
@@ -232,6 +263,19 @@ impl Pool {
         &self,
         req: http::Request<Body>,
     ) -> impl Future<Output = Result<http::Response<Incoming>>> + Send + use<> {
+        // HTTP/2 fastest path: borrow the origin and the connection from the map/snapshot guards (no
+        // `Arc<OriginPool>` or handle clone) and hand the request straight to the actor.
+        {
+            let map = self.inner.map.pin();
+            if let Some(op) = self.inner.lookup(&map, req.uri())
+                && op.is_h2()
+            {
+                let snap = op.h2_snapshot();
+                if let Some((handle, slot)) = op.h2_pick_in(&snap) {
+                    return Either::Right(Either::Left(handle.send(slot, req)));
+                }
+            }
+        }
         let op = match self.inner.origin_pool(req.uri()) {
             Ok(op) => op,
             Err(e) => return Either::Left(std::future::ready(Err(e))),

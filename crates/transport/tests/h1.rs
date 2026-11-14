@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use matier_core::{Body, ConnectionInfo, OriginKey, Scheme, buf};
+use matier_core::{Body, OriginKey, Scheme, buf};
 use matier_transport::h1::{H1Config, H1Conn};
 use matier_transport::{Incoming, Io};
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
@@ -92,7 +92,7 @@ async fn content_length() {
     let (resp, mut rx) = send(c, get("x")).await;
     assert_eq!(resp.status(), 200);
     assert_eq!(resp.headers()["x-a"], "b");
-    let info = *resp.extensions().get::<ConnectionInfo>().unwrap();
+    let info = resp.body().connection_info().unwrap();
     assert!(!info.reused);
     let (b, _) = drain(resp.into_body()).await;
     assert_eq!(b, b"hello");
@@ -178,7 +178,7 @@ async fn keep_alive_reuse_same_conn() {
     let mut c = rx.recv().await.unwrap();
     assert!(c.is_reusable_now());
     let (resp, mut rx) = send(c, get("2")).await;
-    let info = *resp.extensions().get::<ConnectionInfo>().unwrap();
+    let info = resp.body().connection_info().unwrap();
     assert!(info.reused);
     assert_eq!(info.conn_id, id);
     drain(resp.into_body()).await;
@@ -350,4 +350,220 @@ async fn stale_reused_connection_is_flagged() {
     tokio::time::sleep(Duration::from_millis(100)).await;
     let err = c.send(get("2"), |_| {}).await.unwrap_err();
     assert!(matier_transport::h1::is_stale_keepalive(&err), "{err:?}");
+}
+
+/// A view with `n` distinct 3-byte spans (more than fit in one `writev`).
+fn many_spans(n: usize) -> (matier_core::buf::Chunk, Vec<u8>) {
+    let mut flat = Vec::new();
+    let views: Vec<_> = (0..n)
+        .map(|i| {
+            let s = [b'a' + (i % 26) as u8; 3];
+            flat.extend_from_slice(&s);
+            buf::copy_from_slice(&s)
+        })
+        .collect();
+    (matier_core::buf::Chunk::from_views(views), flat)
+}
+
+#[tokio::test]
+async fn chunked_upload_with_many_spans_keeps_wire_order() {
+    let (tx, mut rx) = mpsc::unbounded_channel();
+    let c = conn_to(move |mut s| async move {
+        let mut v = Vec::new();
+        let mut b = [0u8; 4096];
+        while !v.ends_with(b"0\r\n\r\n") {
+            let n = s.read(&mut b).await.unwrap();
+            if n == 0 {
+                break;
+            }
+            v.extend_from_slice(&b[..n]);
+        }
+        tx.send(v).unwrap();
+        s.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+            .await
+            .unwrap();
+        tokio::time::sleep(Duration::from_millis(100)).await;
+    })
+    .await;
+    let (chunk, flat) = many_spans(40);
+    let (mut sender, body) = Body::channel(4);
+    let req = http::Request::post("http://127.0.0.1/s")
+        .body(body)
+        .unwrap();
+    tokio::spawn(async move {
+        sender.send(chunk).await.unwrap();
+        sender.finish();
+    });
+    let (resp, _r) = send(c, req).await;
+    assert_eq!(resp.status(), 200);
+    let got = rx.recv().await.unwrap();
+    let pos = got.windows(4).position(|w| w == b"\r\n\r\n").unwrap() + 4;
+    let mut want = format!("{:x}\r\n", flat.len()).into_bytes();
+    want.extend_from_slice(&flat);
+    want.extend_from_slice(b"\r\n0\r\n\r\n");
+    assert_eq!(&got[pos..], &want[..]);
+}
+
+#[tokio::test]
+async fn full_body_with_many_spans_is_exact() {
+    let (tx, mut rx) = mpsc::unbounded_channel();
+    let (chunk, flat) = many_spans(40);
+    let total = flat.len();
+    let c = conn_to(move |mut s| async move {
+        let mut v = read_head(&mut s).await;
+        let hl = v.windows(4).position(|w| w == b"\r\n\r\n").unwrap() + 4;
+        while v.len() < hl + total {
+            let mut b = vec![0u8; 4096];
+            let n = s.read(&mut b).await.unwrap();
+            if n == 0 {
+                break;
+            }
+            v.extend_from_slice(&b[..n]);
+        }
+        tx.send(v[hl..].to_vec()).unwrap();
+        s.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 0\r\n\r\n")
+            .await
+            .unwrap();
+        tokio::time::sleep(Duration::from_millis(100)).await;
+    })
+    .await;
+    let req = http::Request::post("http://127.0.0.1/p")
+        .body(Body::full(chunk))
+        .unwrap();
+    let (resp, _r) = send(c, req).await;
+    assert_eq!(resp.status(), 200);
+    assert_eq!(rx.recv().await.unwrap(), flat);
+}
+
+async fn conn_with<F, Fut>(cfg: H1Config, handler: F) -> H1Conn
+where
+    F: FnOnce(TcpStream) -> Fut + Send + 'static,
+    Fut: std::future::Future<Output = ()> + Send + 'static,
+{
+    let l = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = l.local_addr().unwrap().port();
+    tokio::spawn(async move {
+        let (s, _) = l.accept().await.unwrap();
+        handler(s).await;
+    });
+    let s = TcpStream::connect(("127.0.0.1", port)).await.unwrap();
+    H1Conn::new(Io::Tcp(s), origin(port), cfg)
+}
+
+#[tokio::test]
+async fn silent_peer_hits_the_response_head_timeout() {
+    let cfg = H1Config {
+        response_head_timeout: Some(Duration::from_millis(100)),
+        ..H1Config::default()
+    };
+    let c = conn_with(cfg, |mut s| async move {
+        read_head(&mut s).await;
+        tokio::time::sleep(Duration::from_secs(5)).await;
+    })
+    .await;
+    let t0 = std::time::Instant::now();
+    let e = c.send(get("x"), |_| {}).await.unwrap_err();
+    assert_eq!(e.kind(), matier_core::ErrorKind::Timeout, "{e:?}");
+    assert!(t0.elapsed() < Duration::from_secs(2));
+}
+
+#[tokio::test]
+async fn response_timeout_extension_overrides_the_default() {
+    let c = conn_with(H1Config::default(), |mut s| async move {
+        read_head(&mut s).await;
+        tokio::time::sleep(Duration::from_secs(5)).await;
+    })
+    .await;
+    let mut req = get("x");
+    req.extensions_mut()
+        .insert(matier_core::ResponseTimeout(Duration::from_millis(100)));
+    let t0 = std::time::Instant::now();
+    let e = c.send(req, |_| {}).await.unwrap_err();
+    assert_eq!(e.kind(), matier_core::ErrorKind::Timeout, "{e:?}");
+    assert!(t0.elapsed() < Duration::from_secs(2));
+}
+
+#[tokio::test]
+async fn stalled_body_hits_the_idle_timeout() {
+    use http_body::Body as _;
+    let c = conn_with(H1Config::default(), |mut s| async move {
+        read_head(&mut s).await;
+        s.write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 10\r\n\r\nabc")
+            .await
+            .unwrap();
+        tokio::time::sleep(Duration::from_secs(5)).await;
+    })
+    .await;
+    let mut req = get("x");
+    req.extensions_mut()
+        .insert(matier_core::BodyTimeout(Duration::from_millis(100)));
+    let (resp, _r) = send(c, req).await;
+    let mut body = std::pin::pin!(resp.into_body());
+    let first = std::future::poll_fn(|cx| body.as_mut().poll_frame(cx)).await;
+    assert!(first.unwrap().is_ok());
+    let second = std::future::poll_fn(|cx| body.as_mut().poll_frame(cx)).await;
+    let e = second.unwrap().unwrap_err();
+    assert_eq!(e.kind(), matier_core::ErrorKind::Timeout, "{e:?}");
+}
+
+#[tokio::test]
+async fn byte_by_byte_head_is_parsed() {
+    let c = conn_to(|mut s| async move {
+        read_head(&mut s).await;
+        s.set_nodelay(true).unwrap();
+        let head = b"HTTP/1.1 200 OK\r\nX-A: 1\r\nContent-Length: 2\r\n\r\nok";
+        for b in head {
+            s.write_all(&[*b]).await.unwrap();
+            s.flush().await.unwrap();
+            tokio::time::sleep(Duration::from_micros(300)).await;
+        }
+        tokio::time::sleep(Duration::from_millis(100)).await;
+    })
+    .await;
+    let (resp, _r) = send(c, get("x")).await;
+    assert_eq!(resp.status(), 200);
+    assert_eq!(resp.headers()["x-a"], "1");
+    let (b, _) = drain(resp.into_body()).await;
+    assert_eq!(b, b"ok");
+}
+
+#[tokio::test]
+async fn slow_drip_head_is_rejected_after_too_many_reads() {
+    let c = conn_to(|mut s| async move {
+        read_head(&mut s).await;
+        s.set_nodelay(true).unwrap();
+        s.write_all(b"HTTP/1.1 200 OK\r\nX-Pad: ").await.unwrap();
+        for _ in 0..400 {
+            if s.write_all(b"a").await.is_err() {
+                return;
+            }
+            let _ = s.flush().await;
+            tokio::time::sleep(Duration::from_micros(300)).await;
+        }
+    })
+    .await;
+    let (tx, _rx) = mpsc::unbounded_channel::<H1Conn>();
+    let e = c
+        .send(get("x"), move |c| {
+            let _ = tx.send(c);
+        })
+        .await
+        .unwrap_err();
+    assert_eq!(e.kind(), matier_core::ErrorKind::Protocol, "{e:?}");
+}
+
+#[tokio::test]
+async fn too_many_interim_responses_are_a_protocol_error() {
+    let c = conn_to(|mut s| async move {
+        read_head(&mut s).await;
+        for _ in 0..20 {
+            s.write_all(b"HTTP/1.1 103 Early Hints\r\nLink: </a>\r\n\r\n")
+                .await
+                .unwrap();
+        }
+        tokio::time::sleep(Duration::from_millis(100)).await;
+    })
+    .await;
+    let e = c.send(get("x"), |_| {}).await.unwrap_err();
+    assert_eq!(e.kind(), matier_core::ErrorKind::Protocol, "{e:?}");
 }

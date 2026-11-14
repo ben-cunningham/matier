@@ -4,8 +4,23 @@
 #[cfg(not(matier_loom))]
 mod imp {
     pub(crate) use atomic_waker::AtomicWaker;
-    pub(crate) use std::sync::atomic::{AtomicBool, AtomicI64, AtomicU32, AtomicUsize, Ordering};
+    pub(crate) use std::sync::atomic::{
+        AtomicBool, AtomicI64, AtomicU32, AtomicU64, AtomicUsize, Ordering,
+    };
     pub(crate) use std::sync::{Arc, Mutex};
+
+    /// `std` cell with loom's closure-based access API, so ring code is written once.
+    pub(crate) struct UnsafeCell<T>(std::cell::UnsafeCell<T>);
+
+    impl<T> UnsafeCell<T> {
+        pub(crate) fn new(v: T) -> Self {
+            Self(std::cell::UnsafeCell::new(v))
+        }
+        #[inline]
+        pub(crate) fn with_mut<R>(&self, f: impl FnOnce(*mut T) -> R) -> R {
+            f(self.0.get())
+        }
+    }
 
     /// Unbounded lock-free MPMC queue (used as SPSC): crossbeam's `SegQueue`.
     pub(crate) struct EventQueue<T>(crossbeam_queue::SegQueue<T>);
@@ -40,7 +55,10 @@ mod imp {
             self.0.wake();
         }
     }
-    pub(crate) use loom::sync::atomic::{AtomicBool, AtomicI64, AtomicU32, AtomicUsize, Ordering};
+    pub(crate) use loom::cell::UnsafeCell;
+    pub(crate) use loom::sync::atomic::{
+        AtomicBool, AtomicI64, AtomicU32, AtomicU64, AtomicUsize, Ordering,
+    };
     pub(crate) use loom::sync::{Arc, Mutex};
     use std::collections::VecDeque;
 

@@ -7,7 +7,7 @@ use std::pin::Pin;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::task::{Context, Poll, Waker};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use futures_util::future::Either;
 use http::header::CONNECTION;
@@ -19,10 +19,11 @@ use matier_core::{
 };
 use matier_h1::{
     BodyKind, BodyLength, ChunkedDecoder, EncodeOptions, Limits, ParseStatus, ResponseHead,
-    chunk_header, encode_last_chunk, encode_request_head, keep_alive, parse_response_head,
+    chunk_header, encode_last_chunk, encode_request_head, keep_alive, parse_response_head_in,
     response_body_kind,
 };
 use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt, ReadBuf};
+use tokio::time::Sleep;
 
 use super::body::{Decoder, RecvBody};
 use super::{Release, ReleaseFn, Releaser};
@@ -35,6 +36,8 @@ const INLINE_BODY_MAX: usize = 1024;
 const MIN_READ: usize = 1024;
 const INITIAL_READ: usize = 4096;
 const MAX_IOV: usize = 16;
+/// Interim (1xx) responses tolerated per request.
+const MAX_INFORMATIONAL: u8 = 16;
 
 /// HTTP/1.1 connection settings.
 #[derive(Clone, Debug)]
@@ -45,6 +48,16 @@ pub struct H1Config {
     pub title_case_headers: bool,
     /// Upper bound for a single socket read (the read size adapts between 4 KiB and this).
     pub max_buffer: usize,
+    /// Deadline for the response head, measured from the end of the request write. `None` disables.
+    /// Overridden per request by the [`matier_core::ResponseTimeout`] extension.
+    pub response_head_timeout: Option<Duration>,
+    /// Idle timeout between response body reads. `None` disables. Overridden per request by the
+    /// [`matier_core::BodyTimeout`] extension.
+    pub body_idle_timeout: Option<Duration>,
+    /// Also insert [`ConnectionInfo`] into the response's `http::Extensions` (costs three allocations per
+    /// response). Off by default: use `Incoming::connection_info()`. Layers that only see `http::Response<B>`
+    /// (such as the OpenTelemetry metrics layer's `network.protocol.name`) need this on.
+    pub connection_info: bool,
 }
 
 impl Default for H1Config {
@@ -53,6 +66,9 @@ impl Default for H1Config {
             limits: Limits::default(),
             title_case_headers: false,
             max_buffer: 64 * 1024,
+            response_head_timeout: Some(Duration::from_secs(30)),
+            body_idle_timeout: Some(Duration::from_secs(60)),
+            connection_info: false,
         }
     }
 }
@@ -101,6 +117,72 @@ pub(super) struct Inner {
     uses: u32,
     read_hint: usize,
     owner: Option<std::sync::Weak<dyn Release>>,
+    /// Effective timeouts of the request in flight.
+    head_timeout: Option<Duration>,
+    pub(super) body_timeout: Option<Duration>,
+    /// The deadline of the current wait (head: fixed for the whole head; body: per idle period).
+    pub(super) wait_dl: Option<tokio::time::Instant>,
+    /// One lazily created timer per connection. It is only re-armed when it has fired or would fire after
+    /// the wanted deadline, so a request normally costs no timer operation at all.
+    timer: Option<Pin<Box<Sleep>>>,
+    timer_at: Option<tokio::time::Instant>,
+    /// Incremental head scanning state (see [`HeadScan`]).
+    scan: HeadScan,
+    /// Contiguous copy of a head that spans read blocks, grown incrementally (never rebuilt from scratch).
+    head_scratch: Vec<u8>,
+    /// Arena the parsed head is copied into (shared chunk allocations across responses).
+    head_arena: bytes::BytesMut,
+}
+
+/// Where the response-head search stands. The head is re-parsed only when a blank line may have arrived or
+/// a good amount of new data accumulated, not after every partial read.
+#[derive(Default)]
+struct HeadScan {
+    /// Bytes of the buffer already looked at.
+    scanned: usize,
+    /// Buffer length at the last parse attempt.
+    parsed_len: usize,
+    /// Line-ending state: 0 none, 1 just saw `\n`, 2 saw `\n\r`.
+    nl: u8,
+    /// Socket reads spent on this head.
+    reads: u32,
+}
+
+/// Re-parse a partial head at least every this many new bytes (surfaces malformed heads early).
+const REPARSE_EVERY: usize = 1024;
+/// A head that needs more reads than this is hostile (slow-drip) and rejected.
+const MAX_READS_PER_HEAD: u32 = 256;
+
+impl HeadScan {
+    /// Feeds the bytes of `view` from `self.scanned` on, stopping right after the first blank line
+    /// (`\n\n`, `\n\r\n`) so body bytes that share the buffer are never scanned. Returns the end of the
+    /// head (offset just past the blank line) if one was found.
+    fn scan(&mut self, view: &BytesView) -> Option<usize> {
+        let mut skip = self.scanned;
+        let mut pos = self.scanned;
+        for (s, _) in view.slices() {
+            if skip >= s.len() {
+                skip -= s.len();
+                continue;
+            }
+            for &b in &s[skip..] {
+                pos += 1;
+                self.nl = match (self.nl, b) {
+                    (1 | 2, b'\n') => {
+                        self.scanned = pos;
+                        self.nl = 0;
+                        return Some(pos);
+                    }
+                    (_, b'\n') => 1,
+                    (1, b'\r') => 2,
+                    _ => 0,
+                };
+            }
+            skip = 0;
+        }
+        self.scanned = pos;
+        None
+    }
 }
 
 impl Drop for Inner {
@@ -132,6 +214,50 @@ impl Inner {
             self.read_hint = (self.read_hint * 2).min(self.cfg.max_buffer.max(INITIAL_READ));
         }
         Poll::Ready(Ok(n))
+    }
+
+    /// [`Self::poll_fill`] with the idle/head deadline `self.wait_dl` (set on the first `Pending` from
+    /// `idle`). Fails with `TimedOut` once it passes.
+    pub(super) fn poll_fill_timed(
+        &mut self,
+        cx: &mut Context<'_>,
+        idle: Option<Duration>,
+    ) -> Poll<io::Result<usize>> {
+        let r = self.poll_fill(cx);
+        if r.is_ready() {
+            return r;
+        }
+        let Some(idle) = idle else {
+            return Poll::Pending;
+        };
+        let now = tokio::time::Instant::now();
+        let deadline = *self.wait_dl.get_or_insert(now + idle);
+        let sleep = match &mut self.timer {
+            Some(s) => s,
+            None => {
+                self.timer_at = Some(deadline);
+                self.timer
+                    .insert(Box::pin(tokio::time::sleep_until(deadline)))
+            }
+        };
+        // Keep an armed timer that fires within (now, deadline]; otherwise re-arm.
+        if !self.timer_at.is_some_and(|t| t > now && t <= deadline) {
+            sleep.as_mut().reset(deadline);
+            self.timer_at = Some(deadline);
+        }
+        loop {
+            if sleep.as_mut().poll(cx).is_pending() {
+                return Poll::Pending;
+            }
+            if tokio::time::Instant::now() >= deadline {
+                return Poll::Ready(Err(io::Error::new(
+                    io::ErrorKind::TimedOut,
+                    "HTTP/1 read timed out",
+                )));
+            }
+            sleep.as_mut().reset(deadline);
+            self.timer_at = Some(deadline);
+        }
     }
 }
 
@@ -174,6 +300,14 @@ impl H1Conn {
                 uses: 0,
                 read_hint: INITIAL_READ,
                 owner: None,
+                head_timeout: None,
+                body_timeout: None,
+                wait_dl: None,
+                timer: None,
+                timer_at: None,
+                scan: HeadScan::default(),
+                head_scratch: Vec::new(),
+                head_arena: bytes::BytesMut::new(),
             }),
         }
     }
@@ -292,6 +426,15 @@ impl H1Conn {
                 None => BodyLength::Chunked,
             },
         };
+        inner.head_timeout = req
+            .extensions()
+            .get::<matier_core::ResponseTimeout>()
+            .map_or(inner.cfg.response_head_timeout, |t| Some(t.0));
+        inner.body_timeout = req
+            .extensions()
+            .get::<matier_core::BodyTimeout>()
+            .map_or(inner.cfg.body_idle_timeout, |t| Some(t.0));
+        inner.wait_dl = None;
         inner.whead.clear();
         encode_request_head(
             req.method(),
@@ -353,6 +496,7 @@ impl H1Conn {
             reused: prep.reused,
             conn_id: self.inner.id,
         };
+        let connection_info = self.inner.cfg.connection_info;
         let decoder = match framing.kind {
             BodyKind::Empty | BodyKind::Length(0) => None,
             BodyKind::Length(n) => Some(Decoder::Length(n)),
@@ -360,7 +504,7 @@ impl H1Conn {
             BodyKind::CloseDelimited => Some(Decoder::Close),
         };
         let incoming = if let Some(decoder) = decoder {
-            Incoming::H1(RecvBody::new(self, decoder, keep, rel))
+            Incoming::H1(RecvBody::new(self, decoder, keep, rel, info))
         } else {
             if keep && self.inner.rbuf.is_empty() {
                 self.inner.last_used = Instant::now();
@@ -372,7 +516,9 @@ impl H1Conn {
         *resp.status_mut() = head.status;
         *resp.version_mut() = head.version;
         *resp.headers_mut() = head.headers;
-        resp.extensions_mut().insert(info);
+        if connection_info {
+            resp.extensions_mut().insert(info);
+        }
         Ok(resp)
     }
 
@@ -404,6 +550,7 @@ impl H1Conn {
 
     /// Reads response heads until a final (non-1xx) one; consumes it from the buffer.
     async fn read_final_head(&mut self, reused: bool) -> Result<ResponseHead> {
+        let mut interim = 0u8;
         loop {
             let (head, head_len) = self.read_head(reused).await?;
             let _ = self.inner.rbuf.consume(head_len);
@@ -411,8 +558,13 @@ impl H1Conn {
                 if head.status.as_u16() == 101 {
                     return Err(Error::protocol("unexpected 101 Switching Protocols"));
                 }
+                interim += 1;
+                if interim > MAX_INFORMATIONAL {
+                    return Err(Error::protocol("too many 1xx responses"));
+                }
                 continue;
             }
+            self.inner.wait_dl = None;
             return Ok(head);
         }
     }
@@ -421,20 +573,33 @@ impl H1Conn {
     async fn read_head(&mut self, reused: bool) -> Result<(ResponseHead, usize)> {
         let inner = &mut *self.inner;
         let mut got_bytes = !inner.rbuf.is_empty();
+        // The head deadline is fixed for the whole head (a dribbling peer cannot extend it).
+        inner.wait_dl = None;
+        inner.scan = HeadScan::default();
+        inner.head_scratch.clear();
+        let head_timeout = inner.head_timeout;
         loop {
-            if !inner.rbuf.is_empty() {
-                match try_parse(&inner.rbuf, &inner.cfg.limits).map_err(Error::protocol)? {
-                    ParseStatus::Complete { value, head_len } => return Ok((value, head_len)),
-                    ParseStatus::Partial => {}
-                }
+            if !inner.rbuf.is_empty()
+                && let Some(r) = inner.try_parse_head().map_err(Error::protocol)?
+            {
+                return Ok(r);
             }
-            let n = poll_fn(|cx| inner.poll_fill(cx)).await.map_err(|e| {
-                if reused && !got_bytes {
-                    Error::with_source(ErrorKind::Io, Recovery::Retryable, StaleKeepAlive(e))
-                } else {
-                    Error::io(e)
-                }
-            })?;
+            if inner.scan.reads >= MAX_READS_PER_HEAD {
+                return Err(Error::protocol(
+                    "response head dribbled over too many reads",
+                ));
+            }
+            let n = poll_fn(|cx| inner.poll_fill_timed(cx, head_timeout))
+                .await
+                .map_err(|e| {
+                    if e.kind() == io::ErrorKind::TimedOut {
+                        Error::with_source(ErrorKind::Timeout, Recovery::Retryable, e)
+                    } else if reused && !got_bytes {
+                        Error::with_source(ErrorKind::Io, Recovery::Retryable, StaleKeepAlive(e))
+                    } else {
+                        Error::io(e)
+                    }
+                })?;
             if n == 0 {
                 let e = io::Error::new(
                     io::ErrorKind::UnexpectedEof,
@@ -447,6 +612,7 @@ impl H1Conn {
                 });
             }
             got_bytes = true;
+            inner.scan.reads += 1;
         }
     }
 }
@@ -469,19 +635,47 @@ fn wants_close(h: &HeaderMap) -> bool {
     })
 }
 
-/// Parses from the first contiguous slice; copies into a scratch `Vec` only when the buffered
-/// head spans several blocks (rare).
-fn try_parse(
-    rbuf: &BytesBuf,
-    limits: &Limits,
-) -> std::result::Result<ParseStatus<ResponseHead>, matier_h1::ParseError> {
-    let view = rbuf.peek();
-    let first = view.first_slice();
-    match parse_response_head(first, limits)? {
-        ParseStatus::Partial if first.len() < view.len() => {
-            parse_response_head(&view.to_vec(), limits)
+impl Inner {
+    /// Parses the buffered response head if it may be complete. Contiguous heads are parsed in place; heads
+    /// spanning blocks are appended incrementally to `head_scratch`.
+    fn try_parse_head(
+        &mut self,
+    ) -> std::result::Result<Option<(ResponseHead, usize)>, matier_h1::ParseError> {
+        let view = self.rbuf.peek();
+        let total = view.len();
+        // Only head bytes are ever looked at or copied: up to the blank line when we found one (the rest of
+        // the buffer is body), otherwise everything buffered so far.
+        let end = self.scan.scan(&view);
+        if end.is_none() && total - self.scan.parsed_len < REPARSE_EVERY {
+            return Ok(None);
         }
-        r => Ok(r),
+        let limit = end.unwrap_or(total);
+        self.scan.parsed_len = total;
+        let first = view.first_slice();
+        let status = if first.len() >= limit {
+            parse_response_head_in(&first[..limit], &self.cfg.limits, &mut self.head_arena)?
+        } else {
+            let mut have = self.head_scratch.len();
+            let mut skip = have;
+            for (s, _) in view.slices() {
+                if skip >= s.len() {
+                    skip -= s.len();
+                    continue;
+                }
+                let take = (limit - have).min(s.len() - skip);
+                self.head_scratch.extend_from_slice(&s[skip..skip + take]);
+                have += take;
+                skip = 0;
+                if have >= limit {
+                    break;
+                }
+            }
+            parse_response_head_in(&self.head_scratch, &self.cfg.limits, &mut self.head_arena)?
+        };
+        Ok(match status {
+            ParseStatus::Complete { value, head_len } => Some((value, head_len)),
+            ParseStatus::Partial => None,
+        })
     }
 }
 
@@ -503,22 +697,31 @@ async fn write_all(io: &mut Io, head: &[u8], body: &BytesView, tail: &[u8]) -> i
                 off -= head.len();
             }
             if off < body.len() {
+                let k0 = k;
+                let remaining = body.len() - off;
                 if off == 0 {
                     k += buf::io_slices(body, &mut iov[k..MAX_IOV - 1]);
                 } else {
                     let rest = body.range(off..);
                     k += buf::io_slices(&rest, &mut iov[k..MAX_IOV - 1]);
                     // `iov` borrows `rest`: write while it is alive.
-                    if !tail.is_empty() {
+                    let filled: usize = iov[k0..k].iter().map(|s| s.len()).sum();
+                    // The tail may follow only when the slices cover the whole rest of the body;
+                    // otherwise the bytes would be reordered on the wire.
+                    if filled == remaining && !tail.is_empty() {
                         iov[k] = IoSlice::new(tail);
                         k += 1;
                     }
                     return Pin::new(&mut *io).poll_write_vectored(cx, &iov[..k]);
                 }
-                off = 0;
-            } else {
-                off -= body.len();
+                let filled: usize = iov[k0..k].iter().map(|s| s.len()).sum();
+                if filled == remaining && !tail.is_empty() {
+                    iov[k] = IoSlice::new(tail);
+                    k += 1;
+                }
+                return Pin::new(&mut *io).poll_write_vectored(cx, &iov[..k]);
             }
+            off -= body.len();
             if !tail.is_empty() && (off < tail.len()) {
                 iov[k] = IoSlice::new(&tail[off..]);
                 k += 1;
@@ -555,6 +758,16 @@ async fn write_stream(inner: &mut Inner, body: &mut Body, blen: BodyLength) -> R
             continue;
         }
         sent += data.len() as u64;
+        if let BodyLength::Known(n) = blen
+            && sent > n
+        {
+            // Never put more on the wire than Content-Length announced (request smuggling / desync).
+            return Err(Error::with_source(
+                ErrorKind::BodyWrite,
+                Recovery::Never,
+                format!("request body exceeds its declared length of {n} bytes"),
+            ));
+        }
         let r = match blen {
             BodyLength::Chunked => {
                 let mut hb = [0u8; 18];

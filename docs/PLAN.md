@@ -170,12 +170,29 @@ One iteration ("tick") of the actor:
 - Stream receive window 2 MiB and connection window 16 MiB, configurable, with optional BDP auto-tuning via PING RTT samples. Go uses 4 MiB / 1 GiB fixed with no BDP.
 - WINDOW_UPDATE is sent when ≥ 25% of the window is consumed (Go: 4 KiB or doubling; ours batches more).
 - Stream send windows are stored as offsets from the shared initial window, so a SETTINGS change is O(1) (from Go).
-- Hardening limits (all configurable):
-  - CONTINUATION count and header-list size;
-  - max header-table size;
-  - SETTINGS, PING and empty-DATA flood counters;
-  - WINDOW_UPDATE overflow checks;
-  - max frame size of 16 KiB send / 1 MiB receive.
+- Hardening limits (as built; defaults):
+
+  | Limit | Default | Failure |
+  |---|---|---|
+  | CONTINUATION frames / header block bytes | 32 / 2x max header list | connection ENHANCE_YOUR_CALM |
+  | Header block completion deadline | 10 s | connection ENHANCE_YOUR_CALM, streams `Timeout` |
+  | Response head deadline (no progress) | 30 s (`ResponseTimeout` extension: absolute) | stream RST(CANCEL), `Timeout`, Retryable/Unprocessed |
+  | Body idle timeout | 60 s (`BodyTimeout` extension) | stream RST(CANCEL), `Timeout`, Never |
+  | Keep-alive PING after read idle / ack timeout | 30 s / 20 s | connection closed |
+  | Unconsumed receive events per stream | 1024 | stream ENHANCE_YOUR_CALM |
+  | Buffered bytes (DATA flow length + 64 B per event) before the connection window stops being credited | initial connection window | peer stalls |
+  | SETTINGS / PING (leaky bucket) | burst 100, 10/s | connection ENHANCE_YOUR_CALM |
+  | RST_STREAM received | burst 200, 100/s | connection ENHANCE_YOUR_CALM |
+  | WINDOW_UPDATE | burst 1000, 1000/s + 1 per 16 KiB we wrote | connection ENHANCE_YOUR_CALM |
+  | DATA frames with < 16 B payload and no END_STREAM | burst 1000, 1000/s | connection ENHANCE_YOUR_CALM |
+  | 1xx responses per request | 16 | stream/`Protocol` error |
+  | Response body vs `content-length` | exact | stream PROTOCOL_ERROR |
+  | HTTP/1 response head reads | 256 per head; response head deadline 30 s; body idle 60 s | `Protocol` / `Timeout` |
+  | Pool checkout wait | 30 s | `PoolTimeout` (Unprocessed) |
+  | Peer `MAX_CONCURRENT_STREAMS = 0` | one extra dial at most; connection retired after 10 s | `PoolTimeout` after the checkout wait |
+
+  WINDOW_UPDATE, wake and accounting details: `docs/design/h2-actor.md` "As built".
+  Request header/trailer fields that are connection-specific are dropped; `:authority` never carries userinfo.
 
 ### 4.5 HPACK
 Encoding runs in the actor (ordering requires it). It's cheap, and the multi-connection pool spreads it across cores.

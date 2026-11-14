@@ -249,7 +249,12 @@ impl Encoder {
             );
         }
         match uri.authority() {
-            Some(a) => self.encode_field(b":authority", a.as_str().as_bytes(), false, out),
+            // RFC 9113 8.3.1: `:authority` MUST NOT include the deprecated userinfo subcomponent.
+            Some(a) => {
+                let a = a.as_str();
+                let host = a.rsplit_once('@').map_or(a, |(_, h)| h);
+                self.encode_field(b":authority", host.as_bytes(), false, out);
+            }
             None => {
                 if let Some(h) = headers.get(header::HOST) {
                     self.encode_field(b":authority", h.as_bytes(), false, out);
@@ -268,11 +273,8 @@ impl Encoder {
             self.encode_field(b":protocol", p.as_bytes(), false, out);
         }
         for (name, value) in headers {
-            match name.as_str() {
-                "host" | "connection" | "keep-alive" | "proxy-connection" | "transfer-encoding"
-                | "upgrade" => continue,
-                "te" if !value.as_bytes().eq_ignore_ascii_case(b"trailers") => continue,
-                _ => {}
+            if is_connection_specific(name.as_str(), value.as_bytes()) {
+                continue;
             }
             self.encode_field(
                 name.as_str().as_bytes(),
@@ -281,6 +283,18 @@ impl Encoder {
                 out,
             );
         }
+    }
+}
+
+/// Fields that must not be forwarded over HTTP/2 (RFC 9113 8.2.2) plus `host` (replaced by `:authority`).
+/// Applies to request headers and request trailers alike.
+#[must_use]
+pub fn is_connection_specific(name: &str, value: &[u8]) -> bool {
+    match name {
+        "host" | "connection" | "keep-alive" | "proxy-connection" | "transfer-encoding"
+        | "upgrade" => true,
+        "te" => !value.eq_ignore_ascii_case(b"trailers"),
+        _ => false,
     }
 }
 

@@ -190,16 +190,41 @@ Follows the blueprint; deviations and additions:
   `Option<Arc<StreamShared>>` + `Option<Box<Error>>`. Dropping it before the head arrives cancels the request. Upload pumps are a hand-written `Pump` future.
 - **Inbox** is `tokio::sync::mpsc::unbounded_channel`. `ConnShared` does *not* hold the sender (otherwise the actor's own `Arc<ConnShared>` would keep the
   channel open); `H2Handle` = `Arc<ConnShared>` + sender, and each `StreamShared` holds a sender clone for `Ready`. When every handle and stream is gone the actor sends GOAWAY(NO_ERROR) and exits.
-- **Queues carry boxed payloads.** `RecvEvent`/`SendEvent` hold `Box<BytesView>` etc. (16-byte events): `SegQueue` allocates 31-slot blocks, and a 272-byte `BytesView`
-  slot would make that a ~9 KiB zeroed allocation per stream. Cost: one small allocation per DATA chunk (candidate for a per-stream inline slot later).
+- **Receive queue is an inline SPSC ring.** `StreamShared` holds a 4-slot ring of `RecvEvent` (`ring.rs`; `UnsafeCell<MaybeUninit<_>>` + head/tail atomics, Release/Acquire) with a
+  `SegQueue<Box<_>>` spill used only when the ring is full: zero allocations and no cross-thread frees per chunk in the common case. FIFO across ring + spill relies on `spill_len`
+  (producer pushes to the ring only while it is 0; the consumer drains the ring, re-checks it after seeing `spill_len > 0`, then the spill). Producer = actor, consumer = body reader
+  (on cancel the reader drains and hands over to the actor through the command channel). `RecvEvent::Data { view, flow, end }` folds END_STREAM into the last DATA event. The send-side
+  queue (request body) is still a boxed `SegQueue`.
+- **Wake batching.** Actor-side producers set state and `owe_wake` (per-stream `wake_pending`, plain load/store: actor-only); streams go on `Core::dirty` and are woken once by
+  `drain_dirty` at the end of the read phase and once more in the `poll` wrapper (every exit path: teardown, fail_connection, Closing, Drop). A response = one wake instead of three.
+  Wake is still "set state, then wake"; the consumer still registers, then checks.
+- **Receive accounting.** Every DATA event is charged `flow_len + 64 B` (`EVENT_OVERHEAD`) to the connection's `delivered` (actor-local) and, on consumption/drop, to the atomic
+  `ConnShared::consumed` (`buffered = delivered - consumed`). Padding is credited to the stream window on consumption, not on receipt, so padded 1-byte DATA floods cannot
+  earn credit. Payloads < 16 B (or padded < 256 B) are copied out of the read block so they cannot pin it. At most 1024 unconsumed events per stream (ENHANCE_YOUR_CALM).
+  The consumer sends a `Ready` only when the stream is still open and its stream-window credit crossed the threshold, or when the actor has parked connection credit: the actor sets
+  `CONSUMED_BLOCKED` (top bit of the same `consumed` word, via `fetch_or`, which also returns the counter) and consumers' `fetch_add` sees that bit in the previous value, so the
+  hand-off is decided by one word's modification order (no Dekker fences; loom's SeqCst model is too weak to check fence-based versions). Cancelled/dropped streams account their queued events in `Drop`.
+- **Timeouts.** Per stream: `activity` (updated on open, request DATA emitted, response frames), `head_idle`/`head_abs` (config or `ResponseTimeout`), `body_idle` (config or
+  `BodyTimeout`); header-block deadline on `HeaderAsm`. One `Sleep` per connection armed for the earliest known deadline (`Core::want_timer`, re-armed only when a new deadline is
+  earlier or after it fires); when it fires `scan_timeouts` walks the stream table (O(streams), only on fire), cancels expired streams with RST(CANCEL) and re-arms. Deadlines only move
+  later, so early fires are harmless. Defaults in `H2Config`; keep-alive PING defaults to 30 s.
+- **Flood limits.** Leaky buckets (`Leaky`, milli-unit fixed point, tick time) for SETTINGS, PING, RST_STREAM, WINDOW_UPDATE and tiny DATA; overflow is a connection error (GOAWAY ENHANCE_YOUR_CALM).
+- **Response validation.** `content-length` vs DATA bytes (not for HEAD/204/304), 16 interim responses max, no RST for streams we do not know, request trailers filtered like headers.
+- **Write coalescing (`H2Config::coalesce_small_writes`).** If a tick produced < 1 KiB of output from newly opened requests while > 8 streams are in flight, the write is deferred once
+  (self-wake) so concurrent submitters share one `writev`; never twice in a row. Measured +5-10% req/s at c=256 (64 B..64 KiB), no effect below 8 in flight.
+- **Actor task is `unconstrained`**: it bounds its own work per tick; tokio's coop budget would make a busy actor read `Pending` as "inbox empty".
+- **Vectored TCP reads were tried and rejected** (`readv` over up to 4 blocks via socket2): -20% req/s / +25% CPU per request at 1 MiB, no gain at 64 KiB. `poll_fill` reserves exactly one
+  block (the old `max(READ_BLOCK, want)` reserved a second block that the re-wrap dropped unused for every frame larger than a block).
+- **`ConnectionInfo`** is no longer inserted into `http::Extensions` by default (3 allocations per response): `Incoming::connection_info()`; `H2Config::connection_info` / `H1Config::connection_info`
+  / `ClientBuilder::connection_info(true)` restore the extension (needed by the otel layers for `network.protocol.name`). Huffman-decoded strings are split off a per-decoder arena.
 - **Read path.** `Reader` = pooled `BytesBuf` (64 KiB blocks, `buf::memory()` re-fetched per block so the thread-local pool follows the task) + a `peek()` view for parsing.
   DATA frames are parsed by hand (header only) and sliced with `consume` => zero-copy even when the payload spans blocks. Non-DATA frames go through `decode_frame` on the
   contiguous bytes; if one straddles two blocks it is copied into a small scratch `Vec` (<= MAX_FRAME_SIZE; control/header frames only). Parsed non-DATA bytes are consumed lazily in one batch (`skip`).
   The only `unsafe` is `BytesBuf::advance` after `ReadBuf::filled()` (commented).
 - **Header blocks** are copied once into a shared `BytesMut` (split + freeze, so HPACK values are slices of it). CONTINUATION reassembly is bounded: 32 frames and 2x MAX_HEADER_LIST_SIZE, else ENHANCE_YOUR_CALM.
 - **Flow control.** Connection recv window is credited on receipt after each read burst, gated by `buffered <= buffered_budget` (= `initial_conn_window`).
-  `buffered` is decremented from consumer reports. Consumers report (`Ready`) when consumed >= `min(window/4, 32 KiB)`, at end of body, and on cancel; without the 32 KiB cap and
-  end-of-body flush, bytes consumed below the threshold were never reported and the budget leaked, stalling the connection after ~budget bytes (regression test `many_small_responses_never_stall_the_connection_window`).
+  `buffered` is decremented from consumer reports. Connection-level consumption is reported through the atomic `consumed` counter (see "Receive accounting"); stream-level credit goes through `Ready` once consumed >= `min(window/4, 32 KiB)` and on cancel
+  (regression tests `many_small_responses_never_stall_the_connection_window`, `consumption_without_ready_still_credits_the_connection_window`).
   Stream windows use `RecvWindow`'s 25% policy on the actor side. INITIAL_WINDOW_SIZE increases check overflow by iterating live streams (rare) rather than tracking a max offset.
 - **Write path.** As blueprint. Control frames are encoded straight into the arena in arrival order (ahead of any not-yet-scheduled DATA, behind already-queued bytes; DATA scheduling stops at 256 KiB queued).
   Reads pause only if >1 MiB is queued unwritten; commands pause at 4 MiB. Small payloads (<= 256 B) are copied into the arena.
@@ -207,6 +232,6 @@ Follows the blueprint; deviations and additions:
 - **Errors.** Stream/connection failure => `Retryable` if the stream's HEADERS were fully written, else `Unprocessed`; GOAWAY above last_stream_id and REFUSED_STREAM => `Unprocessed`;
   RST codes CANCEL/INTERNAL/NO_ERROR/STREAM_CLOSED/CONNECT => `Retryable`, others `Never`.
 - **Extras in `H2Config`:** `keepalive_timeout`, `handshake_timeout`, `connection_info` (attach `ConnectionInfo`; costs ~3 allocations, the pool may prefer to do it).
-- **loom.** `--cfg matier_loom` (not `loom`: tokio disables `net` under `cfg(loom)`). `sync.rs` swaps atomics/Arc/Mutex/AtomicWaker/queue; models: head handoff (value and error), recv queue + waker, QUEUED dedup,
-  cancel vs push accounting, send-credit wakeup, slot accounting. `RUSTFLAGS="--cfg matier_loom" cargo test -p matier-transport --lib --release loom_` (use a separate `CARGO_TARGET_DIR`).
-- Not done: RFC 9218 priority scheduling (round-robin only), BDP estimation, per-connection free list for `StreamShared`, custom MPSC inbox, `Expect: 100-continue` wake, content-length validation of responses.
+- **loom.** `--cfg matier_loom` (not `loom`: tokio disables `net` under `cfg(loom)`). `sync.rs` swaps atomics/Arc/Mutex/AtomicWaker/queue/UnsafeCell; models: head handoff (value and error), recv queue + waker, QUEUED dedup,
+  cancel vs push accounting, ring + spill FIFO with END, drop with queued events, deferred-wake dedup vs register-then-check, blocked-bit handshake, send-credit wakeup, slot accounting (the larger ones use `preemption_bound = 3`). `RUSTFLAGS="--cfg matier_loom" cargo test -p matier-transport --lib --release loom_` (use a separate `CARGO_TARGET_DIR`).
+- Not done: RFC 9218 priority scheduling (round-robin only), BDP estimation, per-connection free list for `StreamShared`, custom MPSC inbox, `Expect: 100-continue` wake.

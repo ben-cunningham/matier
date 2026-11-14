@@ -88,7 +88,7 @@ pub struct NoopObserver;   // the default
 
 Per-request options (in `http::Extensions`): `ResponseTimeout(Duration)`, `BodyTimeout(Duration)`,
 `Priority { urgency: u8, incremental: bool }` (RFC 9218), `TelemetryAttributes(Vec<KeyValueLike>)` (defined in matier-otel),
-`UriTemplate(&'static str)`. Response-side extension: `ConnectionInfo { protocol, reused: bool, conn_id: u64 }`.
+`UriTemplate(&'static str)`. Response-side: `Incoming::connection_info() -> Option<ConnectionInfo { protocol, reused: bool, conn_id: u64 }>` (always); the same value is inserted into `http::Extensions` only when `connection_info` is enabled on `H1Config`/`H2Config`/`ClientBuilder` (off by default: three allocations per response; the otel layers read the extension).
 
 ### Implementation notes (matier-core, as built)
 
@@ -192,7 +192,7 @@ pub mod h2 {
 
 ### Implementation notes (matier-transport h2 actor, as built)
 
-- `H2Config` additionally has `keepalive_timeout`, `handshake_timeout`, `connection_info` (see h2-actor.md "As built"). `handshake(io, origin, cfg, obs: Arc<dyn Observer>)` is as specified; internally generic over any `AsyncRead + AsyncWrite` for tests.
+- `H2Config` additionally has `keepalive_timeout`, `handshake_timeout`, `response_head_timeout` (30 s), `body_idle_timeout` (60 s), `header_block_timeout` (10 s), `coalesce_small_writes`, `connection_info` (off) and a default `keepalive_interval` of 30 s (see h2-actor.md "As built"). `H1Config` has `response_head_timeout` (30 s), `body_idle_timeout` (60 s), `connection_info`. `ResponseTimeout`/`BodyTimeout` request extensions override them. `handshake(io, origin, cfg, obs: Arc<dyn Observer>)` is as specified; internally generic over any `AsyncRead + AsyncWrite` for tests.
 - `H2Handle::send(&self, slot, req) -> ResponseFuture` is a plain `fn` (not `async fn`): the request is moved into the actor inbox immediately and the returned `'static + Send` future is 16 bytes. Dropping it cancels the request. `ResponseFuture: Future<Output = Result<Response<Incoming>>>`.
 - `H2Handle::slot_released(&self) -> tokio::sync::futures::Notified<'_>`: resolves when a stream slot is released, the peer raises MAX_CONCURRENT_STREAMS, or the connection closes. Waiters must create it and `enable()` it *before* calling `try_reserve()` (the pool does this per connection).
 - Also `conn_id()`, `origin()`; `StreamSlot` releases its permit on drop or when the stream it was sent on ends; `H2Handle: Debug`. `RecvStream` is `http_body::Body<Data = BytesView, Error = Error>`; trailers arrive as a trailers frame.
@@ -227,7 +227,7 @@ Behaviour (see PLAN §6):
 - H2: `ArcSwap<Vec<Arc<Entry>>>` snapshot, power-of-two-choices on `in_flight()` among `is_accepting()` handles below `min(max_concurrent_streams, h2_target_streams_per_conn)`, `try_reserve`. If none: wait; `h2_maybe_dial` starts a background (spawned, cancellation-proof) dial when `live + dialing < max_conns` and `dialing < max(1, ceil(waiting / target))`. Dial failures are recorded (kind + message) and returned to the waiters that started waiting before the failure. A watcher task per handle (`handle.closed()`) rebuilds the snapshot and re-establishes `h2_min_conns_per_origin`. Because `H2Handle` has no slot-release notification, h2 waiters also poll every 500 us (TODO: replace by a notification from the actor).
 - H2 requests are sent via a boxed future (`handle.send(slot, req)` borrows the handle and owns the request) and are **not** retried inside the pool: `H2Handle::send` consumes the request, so an `Unprocessed` retry needs the caller (or a retry layer) to clone it.
 - Retry (H1): once, on a fresh connection, if the body is `Empty`/`Full` and (`Recovery::Unprocessed`, or stale-keepalive on an idempotent method).
-- `PoolConfig` defaults: `max_idle_per_origin` 32, `idle_timeout` 90 s, `max_conns_per_origin` 256, `h2_target_streams_per_conn` 128, `h2_min_conns_per_origin` 1, `checkout_timeout` None. `Pool::stats(&Uri) -> Option<OriginStats>` was added for diagnostics/tests. The observer gets `connection_opened/closed`, `request_queued` and `pool_waiters`.
+- `PoolConfig` defaults: `max_idle_per_origin` 32, `idle_timeout` 90 s, `max_conns_per_origin` 256, `h2_target_streams_per_conn` 128, `h2_min_conns_per_origin` 1, `checkout_timeout` Some(30 s), `h2_zero_capacity_drain` 10 s. The HTTP/2 hot path borrows the origin and connection from the map/snapshot guards (no `Arc` clone of either). A peer that advertises `MAX_CONCURRENT_STREAMS = 0` never counts as capacity: at most one extra dial, retired after `h2_zero_capacity_drain`. `Pool::stats(&Uri) -> Option<OriginStats>` was added for diagnostics/tests. The observer gets `connection_opened/closed`, `request_queued` and `pool_waiters`.
 
 ## matier
 

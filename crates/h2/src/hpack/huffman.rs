@@ -107,10 +107,37 @@ pub fn encode(src: &[u8], out: &mut Vec<u8>) {
     }
 }
 
+/// Destination of [`decode`]: a `Vec<u8>` or a `BytesMut` (so callers can split frozen strings off one
+/// shared scratch buffer instead of allocating per string).
+pub trait Sink {
+    /// Bytes written so far.
+    fn written(&self) -> usize;
+    /// Appends one byte.
+    fn push_byte(&mut self, b: u8);
+}
+
+impl Sink for Vec<u8> {
+    fn written(&self) -> usize {
+        Vec::len(self)
+    }
+    fn push_byte(&mut self, b: u8) {
+        self.push(b);
+    }
+}
+
+impl Sink for bytes::BytesMut {
+    fn written(&self) -> usize {
+        bytes::BytesMut::len(self)
+    }
+    fn push_byte(&mut self, b: u8) {
+        bytes::BufMut::put_u8(self, b);
+    }
+}
+
 /// Decode `src`, appending to `out`; fails with [`HuffmanError::TooLong`] once more than
 /// `max_out` bytes would be produced. On error `out` may contain partial output.
-pub fn decode(src: &[u8], out: &mut Vec<u8>, max_out: usize) -> Result<(), HuffmanError> {
-    let start = out.len();
+pub fn decode<S: Sink>(src: &[u8], out: &mut S, max_out: usize) -> Result<(), HuffmanError> {
+    let start = out.written();
     let mut acc: u64 = 0;
     let mut nbits: u32 = 0;
     let mut i = 0;
@@ -154,10 +181,10 @@ pub fn decode(src: &[u8], out: &mut Vec<u8>, max_out: usize) -> Result<(), Huffm
             if sym == 256 {
                 return Err(HuffmanError::Invalid);
             }
-            if out.len() - start >= max_out {
+            if out.written() - start >= max_out {
                 return Err(HuffmanError::TooLong);
             }
-            out.push(sym as u8);
+            out.push_byte(sym as u8);
             nbits -= len;
         }
         if exhausted {

@@ -8,6 +8,7 @@ mod actor;
 mod load;
 #[cfg(all(test, matier_loom))]
 mod loom_tests;
+mod ring;
 mod shared;
 mod sync;
 #[cfg(all(test, not(matier_loom)))]
@@ -51,7 +52,21 @@ pub struct H2Config {
     pub read_budget_frames: usize,
     /// Deadline for the preface/SETTINGS exchange.
     pub handshake_timeout: Duration,
-    /// Attach `ConnectionInfo` to responses (costs a few allocations per response; the pool may do it instead).
+    /// Deadline for the response head: max time without progress (request bytes sent, head frames received)
+    /// before a stream fails with `Timeout`. `None` disables. A `ResponseTimeout` request extension
+    /// replaces it with an absolute deadline measured from the request start.
+    pub response_head_timeout: Option<Duration>,
+    /// Max idle time between response body events. `None` disables. Overridden by `BodyTimeout`.
+    pub body_idle_timeout: Option<Duration>,
+    /// Deadline for a header block (HEADERS + CONTINUATIONs) to complete; exceeding it closes the connection.
+    pub header_block_timeout: Duration,
+    /// Yield once before a socket write when the tick only produced a few small request frames while many
+    /// streams are in flight, so concurrent submitters share one `writev` (measured: +5-10% req/s at c=256,
+    /// no effect at low concurrency). Bounded: at most one deferred tick in a row, and never with more than
+    /// 1 KiB queued.
+    pub coalesce_small_writes: bool,
+    /// Also attach `ConnectionInfo` to the response's `http::Extensions` (three allocations per response). Off by
+    /// default: use `Incoming::connection_info()`. Layers that only see `http::Response<B>` need this on.
     pub connection_info: bool,
 }
 
@@ -62,11 +77,15 @@ impl Default for H2Config {
             initial_conn_window: 4 << 20,
             max_frame_size: 16 * 1024,
             max_header_list_size: 64 * 1024,
-            keepalive_interval: None,
+            keepalive_interval: Some(Duration::from_secs(30)),
             keepalive_timeout: Duration::from_secs(20),
             read_budget_frames: 64,
             handshake_timeout: Duration::from_secs(10),
-            connection_info: true,
+            response_head_timeout: Some(Duration::from_secs(30)),
+            body_idle_timeout: Some(Duration::from_secs(60)),
+            header_block_timeout: Duration::from_secs(10),
+            coalesce_small_writes: true,
+            connection_info: false,
         }
     }
 }
@@ -209,6 +228,7 @@ impl H2Handle {
         let threshold = self.shared.stream_threshold;
         let shared = Arc::new(StreamShared::new(
             self.tx.clone(),
+            Arc::clone(&self.shared),
             threshold,
             if streaming { SEND_BUFFER } else { 0 },
         ));
@@ -339,21 +359,22 @@ impl http_body::Body for RecvStream {
         }
         match self.shared.poll_recv(cx) {
             Poll::Pending => Poll::Pending,
-            Poll::Ready(RecvEvent::Data(d)) => {
-                StreamShared::consumed(&self.shared, u32::try_from(d.len()).unwrap_or(u32::MAX));
-                Poll::Ready(Some(Ok(http_body::Frame::data(*d))))
+            Poll::Ready(RecvEvent::Data { view, flow, end }) => {
+                StreamShared::consumed(&self.shared, flow);
+                if end {
+                    self.done = true;
+                }
+                Poll::Ready(Some(Ok(http_body::Frame::data(view))))
             }
             Poll::Ready(RecvEvent::Trailers(t)) => {
                 Poll::Ready(Some(Ok(http_body::Frame::trailers(*t))))
             }
             Poll::Ready(RecvEvent::End) => {
                 self.done = true;
-                StreamShared::flush_consumed(&self.shared);
                 Poll::Ready(None)
             }
             Poll::Ready(RecvEvent::Error(e)) => {
                 self.done = true;
-                StreamShared::flush_consumed(&self.shared);
                 Poll::Ready(Some(Err(*e)))
             }
         }
@@ -361,6 +382,18 @@ impl http_body::Body for RecvStream {
 
     fn is_end_stream(&self) -> bool {
         self.done
+    }
+}
+
+impl RecvStream {
+    /// The connection that served this response.
+    #[must_use]
+    pub fn connection_info(&self) -> matier_core::ConnectionInfo {
+        matier_core::ConnectionInfo {
+            protocol: matier_core::Protocol::Http2,
+            reused: self.shared.id() > 1,
+            conn_id: self.shared.conn.conn_id,
+        }
     }
 }
 

@@ -1,7 +1,7 @@
 //! Response head parsing.
 
 use crate::error::ParseError;
-use bytes::Bytes;
+use bytes::{Bytes, BytesMut};
 use http::{HeaderMap, HeaderName, HeaderValue, StatusCode, Version};
 use std::mem::MaybeUninit;
 
@@ -28,6 +28,9 @@ impl Default for Limits {
         }
     }
 }
+
+/// Capacity added to a head arena when it runs out.
+const ARENA_CHUNK: usize = 8 * 1024;
 
 /// A parsed response head. Header values are zero-copy slices of one shared `Bytes`.
 #[derive(Debug, Clone)]
@@ -74,6 +77,19 @@ pub fn parse_response_head(
     buf: &[u8],
     limits: &Limits,
 ) -> Result<ParseStatus<ResponseHead>, ParseError> {
+    parse_response_head_in(buf, limits, &mut BytesMut::new())
+}
+
+/// Like [`parse_response_head`], copying the head into `arena` instead of a fresh allocation: the copy is
+/// `split().freeze()` off `arena`, so heads parsed with the same arena share chunk allocations (the arena
+/// grows in chunks; its contents on entry are discarded and it is empty on a successful return).
+pub fn parse_response_head_in(
+    buf: &[u8],
+    limits: &Limits,
+    arena: &mut BytesMut,
+) -> Result<ParseStatus<ResponseHead>, ParseError> {
+    // A previous call that failed after copying leaves its bytes here.
+    arena.clear();
     let max = limits.max_head_bytes;
     let view = &buf[..buf.len().min(max)];
 
@@ -135,7 +151,11 @@ pub fn parse_response_head(
     let hs = &*resp.headers;
 
     // The single copy of the head.
-    let mut data = buf[..head_len].to_vec();
+    if arena.capacity() < head_len {
+        arena.reserve(head_len.max(ARENA_CHUNK));
+    }
+    arena.extend_from_slice(&buf[..head_len]);
+    let data = &mut arena[..];
 
     if limits.allow_obs_fold {
         // httparse reports a folded value as one span that still contains CRLF + whitespace;
@@ -150,7 +170,7 @@ pub fn parse_response_head(
         }
     }
 
-    let shared = Bytes::from(data);
+    let shared = arena.split().freeze();
     let reason = reason.map(|r| {
         let s = off(buf, r);
         shared.slice(s..s + r.len())

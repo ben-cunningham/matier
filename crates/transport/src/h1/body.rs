@@ -5,7 +5,7 @@ use std::task::{Context, Poll};
 use std::time::Instant;
 
 use http_body::{Frame, SizeHint};
-use matier_core::{BytesView, Error, ErrorKind, Recovery};
+use matier_core::{BytesView, ConnectionInfo, Error, ErrorKind, Recovery};
 use matier_h1::ChunkedDecoder;
 
 use super::Releaser;
@@ -28,6 +28,7 @@ pub struct RecvBody {
     keep: bool,
     release: Option<Releaser>,
     hint: Option<u64>,
+    info: ConnectionInfo,
 }
 
 impl fmt::Debug for RecvBody {
@@ -39,7 +40,13 @@ impl fmt::Debug for RecvBody {
 }
 
 impl RecvBody {
-    pub(super) fn new(conn: H1Conn, dec: Decoder, keep: bool, release: Releaser) -> Self {
+    pub(super) fn new(
+        conn: H1Conn,
+        dec: Decoder,
+        keep: bool,
+        release: Releaser,
+        info: ConnectionInfo,
+    ) -> Self {
         let hint = match &dec {
             Decoder::Length(n) => Some(*n),
             _ => None,
@@ -50,7 +57,14 @@ impl RecvBody {
             keep,
             release: Some(release),
             hint,
+            info,
         }
+    }
+
+    /// The connection that served this response.
+    #[must_use]
+    pub fn connection_info(&self) -> ConnectionInfo {
+        self.info
     }
 
     /// Body complete: reuse the connection if allowed, otherwise close it.
@@ -162,10 +176,16 @@ impl http_body::Body for RecvBody {
                 }
             }
             // Need more bytes.
-            match inner.poll_fill(cx) {
+            let idle = inner.body_timeout;
+            match inner.poll_fill_timed(cx, idle) {
                 Poll::Pending => return Poll::Pending,
                 Poll::Ready(Err(e)) => {
-                    return this.fail(Error::with_source(ErrorKind::BodyRead, Recovery::Never, e));
+                    let kind = if e.kind() == io::ErrorKind::TimedOut {
+                        ErrorKind::Timeout
+                    } else {
+                        ErrorKind::BodyRead
+                    };
+                    return this.fail(Error::with_source(kind, Recovery::Never, e));
                 }
                 Poll::Ready(Ok(0)) => {
                     if matches!(this.dec, Decoder::Close) {
@@ -175,7 +195,7 @@ impl http_body::Body for RecvBody {
                     }
                     return this.fail(eof_error());
                 }
-                Poll::Ready(Ok(_)) => {}
+                Poll::Ready(Ok(_)) => inner.wait_dl = None,
             }
         }
     }
