@@ -26,6 +26,7 @@ use tokio::io::{AsyncRead, AsyncWrite, AsyncWriteExt, ReadBuf};
 use tokio::sync::mpsc;
 use tokio::time::Sleep;
 
+use super::load::LoadMeter;
 use super::shared::{
     CANCELED, Command, ConnShared, OpenBody, OpenStream, RecvEvent, SendEvent, StreamShared,
 };
@@ -35,7 +36,7 @@ use super::{H2Config, H2Handle, StreamSlot};
 
 type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
-const READ_BYTES_BUDGET: usize = 256 * 1024;
+const READ_BYTES_BUDGET: usize = 1024 * 1024;
 const WRITE_BYTES_BUDGET: usize = 256 * 1024;
 const DATA_BYTES_BUDGET: usize = 256 * 1024;
 const CMD_BUDGET: usize = 128;
@@ -303,6 +304,7 @@ pub(crate) struct Core {
     state: ConnState,
     policy: WindowUpdatePolicy,
     marks: VecDeque<(u64, Instant)>,
+    meter: LoadMeter,
     ping_acked: bool,
     ping_seq: u64,
     ping_out: Option<[u8; 8]>,
@@ -351,6 +353,7 @@ impl Core {
             state: ConnState::Open,
             policy: WindowUpdatePolicy::default(),
             marks: VecDeque::new(),
+            meter: LoadMeter::new(Instant::now()),
             ping_acked: false,
             ping_seq: 0,
             ping_out: None,
@@ -525,11 +528,16 @@ impl Core {
             enc.encode_request(&parts.method, &parts.uri, &parts.headers, out);
         });
         let hdr_end = self.wq.enqueued_total();
-        if self.obs_on
-            && let Some(t) = enqueued_at
-        {
+        if let Some(t) = enqueued_at {
             self.marks.push_back((hdr_end, t));
         }
+        self.shared.streams_opened.store(
+            self.shared
+                .streams_opened
+                .load(Ordering::Relaxed)
+                .wrapping_add(1),
+            Ordering::Relaxed,
+        );
         let send = match body {
             OpenBody::Empty => SendState::None,
             OpenBody::Full(v) => SendState::Full(v),
@@ -1219,16 +1227,21 @@ impl Core {
     }
 
     fn marks_flushed(&mut self) {
-        if !self.obs_on {
+        if self.marks.is_empty() {
             return;
         }
         let w = self.wq.written_total();
+        let now = Instant::now();
         while let Some(&(off, t)) = self.marks.front() {
             if off > w {
                 break;
             }
             self.marks.pop_front();
-            self.obs.request_dispatched(&self.origin, t.elapsed());
+            let d = now.saturating_duration_since(t);
+            self.meter.record_dispatch(d);
+            if self.obs_on {
+                self.obs.request_dispatched(&self.origin, d);
+            }
         }
     }
 
@@ -1528,7 +1541,7 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Future for Actor<T> {
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<()> {
         let this = self.get_mut();
-        let t0 = this.core.obs_on.then(Instant::now);
+        let t0 = Instant::now();
         let mut again = false;
 
         if this.core.state == ConnState::Open {
@@ -1578,10 +1591,18 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Future for Actor<T> {
         }
         again |= this.core.can_schedule() && this.core.state == ConnState::Open;
 
-        if let Some(t0) = t0 {
+        let t1 = Instant::now();
+        let inbox = this.rx.len();
+        if this.core.obs_on {
             this.core
                 .obs
-                .actor_tick(&this.core.origin, t0.elapsed(), this.rx.len());
+                .actor_tick(&this.core.origin, t1.saturating_duration_since(t0), inbox);
+        }
+        if this.core.meter.record_tick(t0, t1, inbox) {
+            let sh = &this.core.shared;
+            let now_ms = u32::try_from(t1.saturating_duration_since(sh.epoch).as_millis())
+                .unwrap_or(u32::MAX);
+            this.core.meter.publish(&sh.load, now_ms);
         }
 
         if this.core.state == ConnState::Closing {

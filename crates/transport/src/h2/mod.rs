@@ -5,6 +5,7 @@
 //! lock (hyperium/h2#531 is fixed by construction). See `docs/design/h2-actor.md`.
 
 mod actor;
+mod load;
 #[cfg(all(test, matier_loom))]
 mod loom_tests;
 mod shared;
@@ -21,6 +22,7 @@ use std::time::{Duration, Instant};
 
 use matier_core::{Body, BytesView, Error, ErrorKind, Observer, OriginKey, Result};
 
+pub use self::load::LoadSnapshot;
 use self::shared::{
     CmdTx, Command, ConnShared, OpenBody, OpenStream, RecvEvent, SendEvent, StreamShared,
 };
@@ -139,6 +141,38 @@ impl H2Handle {
         self.shared.accepting.load(sync::Ordering::Acquire)
     }
 
+    /// The actor's published load signals (busy EWMA, dispatch-delay EWMA, inbox depth). Values older than
+    /// a few windows (the actor stopped ticking, i.e. the connection is idle) read as zero. One relaxed
+    /// load of the cache line unless something non-zero was published, in which case one clock read.
+    #[must_use]
+    pub fn load(&self) -> LoadSnapshot {
+        let raw = self.shared.load.raw();
+        if raw == LoadSnapshot::default() {
+            return raw;
+        }
+        if self.shared.load.is_stale(self.now_ms()) {
+            return LoadSnapshot::default();
+        }
+        raw
+    }
+
+    /// Like [`Self::load`] without the staleness check (no clock read): cheap, but may be old if the actor
+    /// went idle.
+    #[must_use]
+    pub fn load_unchecked(&self) -> LoadSnapshot {
+        self.shared.load.raw()
+    }
+
+    fn now_ms(&self) -> u32 {
+        u32::try_from(self.shared.epoch.elapsed().as_millis()).unwrap_or(u32::MAX)
+    }
+
+    /// Number of streams this connection's actor has opened so far (wraps).
+    #[must_use]
+    pub fn streams_opened(&self) -> u32 {
+        self.shared.streams_opened.load(sync::Ordering::Relaxed)
+    }
+
     /// Reserve a stream slot (CAS on `in_flight < max_concurrent_streams && accepting`).
     #[must_use]
     pub fn try_reserve(&self) -> Option<StreamSlot> {
@@ -187,7 +221,7 @@ impl H2Handle {
             shared: Arc::clone(&shared),
             parts,
             body: open_body,
-            enqueued_at: self.shared.obs_on.then(Instant::now),
+            enqueued_at: (self.shared.obs_on || load::sample_now()).then(Instant::now),
             slot,
         });
         if self.tx.send(cmd).is_err() {

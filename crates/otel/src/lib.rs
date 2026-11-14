@@ -73,6 +73,8 @@
 //! | `matier.h2.goaway` | counter | {frame} | origin, `matier.h2.error_code` | GOAWAYs received. |
 //! | `matier.h2.rst_stream` | counter | {frame} | origin, `matier.h2.error_code`, `matier.h2.direction` = sent/received | Stream resets. |
 //! | `matier.pool.waiters` | histogram | {request} | origin | Pool waiters when a request has to wait. |
+//! | `matier.pool.connections` | gauge | {connection} | origin | HTTP/2 connections held, as of the last autoscaling event. |
+//! | `matier.pool.scale_events` | counter | {event} | origin, `matier.pool.scale_reason` = saturated/waiters/min/idle/underused | Pool autoscaling decisions. |
 //!
 //! `error.type` is `Error::label()` (e.g. `connect`, `timeout`), `abandoned` for dropped futures, or the
 //! status code string for statuses at or above the threshold (default 400, as semconv specifies for clients;

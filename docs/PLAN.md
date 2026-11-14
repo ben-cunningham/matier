@@ -209,6 +209,11 @@ neither: an `H1Conn` is **owned by the request in flight**.
   - **Selection**: power-of-two-choices on `in_flight` among connections below `target_streams_per_conn`, reserving the slot with a CAS.
   - **When nothing is available**: if `conns + dialing < max_conns_per_origin`, start a coalesced dial (one in flight per origin unless demand exceeds what that dial will provide); otherwise wait in the waiter list.
   - **Tuning knobs**: `target_streams_per_conn` (default `min(peer_max, 128)`), `min_conns_per_origin` (pre-spread hot origins across cores), and `max_conns_per_origin`. These replace "N clients round-robin" with load-aware, capacity-aware spreading.
+- **Zero-config autoscaling (as built).** Nobody sizes the pool.
+  - **Signals:** each actor publishes, through atomics, a smoothed busy ratio (over 10 ms windows), a smoothed dispatch delay (enqueue → HEADERS written, sampled on 1 request in 4), and its inbox depth.
+  - **Scale up:** when the chosen connection is saturated (busy > 50%, dispatch delay > 100 µs, or inbox > 256, with ≥ 4 streams in flight), the pool starts **one background dial**. The triggering request isn't delayed. There's a 50 ms cooldown, and the cap is `h2_max_conns_per_origin`, which defaults to the CPU count.
+  - **Scale down:** a connection idle past `idle_timeout` is closed. When every connection is < 20% busy for 1 s, the newest one is drained, with a 300/500 permille hysteresis band and no drain within 5 s of a scale-up.
+  - Measured: 1 → 10 connections in 0.42 s at c=256. See `crates/pool/src/scale.rs`.
 - **Protocol negotiation.** The first dial to an origin uses ALPN, and the result is cached per origin. h2c prior knowledge is opt-in.
 - **Connect.**
   - **DNS** sits behind a `Resolver` trait. The default is an async resolver with TTL cache; `getaddrinfo` on a *bounded* blocking pool is the fallback (cf. hyper#3838).

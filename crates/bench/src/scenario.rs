@@ -59,6 +59,12 @@ pub struct ScenarioConfig {
     /// Pool selection strategy for `fetch-pooled`.
     #[serde(default)]
     pub pool_selection: PoolSelection,
+    /// `matier`: explicit `h2_min_conns_per_origin`; unset = zero-config autoscaling (the default).
+    #[serde(default)]
+    pub matier_min_conns: Option<usize>,
+    /// `matier`: explicit `h2_max_conns_per_origin`; unset = default (number of CPUs).
+    #[serde(default)]
+    pub matier_max_conns: Option<usize>,
     /// Base URL (scheme://host:port).
     pub url: String,
     pub method: String,
@@ -81,6 +87,15 @@ impl ScenarioConfig {
                 ""
             };
             format!("{}(pool={}{sel})", self.subject, self.pool_size)
+        } else if self.subject == "matier"
+            && (self.matier_min_conns.is_some() || self.matier_max_conns.is_some())
+        {
+            let fmt = |v: Option<usize>| v.map_or_else(|| "auto".to_owned(), |n| n.to_string());
+            format!(
+                "matier(min={},max={})",
+                fmt(self.matier_min_conns),
+                fmt(self.matier_max_conns)
+            )
         } else {
             self.subject.clone()
         };
@@ -118,6 +133,8 @@ impl ScenarioConfig {
             ca_cert: self.ca_cert.clone(),
             pool_size: self.pool_size,
             pool_selection: self.pool_selection,
+            matier_min_conns: self.matier_min_conns,
+            matier_max_conns: self.matier_max_conns,
         }
     }
 

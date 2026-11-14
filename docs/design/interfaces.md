@@ -244,3 +244,12 @@ v0 stack: `Dispatch` (validation, scheme policy) → `Pool`. Timeout, retry, met
 
 - `Client` (Clone; wraps `Pool`), `ClientBuilder { pool(), connect(), h1(), h2(), tls(), http2_prior_knowledge(), observer(), build() }`. `Client::send` is a plain `fn` returning `Either<Ready<Err>, Pool::send future>` (validation in `Dispatch` happens before the pool: absolute `http`/`https` URI with a host, else `InvalidRequest`). `impl Service<Request<Body>> for Client` delegates to `send`. Core types are re-exported.
 - Bench subject `matier` (feature `matier`, default-on): `--pool-size` maps to `h2_min_conns_per_origin`; h1 benchmarks set `alpn_h2 = false`.
+
+
+### matier-pool autoscaling (as built)
+- `PoolConfig { h2_min_conns_per_origin: 1, h2_max_conns_per_origin: available_parallelism(), h2_target_streams_per_conn: 128 (hard cap), .. }`.
+- `H2Handle::load() -> LoadSnapshot { busy_permille, dispatch_delay, inbox }`. Values older than 8 windows read as zero.
+- `H2Handle::streams_opened()`.
+- Thresholds and the pure decision functions are in `matier_pool::scale` (`ScaleThresholds`, `is_saturated`, `can_drain`).
+- `Observer::pool_scaled(origin, conns, ScaleReason)`, where `ScaleReason` is `Saturated | Waiters | Min | Idle | Underused`. `matier-otel` records `matier.pool.scale` events.
+- Bench: the `matier` subject is zero-config by default. `--matier-min-conns` / `--matier-max-conns` (matrix keys `matier_min_conns` / `matier_max_conns`) pin it, e.g. `matier_max_conns = 1` for single-connection runs.

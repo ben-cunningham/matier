@@ -8,6 +8,8 @@
 use std::task::{Context, Poll};
 use std::time::Instant;
 
+use super::load::LoadCell;
+
 use http::HeaderMap;
 use matier_core::{BytesView, Error, OriginKey};
 use tokio::sync::Notify;
@@ -319,6 +321,12 @@ pub(crate) struct ConnShared {
     /// Per-stream consumption (bytes) at which the consumer asks the actor for a WINDOW_UPDATE.
     pub(crate) stream_threshold: u32,
     pub(crate) obs_on: bool,
+    /// Autoscaling signals published by the actor (own cache line).
+    pub(crate) load: LoadCell,
+    /// Reference point for `load`'s millisecond stamp.
+    pub(crate) epoch: Instant,
+    /// Streams the actor has opened so far (actor-written; the pool uses it to detect idleness).
+    pub(crate) streams_opened: AtomicU32,
 }
 
 impl ConnShared {
@@ -340,6 +348,9 @@ impl ConnShared {
             conn_id,
             stream_threshold,
             obs_on,
+            load: LoadCell::new(),
+            epoch: Instant::now(),
+            streams_opened: AtomicU32::new(0),
         }
     }
 

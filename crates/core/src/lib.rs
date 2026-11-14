@@ -13,5 +13,5 @@ pub use buf::{BytesBuf, BytesView};
 pub use error::{Error, ErrorKind, Recovery, Result};
 pub use ext::{BodyTimeout, ConnectionInfo, Priority, ResponseTimeout, UriTemplate};
 pub use layered::Service;
-pub use observer::{ConnectPhase, NoopObserver, Observer};
+pub use observer::{ConnectPhase, NoopObserver, Observer, ScaleReason};
 pub use origin::{OriginKey, Protocol, Scheme};

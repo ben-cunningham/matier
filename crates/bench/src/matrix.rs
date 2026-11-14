@@ -76,6 +76,12 @@ pub struct Group {
     /// `round-robin` (default) or `saturating`; only affects `fetch-pooled`.
     #[serde(default)]
     pub pool_selection: PoolSelection,
+    /// `matier` subject only: pin `h2_min_conns_per_origin` (default: unset = zero-config autoscaling).
+    #[serde(default)]
+    pub matier_min_conns: Option<usize>,
+    /// `matier` subject only: pin `h2_max_conns_per_origin` (1 = single connection).
+    #[serde(default)]
+    pub matier_max_conns: Option<usize>,
     /// Response sizes; used to build `/bytes/{n}` when `path` is unset.
     #[serde(default)]
     pub resp_sizes: Vec<usize>,
@@ -157,6 +163,8 @@ impl MatrixConfig {
                                         ca_cert: self.ca_cert.clone(),
                                         pool_size: g.pool_size,
                                         pool_selection: g.pool_selection,
+                                        matier_min_conns: g.matier_min_conns,
+                                        matier_max_conns: g.matier_max_conns,
                                         url: url.clone(),
                                         method: g.method.clone(),
                                         path: g

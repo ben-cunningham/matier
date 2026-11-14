@@ -8,12 +8,13 @@
 //!   cancel) with direct handoff of released connections (or of a freed dial slot) to the oldest
 //!   waiter. The liveness probe runs at checkout; the idle timeout is checked lazily.
 //! * **HTTP/2**: an `arc_swap` snapshot of handles, power-of-two-choices on `in_flight`,
-//!   `try_reserve`, and coalesced background dials.
+//!   `try_reserve`, coalesced background dials, and zero-config load-based autoscaling ([`scale`]).
 //!
 //! The protocol of an origin is learned from the first connection (ALPN / prior knowledge) and
 //! cached; concurrent first requests wait for that one connection instead of dialing in parallel.
 
 mod origin;
+pub mod scale;
 mod waiters;
 
 use std::borrow::Borrow;
@@ -38,12 +39,19 @@ pub struct PoolConfig {
     pub max_idle_per_origin: usize,
     /// Idle HTTP/1 connections older than this are discarded at checkout (default 90 s).
     pub idle_timeout: Duration,
-    /// Maximum connections (in use + idle + dialing) per origin (default 256).
+    /// HTTP/1: maximum connections (in use + idle + dialing) per origin (default 256).
     pub max_conns_per_origin: usize,
     /// Streams per HTTP/2 connection before preferring another/new connection (default 128).
     pub h2_target_streams_per_conn: usize,
-    /// HTTP/2 connections dialed eagerly once an origin is known to speak h2 (default 1).
+    /// HTTP/2 connections kept per origin: dialed eagerly once the origin is known to speak h2 and never
+    /// scaled below (default 1). Leave it alone: the pool adds connections under load by itself.
     pub h2_min_conns_per_origin: usize,
+    /// HTTP/2 autoscaling ceiling per origin (default: `std::thread::available_parallelism()`; one
+    /// connection is one actor task, so more connections than cores cannot add parallelism). Set equal to
+    /// `h2_min_conns_per_origin` to pin the connection count. See [`scale`] for the policy.
+    pub h2_max_conns_per_origin: usize,
+    /// HTTP/2 scale-up thresholds (defaults: the constants in [`scale`]).
+    pub h2_scale: scale::ScaleThresholds,
     /// Maximum time a request waits for a connection or stream slot (default none).
     pub checkout_timeout: Option<Duration>,
 }
@@ -56,6 +64,8 @@ impl Default for PoolConfig {
             max_conns_per_origin: 256,
             h2_target_streams_per_conn: 128,
             h2_min_conns_per_origin: 1,
+            h2_max_conns_per_origin: scale::default_h2_max_conns(),
+            h2_scale: scale::ScaleThresholds::default(),
             checkout_timeout: None,
         }
     }
@@ -80,8 +90,10 @@ pub struct OriginStats {
     pub h1_idle: usize,
     /// HTTP/1: queued waiters.
     pub h1_waiters: usize,
-    /// HTTP/2: live connections.
+    /// HTTP/2: live connections (including draining ones).
     pub h2_conns: usize,
+    /// HTTP/2: connections marked draining (not selectable; closing once idle).
+    pub h2_draining: usize,
 }
 
 // --- allocation-free map lookup ---------------------------------------------------------------

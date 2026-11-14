@@ -1633,10 +1633,13 @@ name = "matier-pool"
 version = "0.0.0"
 dependencies = [
  "arc-swap",
+ "bytes",
  "futures-util",
  "http",
  "http-body",
  "http-body-util",
+ "hyper",
+ "hyper-util",
  "matier-core",
  "matier-transport",
  "papaya",

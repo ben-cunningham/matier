@@ -6,7 +6,8 @@ warmup = "1s"
 duration = "5s"
 cooldown = "500ms"
 
-# Multi-connection: matier's default pool vs. the pooled workarounds.
+# Multi-connection: matier's zero-config autoscaling pool vs. the pre-sized pooled workarounds
+# (pool_size applies only to hyper-pooled / fetch-pooled).
 [[group]]
 subjects = ["matier", "hyper-legacy", "hyper-pooled", "fetch", "fetch-pooled"]
 protocols = ["h1", "h2"]
@@ -16,8 +17,15 @@ pool_size = 4
 
 # Single HTTP/2 connection: isolates the per-connection design (matier actor vs hyper/h2 big mutex).
 [[group]]
-subjects = ["matier", "hyper-legacy", "fetch"]
+subjects = ["hyper-legacy", "fetch"]
 protocols = ["h2"]
 concurrency = [64]
 resp_sizes = [1024, 65536]
 pool_size = 1
+
+[[group]]
+subjects = ["matier"]
+protocols = ["h2"]
+concurrency = [64]
+resp_sizes = [1024, 65536]
+matier_max_conns = 1

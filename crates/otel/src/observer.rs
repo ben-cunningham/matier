@@ -3,10 +3,10 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use matier_core::{ConnectPhase, Observer, OriginKey, Protocol};
+use matier_core::{ConnectPhase, Observer, OriginKey, Protocol, ScaleReason};
 use opentelemetry::KeyValue;
 use opentelemetry::global;
-use opentelemetry::metrics::{Counter, Histogram, Meter, UpDownCounter};
+use opentelemetry::metrics::{Counter, Gauge, Histogram, Meter, UpDownCounter};
 use smallvec::SmallVec;
 
 use crate::attrs::OriginAttrCache;
@@ -109,6 +109,8 @@ pub struct OtelObserver {
     goaway: Counter<u64>,
     rst: Counter<u64>,
     waiters: Histogram<u64>,
+    pool_conns: Gauge<u64>,
+    scale_events: Counter<u64>,
 }
 
 impl Default for OtelObserver {
@@ -219,6 +221,18 @@ impl OtelObserver {
                 "Pool waiters sampled when a request waits",
                 COUNT_BUCKETS,
             ),
+            pool_conns: m
+                .u64_gauge("matier.pool.connections")
+                .with_unit("{connection}")
+                .with_description(
+                    "HTTP/2 connections the pool holds for the origin, at the last scale event",
+                )
+                .build(),
+            scale_events: m
+                .u64_counter("matier.pool.scale_events")
+                .with_unit("{event}")
+                .with_description("Pool autoscaling decisions, by reason")
+                .build(),
         }
     }
 
@@ -307,5 +321,13 @@ impl Observer for OtelObserver {
     fn pool_waiters(&self, o: &OriginKey, n: usize) {
         self.cache
             .with_key(o, |a| self.waiters.record(n as u64, &a.base));
+    }
+    fn pool_scaled(&self, o: &OriginKey, conns: usize, reason: ScaleReason) {
+        self.cache.with_key(o, |a| {
+            self.pool_conns.record(conns as u64, &a.base);
+            let mut v: SmallVec<[KeyValue; 4]> = a.base.iter().cloned().collect();
+            v.push(KeyValue::new("matier.pool.scale_reason", reason.as_str()));
+            self.scale_events.add(1, &v);
+        });
     }
 }

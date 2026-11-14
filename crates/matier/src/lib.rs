@@ -31,7 +31,7 @@ use std::sync::Arc;
 use futures_util::future::Either;
 pub use matier_core::{
     Body, BodySender, BytesView, ConnectionInfo, Error, ErrorKind, NoopObserver, Observer,
-    OriginKey, Priority, Protocol, Recovery, Result, Scheme, Service,
+    OriginKey, Priority, Protocol, Recovery, Result, ScaleReason, Scheme, Service,
 };
 pub use matier_pool::{OriginStats, Pool, PoolConfig};
 pub use matier_transport::h1::H1Config;
@@ -170,10 +170,15 @@ impl ClientBuilder {
     /// Builds the client.
     ///
     /// # Errors
-    /// `InvalidRequest` for inconsistent limits (zero `max_conns_per_origin`).
+    /// `InvalidRequest` for inconsistent limits (zero `max_conns_per_origin` / `h2_max_conns_per_origin`).
     pub fn build(self) -> Result<Client> {
         if self.pool.max_conns_per_origin == 0 {
             return Err(Error::invalid_request("max_conns_per_origin must be > 0"));
+        }
+        if self.pool.h2_max_conns_per_origin == 0 {
+            return Err(Error::invalid_request(
+                "h2_max_conns_per_origin must be > 0",
+            ));
         }
         Ok(Client {
             pool: Pool::new(self.pool, self.connect, self.h1, self.h2, self.observer),

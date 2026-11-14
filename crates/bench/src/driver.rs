@@ -10,19 +10,19 @@
 //! up and issues all requests that have become due; the resulting delay shows up as
 //! schedule lag.
 
-use std::{collections::BTreeMap, sync::Arc, time::Duration};
+use std::{collections::BTreeMap, pin::Pin, sync::Arc, time::Duration};
 
 use hdrhistogram::Histogram;
 use tokio::{
     sync::{Semaphore, mpsc},
     task::JoinHandle,
-    time::{Instant, sleep_until, timeout},
+    time::{Instant, Sleep, sleep_until, timeout},
 };
 
 use crate::{
     metrics::Snapshot,
     scenario::LoadSpec,
-    subject::{BenchRequest, Subject},
+    subject::{BenchRequest, BenchResponse, Subject},
 };
 
 /// Driver parameters.
@@ -128,10 +128,39 @@ fn classify(e: &anyhow::Error) -> &'static str {
 async fn issue<S: Subject>(s: &S, req: BenchRequest, limit: Duration) -> Result<u64, &'static str> {
     match timeout(limit, s.request(req)).await {
         Err(_) => Err("timeout"),
-        Ok(Err(e)) => Err(classify(&e)),
-        Ok(Ok(r)) if r.status >= 500 => Err("status_5xx"),
-        Ok(Ok(r)) if r.status >= 400 => Err("status_4xx"),
-        Ok(Ok(r)) => Ok(r.body_len),
+        Ok(res) => outcome(res),
+    }
+}
+
+/// Like [`issue`], but without a per-request timer: arming and dropping a tokio `Sleep` per request
+/// takes the timer driver's global mutex, which showed up as the top lock contention in client
+/// profiles and skewed every subject. Closed-loop workers instead share one per-worker `deadline`
+/// (re-polled by the same task, so it registers once) and classify slow requests after the fact.
+async fn issue_until<S: Subject>(
+    s: &S,
+    req: BenchRequest,
+    limit: Duration,
+    deadline: Pin<&mut Sleep>,
+) -> Result<u64, &'static str> {
+    let started = Instant::now();
+    tokio::select! {
+        biased;
+        res = s.request(req) => {
+            if started.elapsed() > limit {
+                return Err("timeout");
+            }
+            outcome(res)
+        }
+        () = deadline => Err("timeout"),
+    }
+}
+
+fn outcome(res: anyhow::Result<BenchResponse>) -> Result<u64, &'static str> {
+    match res {
+        Err(e) => Err(classify(&e)),
+        Ok(r) if r.status >= 500 => Err("status_5xx"),
+        Ok(r) if r.status >= 400 => Err("status_4xx"),
+        Ok(r) => Ok(r.body_len),
     }
 }
 
@@ -221,12 +250,18 @@ async fn closed_worker<S: Subject>(
 ) -> Stats {
     let mut st = Stats::new(false);
     let req_len = req.body.len() as u64;
+    // A request still outstanding this long after the window ends is hung: stop waiting for it.
+    let deadline = sleep_until(end + limit);
+    tokio::pin!(deadline);
     loop {
         let start = Instant::now();
         if start >= end {
             break;
         }
-        let res = issue(&*subject, req.clone(), limit).await;
+        let res = issue_until(&*subject, req.clone(), limit, deadline.as_mut()).await;
+        if deadline.is_elapsed() {
+            break;
+        }
         let done = Instant::now();
         // Only requests completing inside the measured window count.
         if done < measure_start || done >= end {

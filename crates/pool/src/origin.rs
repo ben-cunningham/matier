@@ -1,19 +1,21 @@
 use std::cell::Cell;
+use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
-use std::sync::atomic::{AtomicU8, AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Arc, Weak};
 use std::task::Poll;
 use std::time::{Duration, Instant};
 
 use arc_swap::ArcSwap;
-use matier_core::{Error, ErrorKind, OriginKey, Protocol, Result};
+use matier_core::{Error, ErrorKind, OriginKey, Protocol, Result, ScaleReason};
 use matier_transport::h1::{H1Conn, Release};
 use matier_transport::h2::{self, H2Handle, StreamSlot};
 use matier_transport::{Connected, connect};
 use parking_lot::Mutex;
 use tokio::sync::{Notify, oneshot};
 
+use crate::scale;
 use crate::waiters::Waiters;
 use crate::{OriginStats, Shared, dial_error};
 
@@ -42,6 +44,25 @@ struct H1State {
 struct H2Entry {
     id: u64,
     handle: H2Handle,
+    /// Not selectable for new streams (scale-down in progress); retired once it has no streams.
+    draining: AtomicBool,
+}
+
+impl H2Entry {
+    fn is_draining(&self) -> bool {
+        self.draining.load(Ordering::Acquire)
+    }
+}
+
+/// "No scale-up yet" marker for the `last_*` timestamps.
+const NEVER: u64 = u64::MAX;
+
+/// Reaper-owned bookkeeping.
+struct Reap {
+    /// Per connection: `streams_opened` at the last tick and since when it has had no streams.
+    idle: HashMap<u64, (u32, Option<Instant>)>,
+    /// Since when every selectable connection has been under-used.
+    low_since: Option<Instant>,
 }
 
 struct H2Pool {
@@ -50,6 +71,14 @@ struct H2Pool {
     dialing: AtomicUsize,
     waiting: AtomicUsize,
     next_id: AtomicU64,
+    /// Connections in the snapshot (mirrors `handles.len()`; lets the hot path avoid loading the snapshot).
+    live: AtomicUsize,
+    /// Connections marked draining.
+    draining: AtomicUsize,
+    /// Nanoseconds since `OriginPool::epoch` of the last scale-up dial / of the last scale-up (or `NEVER`).
+    last_scale: AtomicU64,
+    last_up: AtomicU64,
+    reaper_running: AtomicBool,
     fail_gen: AtomicU64,
     fail: Mutex<Option<(ErrorKind, String)>>,
 }
@@ -59,6 +88,7 @@ pub(crate) struct OriginPool {
     shared: Arc<Shared>,
     proto: AtomicU8,
     me: Weak<OriginPool>,
+    epoch: Instant,
     h1: Mutex<H1State>,
     discover: tokio::sync::Mutex<()>,
     h2: H2Pool,
@@ -157,6 +187,7 @@ impl OriginPool {
             shared,
             proto: AtomicU8::new(P_UNKNOWN),
             me: me.clone(),
+            epoch: Instant::now(),
             h1: Mutex::new(H1State {
                 idle: Vec::new(),
                 waiters: Waiters::new(),
@@ -169,6 +200,11 @@ impl OriginPool {
                 dialing: AtomicUsize::new(0),
                 waiting: AtomicUsize::new(0),
                 next_id: AtomicU64::new(1),
+                live: AtomicUsize::new(0),
+                draining: AtomicUsize::new(0),
+                last_scale: AtomicU64::new(NEVER),
+                last_up: AtomicU64::new(NEVER),
+                reaper_running: AtomicBool::new(false),
                 fail_gen: AtomicU64::new(0),
                 fail: Mutex::new(None),
             },
@@ -187,6 +223,7 @@ impl OriginPool {
             h1_idle: st.idle.len(),
             h1_waiters: st.waiters.len(),
             h2_conns: self.h2.handles.load().len(),
+            h2_draining: self.h2.draining.load(Ordering::Acquire),
         }
     }
 
@@ -314,7 +351,7 @@ impl OriginPool {
                 self.release_slot();
                 let handle = r?;
                 self.proto.store(P_H2, Ordering::Release);
-                self.install_h2(handle);
+                self.install_h2(handle, ScaleReason::Min);
                 self.h2_ensure_min();
                 Ok(Dialed::H2)
             }
@@ -409,13 +446,20 @@ impl OriginPool {
 
     fn h2_try(&self, e: &H2Entry) -> Option<(H2Handle, StreamSlot)> {
         let h = &e.handle;
-        if !h.is_accepting() || h.in_flight() >= self.h2_limit(h) {
+        if e.is_draining() || !h.is_accepting() || h.in_flight() >= self.h2_limit(h) {
             return None;
         }
         h.try_reserve().map(|s| (h.clone(), s))
     }
 
+    /// Power-of-two-choices pick, then the autoscaling check on the chosen connection.
     fn h2_pick(&self) -> Option<(H2Handle, StreamSlot)> {
+        let r = self.h2_select()?;
+        self.h2_scale_check(&r.0);
+        Some(r)
+    }
+
+    fn h2_select(&self) -> Option<(H2Handle, StreamSlot)> {
         let snap = self.h2.handles.load();
         let n = snap.len();
         match n {
@@ -506,31 +550,105 @@ impl OriginPool {
         let want = waiting
             .div_ceil(self.shared.cfg.h2_target_streams_per_conn.max(1))
             .max(1);
-        if live + dialing < self.shared.cfg.max_conns_per_origin && dialing < want {
-            self.h2_spawn_dial();
+        if self.h2_undrain_one() {
+            return;
+        }
+        if live + dialing < self.h2_max() && dialing < want {
+            self.h2_spawn_dial(ScaleReason::Waiters);
         }
     }
 
+    fn h2_max(&self) -> usize {
+        self.shared.cfg.h2_max_conns_per_origin.max(1)
+    }
+
+    fn h2_min(&self) -> usize {
+        self.shared.cfg.h2_min_conns_per_origin.min(self.h2_max())
+    }
+
     fn h2_ensure_min(self: &Arc<Self>) {
-        let min = self
-            .shared
-            .cfg
-            .h2_min_conns_per_origin
-            .min(self.shared.cfg.max_conns_per_origin);
+        let min = self.h2_min();
         loop {
             let have = self.h2_live() + self.h2.dialing.load(Ordering::Acquire);
             if have >= min {
                 return;
             }
-            self.h2_spawn_dial();
+            self.h2_spawn_dial(ScaleReason::Min);
         }
     }
 
-    fn h2_spawn_dial(self: &Arc<Self>) {
+    fn now_ns(&self) -> u64 {
+        u64::try_from(self.epoch.elapsed().as_nanos()).unwrap_or(NEVER - 1)
+    }
+
+    /// Autoscaling check, run after a request picked `h` (and reserved a slot on it). Hot path: a handful of
+    /// relaxed loads unless the origin could still grow *and* `h` looks saturated; then one clock read.
+    /// The request itself never waits: at most one background dial is started.
+    fn h2_scale_check(&self, h: &H2Handle) {
+        let h2 = &self.h2;
+        if h2.dialing.load(Ordering::Relaxed) != 0 {
+            return;
+        }
+        let live = h2.live.load(Ordering::Relaxed);
+        if live >= self.h2_max() && h2.draining.load(Ordering::Relaxed) == 0 {
+            return;
+        }
+        let limit = self.h2_limit(h);
+        let th = &self.shared.cfg.h2_scale;
+        if !th.is_saturated(h.load_unchecked(), h.in_flight(), limit) {
+            return;
+        }
+        let now = self.now_ns();
+        let last = h2.last_scale.load(Ordering::Relaxed);
+        if last != NEVER && now.saturating_sub(last) < th.cooldown.as_nanos() as u64 {
+            return;
+        }
+        // Re-check with the staleness-aware signals (an actor that stopped ticking reads as idle).
+        if !th.is_saturated(h.load(), h.in_flight(), limit) {
+            return;
+        }
+        if h2
+            .last_scale
+            .compare_exchange(last, now, Ordering::AcqRel, Ordering::Relaxed)
+            .is_err()
+        {
+            return; // another request won the right to scale
+        }
+        h2.last_up.store(now, Ordering::Relaxed);
+        let Some(me) = self.me.upgrade() else { return };
+        if me.h2_undrain_one() {
+            return;
+        }
+        if live < me.h2_max() {
+            me.h2_spawn_dial(ScaleReason::Saturated);
+        }
+    }
+
+    /// Makes the newest draining connection selectable again (cheaper than dialing). True if one was.
+    fn h2_undrain_one(&self) -> bool {
+        if self.h2.draining.load(Ordering::Acquire) == 0 {
+            return false;
+        }
+        let snap = self.h2.handles.load();
+        for e in snap.iter().rev() {
+            if e.draining.swap(false, Ordering::AcqRel) {
+                self.h2.draining.fetch_sub(1, Ordering::AcqRel);
+                self.h2.notify.notify_waiters();
+                let n = snap.iter().filter(|e| !e.is_draining()).count();
+                self.shared
+                    .obs
+                    .pool_scaled(&self.key, n, ScaleReason::Saturated);
+                return true;
+            }
+        }
+        false
+    }
+
+    fn h2_spawn_dial(self: &Arc<Self>, reason: ScaleReason) {
         self.h2.dialing.fetch_add(1, Ordering::AcqRel);
         let me = Arc::clone(self);
         tokio::spawn(async move {
-            let r = me.h2_dial().await;
+            let r = me.h2_dial(reason).await;
             if let Err(e) = r {
                 *me.h2.fail.lock() = Some((e.kind(), e.to_string()));
                 me.h2.fail_gen.fetch_add(1, Ordering::AcqRel);
@@ -540,7 +658,7 @@ impl OriginPool {
         });
     }
 
-    async fn h2_dial(self: &Arc<Self>) -> Result<()> {
+    async fn h2_dial(self: &Arc<Self>, reason: ScaleReason) -> Result<()> {
         let sh = &self.shared;
         let Connected { io, protocol } = connect(&self.key, &sh.connect, &*sh.obs).await?;
         if protocol != Protocol::Http2 {
@@ -548,40 +666,195 @@ impl OriginPool {
         }
         let handle =
             h2::handshake(io, self.key.clone(), sh.h2.clone(), Arc::clone(&sh.obs)).await?;
-        self.install_h2(handle);
+        self.install_h2(handle, reason);
         Ok(())
     }
 
-    fn install_h2(self: &Arc<Self>, handle: H2Handle) {
+    fn h2_publish_counts(&self) {
+        let snap = self.h2.handles.load();
+        self.h2.live.store(snap.len(), Ordering::Release);
+        let d = snap.iter().filter(|e| e.is_draining()).count();
+        self.h2.draining.store(d, Ordering::Release);
+    }
+
+    fn install_h2(self: &Arc<Self>, handle: H2Handle, reason: ScaleReason) {
         let id = self.h2.next_id.fetch_add(1, Ordering::Relaxed);
-        let entry = Arc::new(H2Entry { id, handle });
+        let entry = Arc::new(H2Entry {
+            id,
+            handle,
+            draining: AtomicBool::new(false),
+        });
         self.h2.handles.rcu(|cur| {
             let mut v = Vec::clone(cur);
             v.push(Arc::clone(&entry));
             v
         });
+        self.h2_publish_counts();
         self.shared
             .obs
             .connection_opened(&self.key, Protocol::Http2);
+        self.shared
+            .obs
+            .pool_scaled(&self.key, self.h2.live.load(Ordering::Acquire), reason);
         self.h2.notify.notify_waiters();
         let me = Arc::downgrade(self);
         let opened = Instant::now();
-        let handle = entry.handle.clone();
+        // Only the close notification is captured: holding an `H2Handle` here would keep the actor's inbox
+        // open and defeat the graceful close of retired connections.
+        let closed = entry.handle.closed();
+        drop(entry);
         tokio::spawn(async move {
-            handle.closed().await;
+            closed.await;
             let Some(me) = me.upgrade() else { return };
-            me.h2.handles.rcu(|cur| {
-                cur.iter()
-                    .filter(|e| e.id != id)
-                    .cloned()
-                    .collect::<Vec<_>>()
-            });
+            me.h2_remove(id);
             me.shared
                 .obs
                 .connection_closed(&me.key, Protocol::Http2, opened.elapsed());
             me.h2.notify.notify_waiters();
             me.h2_ensure_min();
         });
+        self.h2_ensure_reaper();
+    }
+
+    fn h2_remove(&self, id: u64) {
+        self.h2.handles.rcu(|cur| {
+            cur.iter()
+                .filter(|e| e.id != id)
+                .cloned()
+                .collect::<Vec<_>>()
+        });
+        self.h2_publish_counts();
+    }
+
+    // ---- scale-down --------------------------------------------------------------------------
+
+    fn h2_ensure_reaper(self: &Arc<Self>) {
+        if self.h2.reaper_running.swap(true, Ordering::AcqRel) {
+            return;
+        }
+        let me = Arc::downgrade(self);
+        let tick = scale::reap_tick(self.shared.cfg.idle_timeout);
+        tokio::spawn(async move {
+            let mut st = Reap {
+                idle: HashMap::new(),
+                low_since: None,
+            };
+            loop {
+                tokio::time::sleep(tick).await;
+                let Some(op) = me.upgrade() else { return };
+                if !op.h2_reap(&mut st) {
+                    op.h2.reaper_running.store(false, Ordering::Release);
+                    // A connection may have been installed between the check and the store.
+                    if op.h2.live.load(Ordering::Acquire) > 0
+                        && !op.h2.reaper_running.swap(true, Ordering::AcqRel)
+                    {
+                        continue;
+                    }
+                    return;
+                }
+            }
+        });
+    }
+
+    /// One maintenance tick. Returns false when the origin has no connections left.
+    ///
+    /// * A connection with no open stream (and none opened since the last tick) for `idle_timeout` is retired,
+    ///   newest first, down to `h2_min_conns_per_origin`. Retired = removed from the snapshot; when the last
+    ///   in-flight request lets go of its handle the actor sends GOAWAY(NO_ERROR) and exits.
+    /// * A draining connection is retired as soon as it has no streams.
+    /// * When every selectable connection has been under-used for [`scale::DRAIN_AFTER_LOW`] (and nothing was
+    ///   scaled up recently) the newest one is marked draining.
+    fn h2_reap(&self, st: &mut Reap) -> bool {
+        let snap = self.h2.handles.load_full();
+        if snap.is_empty() {
+            return false;
+        }
+        let now = Instant::now();
+        let min = self.h2_min().max(1);
+        st.idle.retain(|id, _| snap.iter().any(|e| e.id == *id));
+        for e in snap.iter() {
+            let opened = e.handle.streams_opened();
+            let s = st.idle.entry(e.id).or_insert((opened, None));
+            if e.handle.in_flight() == 0 && s.0 == opened {
+                s.1.get_or_insert(now);
+            } else {
+                s.1 = None;
+            }
+            s.0 = opened;
+        }
+
+        if std::env::var_os("MATIER_DBG").is_some() {
+            for e in snap.iter() {
+                eprintln!(
+                    "DBG id={} inflight={} load={:?}",
+                    e.id,
+                    e.handle.in_flight(),
+                    e.handle.load_unchecked()
+                );
+            }
+        }
+        let mut n = snap.len();
+        let mut retired = false;
+        for e in snap.iter().rev() {
+            if n <= min {
+                break;
+            }
+            let idle = st.idle[&e.id]
+                .1
+                .is_some_and(|t| now.duration_since(t) >= self.shared.cfg.idle_timeout);
+            let drained = e.is_draining() && e.handle.in_flight() == 0;
+            if drained || idle {
+                self.h2_remove(e.id);
+                n -= 1;
+                retired = true;
+                if !drained {
+                    self.shared.obs.pool_scaled(&self.key, n, ScaleReason::Idle);
+                }
+            }
+        }
+        if retired {
+            st.low_since = None;
+            return true;
+        }
+
+        let sel: Vec<&Arc<H2Entry>> = snap
+            .iter()
+            .filter(|e| !e.is_draining() && e.handle.is_accepting())
+            .collect();
+        if sel.len() <= min {
+            st.low_since = None;
+            return true;
+        }
+        let busy: Vec<u32> = sel
+            .iter()
+            .map(|e| {
+                if e.handle.in_flight() == 0 {
+                    0
+                } else {
+                    e.handle.load().busy_permille
+                }
+            })
+            .collect();
+        let last_up = self.h2.last_up.load(Ordering::Relaxed);
+        let held_off = last_up != NEVER
+            && self.now_ns().saturating_sub(last_up)
+                < scale::DRAIN_HOLDOFF_AFTER_SCALE_UP.as_nanos() as u64;
+        if held_off || !scale::can_drain(&busy) {
+            st.low_since = None;
+            return true;
+        }
+        let since = *st.low_since.get_or_insert(now);
+        if now.duration_since(since) >= scale::DRAIN_AFTER_LOW
+            && let Some(e) = sel.last()
+        {
+            e.draining.store(true, Ordering::Release);
+            self.h2_publish_counts();
+            st.low_since = None;
+            self.shared
+                .obs
+                .pool_scaled(&self.key, sel.len() - 1, ScaleReason::Underused);
+        }
+        true
     }
 }
 

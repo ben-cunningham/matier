@@ -351,6 +351,7 @@ fn observer_records_everything() {
     obs.h2_goaway(&o, 0xb);
     obs.h2_rst_stream(&o, 0x8, true);
     obs.pool_waiters(&o, 3);
+    obs.pool_scaled(&o, 4, matier_core::ScaleReason::Saturated);
 
     let q = one(&p, &e, "http.client.request.time_in_queue");
     assert_eq!(
@@ -411,6 +412,12 @@ fn observer_records_everything() {
         ("CANCEL", "sent")
     );
     assert_eq!(one(&p, &e, "matier.pool.waiters").sum, 3.0);
+    assert_eq!(one(&p, &e, "matier.pool.connections").sum, 4.0);
+    let se = one(&p, &e, "matier.pool.scale_events");
+    assert_eq!(
+        (se.sum, se.attrs["matier.pool.scale_reason"].as_str()),
+        (1.0, "saturated")
+    );
     assert_eq!(obs.cache().len(), 1);
 }
 

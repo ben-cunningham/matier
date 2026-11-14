@@ -55,6 +55,10 @@ pub struct SubjectConfig {
     pub pool_size: usize,
     /// Pool selection for `fetch-pooled`.
     pub pool_selection: PoolSelection,
+    /// `matier` only: explicit `h2_min_conns_per_origin`. `None` = the zero-config autoscaling pool.
+    pub matier_min_conns: Option<usize>,
+    /// `matier`: explicit `h2_max_conns_per_origin` (e.g. 1 to force a single HTTP/2 connection).
+    pub matier_max_conns: Option<usize>,
 }
 
 /// Enum dispatch over the compiled-in subjects.

@@ -85,6 +85,13 @@ struct RunArgs {
     /// Pool selection for `fetch-pooled`.
     #[arg(long, value_enum, default_value = "round-robin")]
     pool_selection: PoolSelection,
+    /// `matier` subject: pin `h2_min_conns_per_origin` (default: unset = zero-config autoscaling pool;
+    /// `--pool-size` does not affect `matier`).
+    #[arg(long)]
+    matier_min_conns: Option<usize>,
+    /// `matier` subject: pin `h2_max_conns_per_origin` (1 forces a single HTTP/2 connection).
+    #[arg(long)]
+    matier_max_conns: Option<usize>,
     #[arg(long, value_enum, default_value = "closed")]
     load: LoadKind,
     #[arg(long, default_value_t = 64)]
@@ -148,6 +155,8 @@ fn main() -> Result<ExitCode> {
                 ca_cert: a.ca_cert,
                 pool_size: a.pool_size,
                 pool_selection: a.pool_selection,
+                matier_min_conns: a.matier_min_conns,
+                matier_max_conns: a.matier_max_conns,
                 url,
                 method: a.method,
                 path: a.path,

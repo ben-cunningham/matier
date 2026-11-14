@@ -24,6 +24,35 @@ impl ConnectPhase {
     }
 }
 
+/// Why the pool changed the number of connections to an origin (see `Observer::pool_scaled`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub enum ScaleReason {
+    /// A connection was saturated (busy actor, dispatch delay, full of streams): one more was dialed.
+    Saturated,
+    /// Requests were waiting for a stream slot and a connection was dialed for them.
+    Waiters,
+    /// Dialed to (re-)establish `h2_min_conns_per_origin`.
+    Min,
+    /// A connection with no streams for `idle_timeout` was closed.
+    Idle,
+    /// The origin was underused and one connection was drained and closed.
+    Underused,
+}
+
+impl ScaleReason {
+    /// Stable lowercase name.
+    #[must_use]
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Saturated => "saturated",
+            Self::Waiters => "waiters",
+            Self::Min => "min",
+            Self::Idle => "idle",
+            Self::Underused => "underused",
+        }
+    }
+}
+
 /// Instrumentation hooks. All methods default to no-ops; `matier-otel` implements them.
 /// Called on hot paths: implementations must not block or allocate per call where avoidable.
 #[allow(unused_variables, reason = "default no-op bodies")]
@@ -46,6 +75,9 @@ pub trait Observer: Send + Sync + 'static {
     fn h2_goaway(&self, o: &OriginKey, code: u32) {}
     fn h2_rst_stream(&self, o: &OriginKey, code: u32, sent: bool) {}
     fn pool_waiters(&self, o: &OriginKey, n: usize) {}
+    /// The pool changed the HTTP/2 connection count of `o`; `conns` is the new number of live connections.
+    /// Rare (at most a few per second); called from pool tasks, never from the request hot path.
+    fn pool_scaled(&self, o: &OriginKey, conns: usize, reason: ScaleReason) {}
 }
 
 /// The default observer: does nothing, `enabled()` is false.
