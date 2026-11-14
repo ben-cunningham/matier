@@ -1,0 +1,60 @@
+# Default benchmark matrix (~112 runs x ~4s ~= 7.5 minutes).
+# Run with: scripts/bench.sh bench/matrix.toml <name>
+url = "http://127.0.0.1:8080"
+tls_url = "https://127.0.0.1:8443"
+ca_cert = "target/bench-server-cert.pem"
+warmup = "500ms"
+duration = "3s"
+cooldown = "500ms"
+# worker_threads = 5   # default: half the CPUs
+
+# Small/medium responses across concurrency levels.
+[[group]]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled"]
+protocols = ["h1", "h2"]
+concurrency = [1, 64, 512]
+resp_sizes = [64, 16384]
+pool_size = 4
+
+# Large responses: fewer combinations.
+[[group]]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled"]
+protocols = ["h1", "h2"]
+concurrency = [1, 64]
+resp_sizes = [1048576]
+pool_size = 4
+
+# POST echo with a 64 KiB request body.
+[[group]]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled"]
+protocols = ["h1", "h2"]
+concurrency = [64]
+method = "POST"
+path = "/echo"
+req_sizes = [65536]
+pool_size = 4
+
+# Open loop at a fixed arrival rate (coordinated-omission-correct latency).
+[[group]]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled"]
+protocols = ["h1", "h2"]
+rates = [20000.0]
+max_inflight = 4096
+resp_sizes = [1024]
+pool_size = 4
+
+# TLS (ALPN) sanity.
+[[group]]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled"]
+protocols = ["h1", "h2"]
+tls = [true]
+concurrency = [64]
+resp_sizes = [16384]
+pool_size = 4
+
+# fetch with its default Standard pipeline (retry/timeouts/metrics) to show layer overhead.
+[[group]]
+subjects = ["fetch-standard"]
+protocols = ["h1", "h2"]
+concurrency = [64]
+resp_sizes = [16384]

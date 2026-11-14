@@ -1,0 +1,48 @@
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+exclude = ["crates/h1/fuzz", "crates/h2/fuzz"]
+
+[workspace.package]
+edition = "2024"
+license = "MIT"
+rust-version = "1.95"
+publish = false
+
+[workspace.dependencies]
+tokio = { version = "1.54", features = ["rt-multi-thread", "net", "io-util", "time", "macros", "sync"] }
+bytes = "1.12"
+http = "1.5"
+anyhow = "1"
+clap = { version = "4.6", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hdrhistogram = "7.6"
+rustls = { version = "0.23", default-features = false, features = ["aws_lc_rs", "std", "tls12"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["aws_lc_rs", "tls12"] }
+rcgen = "0.14"
+# Comparison subjects for benchmarking only.
+hyper = "1.12"
+hyper-util = "0.1.21"
+http-body-util = "0.1.5"
+reqwest = { version = "0.13", default-features = false }
+hyper-rustls = { version = "0.27", default-features = false }
+libc = "0.2"
+toml = "0.9"
+criterion = { version = "0.8", default-features = false, features = ["cargo_bench_support"] }
+proptest = "1.12"
+httparse = "1.10"
+bytesbuf = { version = "=0.14.0", features = ["bytes-compat"] }
+layered = "=0.3.9"
+http-body = "1"
+socket2 = "0.6"
+rustls-platform-verifier = "0.7"
+webpki-roots = "1"
+
+[profile.release]
+debug = 1          # symbols for profiling/flamegraphs
+codegen-units = 1
+lto = "thin"
+
+[profile.bench]
+inherits = "release"

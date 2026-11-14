@@ -1,0 +1,7 @@
+/target
+/bench-results/*.json
+!/bench-results/baseline/
+*.svg
+perf.data*
+.DS_Store
+/.claude/

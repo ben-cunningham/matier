@@ -1,0 +1,26 @@
+[package]
+name = "matier-h1-fuzz"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+[package.metadata]
+cargo-fuzz = true
+
+[dependencies]
+libfuzzer-sys = "0.4"
+matier-h1 = { path = ".." }
+
+[workspace]
+
+[[bin]]
+name = "parse_response_head"
+path = "fuzz_targets/parse_response_head.rs"
+test = false
+doc = false
+
+[[bin]]
+name = "chunked_decode"
+path = "fuzz_targets/chunked_decode.rs"
+test = false
+doc = false
