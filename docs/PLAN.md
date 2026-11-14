@@ -326,6 +326,11 @@ total_metrics → total_timeout → retry | hedging → attempt_timeout → redi
 → attempt_metrics → Dispatch (validation, scheme policy) → Transport (pool)
 ```
 
+**Future size budget** (from fetch's practice): every layer's `execute` returns a hand-written future (pin-project-lite) or a
+`futures-util` combinator rather than an `async` block, so a layer adds only its own fields and stacks don't nest generated
+state machines. Requests are moved into the connection or command early. A test asserts each public future is ≤ 1024 bytes;
+growth fails CI.
+
 **Backpressure** is explicit because there is no `poll_ready`: an optional `ConcurrencyLimit` layer awaits a permit, pool waits are bounded with
 timeouts, and H2 slot waits happen inside `execute`, all of which feed `time_in_queue`.
 

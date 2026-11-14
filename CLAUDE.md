@@ -17,7 +17,12 @@ multi-core throughput, tail latency and allocations. Start with `docs/PLAN.md`; 
 4. Reading never waits on writing. Per-tick work is bounded (frames, commands, bytes).
 5. No copies of body bytes on the send path (iovecs over caller `BytesView`s). Receive-path bodies are slices of read buffers. Header heads are copied once.
 6. Sans-IO crates stay free of tokio and I/O.
-7. Windows (x86_64-pc-windows-msvc) is tier 1: no `libc` or unix-only APIs outside `cfg(unix)`; use `socket2`.
+7. **Small futures.** Public and hot-path futures (`Client::send`, `Service::execute` in every layer, `Pool::send`, `H1Conn::send`,
+   `H2Handle::send`) are hand-written `Future` types (pin-project-lite) or `futures-util` combinators, not `async fn`/async blocks.
+   Generated state machines balloon and nest across layers. A layer's future adds only its own fields to the inner future.
+   Move `Request<Body>` into the connection or command early rather than holding it across awaits (`Body` is ~272 B).
+   `tests/future_sizes.rs` asserts every such future is ≤ 1024 bytes; a growth beyond that is a regression.
+8. Windows (x86_64-pc-windows-msvc) is tier 1: no `libc` or unix-only APIs outside `cfg(unix)`; use `socket2`.
 
 ## Commands
 - Build/test: `cargo test --workspace`; lint: `cargo clippy --workspace --all-targets -- -D warnings`; `cargo fmt --all`.
