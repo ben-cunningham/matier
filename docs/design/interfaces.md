@@ -90,6 +90,19 @@ Per-request options (in `http::Extensions`): `ResponseTimeout(Duration)`, `BodyT
 `Priority { urgency: u8, incremental: bool }` (RFC 9218), `TelemetryAttributes(Vec<KeyValueLike>)` (defined in matier-otel),
 `UriTemplate(&'static str)`. Response-side extension: `ConnectionInfo { protocol, reused: bool, conn_id: u64 }`.
 
+### Implementation notes (matier-core, as built)
+
+Deviations from the sketch above:
+- `bytesbuf` is pinned `=0.14.0` with feature `bytes-compat` (gives `BytesView: bytes::Buf` incl. `chunks_vectored`, `BytesBuf: BufMut`). `layered` pinned `=0.3.9`. No `Chunk` newtype is needed: `buf::Chunk = BytesView`.
+- `buf::memory()` returns the concrete `GlobalPool` (a clone of a `thread_local!` pool), not `impl Memory`. Extra facade fns: `copy_from_slice`, `to_bytes`, `io_slices(&view, &mut [IoSlice]) -> usize`.
+- `buf::from_static` goes through `Bytes::from_static` (bytesbuf has no `From<&'static [u8]>`): zero-copy but one small allocation, like `from_bytes`.
+- `Body::full` maps an empty view to `Body::Empty`. `Body: Default (Empty)`. `Body` is ~272 bytes because `BytesView` inlines 8 spans (clippy `large_enum_variant` allowed); pass `Request<Body>` by move, not by clone.
+- `Body::channel` uses `tokio::sync::mpsc` (v0). `BodySender::send` skips empty chunks and returns `Canceled` if the receiver is gone. Dropping a `BodySender` without `finish()` yields a `Canceled` error to the reader (a dying producer can never look like a complete body). `abort` delivers already-queued chunks first, then the error. Added `BodySender::is_closed`.
+- `Error` has a private layout; constructors: `new(kind, recovery)` (no allocation), `with_source`, `connect`, `dns`, `tls` (Never), `io` (Retryable), `protocol` (Never), `invalid_request`, `timeout`, `canceled`, `closed`, `pool_timeout`, `unprocessed(kind, src)`, `retryable(kind, src)`, `unavailable(kind, retry_after)`, `with_recovery`. `Display` prints one level only; walk `source()`. `ErrorKind::label()` is also public. Labels: `connect tls dns timeout protocol io canceled body_write body_read pool_timeout invalid_request closed`.
+- `OriginKey.host` is lowercased and keeps IPv6 brackets (`[::1]`) so it can go straight into a `Host` header; use `connect_host()` (brackets stripped) for DNS/SNI. Also `is_tls()`, `Display` (`https://host:443`). `Scheme::{default_port, as_str}`, `Protocol`, `ConnectPhase::as_str`.
+- Extension types: `ResponseTimeout`, `BodyTimeout`, `Priority::{new, default}` (default urgency 3), `UriTemplate`, `ConnectionInfo`. `TelemetryAttributes` lives in matier-otel.
+
+
 ## matier-transport
 
 ```rust
@@ -149,6 +162,16 @@ pub mod h2 {
     pub struct RecvStream { /* Arc<StreamShared> */ }   // SPSC of BytesView + window release on consume
 }
 ```
+
+### Implementation notes (matier-transport connect/TLS, as built)
+
+- Features: `aws-lc-rs` (default) or `ring` selects the rustls provider (`tls::default_provider()`); `webpki-roots` (off) enables `TlsConfig::with_webpki_roots`. matier-transport declares its own `rustls`/`tokio-rustls` deps (no provider features) instead of the workspace ones so `ring` is selectable.
+- `TlsConfig` additionally holds a private http/1.1-only sibling config (shares session cache + verifier) used when `ConnectConfig::alpn_h2 == false`; build via the constructors or `TlsConfig::from_rustls(ClientConfig)` (overwrites ALPN). Default rustls session resumption (256-entry in-memory cache, tickets) and rustls' default PQ hybrid key exchange (aws-lc-rs only) are kept.
+- `ConnectConfig: Default` (10 s timeout, nodelay, keepalive 60 s, no TLS). `connect_timeout` applies separately to DNS, each TCP attempt and the TLS handshake. `https` without `tls` -> `InvalidRequest`. IP-literal hosts skip DNS (no `Dns` phase reported).
+- Error classification: DNS/TCP failures and timeouts -> `Unprocessed` (kinds `Dns` / `Connect` / `Timeout`); TLS handshake I/O failure -> `Unprocessed`/`Tls`; rustls-level failure (bad cert etc.) -> `Never`/`Tls`.
+- `Io` also has `tcp() -> &TcpStream` and `alpn_protocol()`. `is_write_vectored()` is always true.
+- `Incoming`, `h1::*`, `h2::*` are not implemented yet (`src/h1/mod.rs`, `src/h2/mod.rs` are stubs).
+
 
 ## matier-pool
 
