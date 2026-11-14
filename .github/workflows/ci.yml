@@ -55,6 +55,7 @@ jobs:
         if: runner.os == 'Windows'
         uses: ilammy/setup-nasm@v1
       # Shared runners are noisy: this checks the harness runs end to end, it does not gate on performance.
+      - run: cargo build --release -p matier-bench -p matier-bench-server
       - run: cargo run --release -p matier-bench -- matrix --config bench/quick.toml --spawn-server --out bench-results/ci-${{ matrix.os }}.json
       - uses: actions/upload-artifact@v4
         with:
