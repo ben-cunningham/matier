@@ -1,0 +1,23 @@
+# Verification matrix: longer runs than quick.toml (~6 min). Run: scripts/bench.sh bench/verify.toml verify
+url = "http://127.0.0.1:8080"
+tls_url = "https://127.0.0.1:8443"
+ca_cert = "target/bench-server-cert.pem"
+warmup = "1s"
+duration = "5s"
+cooldown = "500ms"
+
+# Multi-connection: matier's default pool vs. the pooled workarounds.
+[[group]]
+subjects = ["matier", "hyper-legacy", "hyper-pooled", "fetch", "fetch-pooled"]
+protocols = ["h1", "h2"]
+concurrency = [64, 256]
+resp_sizes = [1024, 65536]
+pool_size = 4
+
+# Single HTTP/2 connection: isolates the per-connection design (matier actor vs hyper/h2 big mutex).
+[[group]]
+subjects = ["matier", "hyper-legacy", "fetch"]
+protocols = ["h2"]
+concurrency = [64]
+resp_sizes = [1024, 65536]
+pool_size = 1
