@@ -7,14 +7,14 @@ duration = "1500ms"
 cooldown = "200ms"
 
 [[group]]
-subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-standard", "fetch-pooled"]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-standard", "fetch-pooled", "matier"]
 protocols = ["h1", "h2"]
 concurrency = [64]
 resp_sizes = [1024]
 pool_size = 4
 
 [[group]]
-subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-standard", "fetch-pooled"]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-standard", "fetch-pooled", "matier"]
 protocols = ["h2"]
 tls = [true]
 concurrency = [64]
@@ -22,7 +22,7 @@ resp_sizes = [1024]
 pool_size = 4
 
 [[group]]
-subjects = ["hyper-legacy", "reqwest", "fetch", "fetch-pooled"]
+subjects = ["hyper-legacy", "reqwest", "fetch", "fetch-pooled", "matier"]
 protocols = ["h1"]
 tls = [true]
 concurrency = [64]
@@ -30,7 +30,7 @@ resp_sizes = [1024]
 pool_size = 4
 
 [[group]]
-subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch"]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "matier"]
 protocols = ["h1"]
 rates = [10000.0]
 resp_sizes = [1024]

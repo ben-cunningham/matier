@@ -178,3 +178,35 @@ async fn send(&self, slot: StreamSlot, req: Request<Body>) -> Result<Response<In
 - **Unit:** an actor driven over `tokio::io::duplex` against a scripted fake peer (written with the matier-h2 codec). Cover: settings exchange, 1/100/10k concurrent streams, flow-control stalls and resumption, INITIAL_WINDOW_SIZE decrease making windows negative, GOAWAY mid-flight (Unprocessed vs Retryable), RST_STREAM REFUSED, cancellation sending RST, CONTINUATION flood → GOAWAY, PING ack, a blocked writer with continued reading (no deadlock: h2#975 scenario).
 - **loom:** `StreamShared` head-slot handoff, recv queue + waker, QUEUED-flag dedup, slot accounting.
 - **Interop:** against the hyper server in `matier-bench-server` (h2c and TLS), and the Go server when available.
+
+## As built (v0)
+
+Code: `crates/transport/src/h2/` — `mod.rs` (public API, `ResponseFuture`, `RecvStream`, upload `Pump`), `actor.rs` (Reader, Core, Actor, handshake),
+`shared.rs` (`ConnShared`, `StreamShared`), `write.rs` (`WriteQueue`), `sync.rs` (std/loom shim), `tests.rs`, `loom_tests.rs`;
+integration tests in `crates/transport/tests/h2_interop.rs` (real hyper server, h2c + TLS) and `h2_future_sizes.rs`.
+
+Follows the blueprint; deviations and additions:
+- **`H2Handle::send` is not `async`.** It moves the request into `Command::Open` synchronously and returns `ResponseFuture` (16 bytes, `'static`, `Send`):
+  `Option<Arc<StreamShared>>` + `Option<Box<Error>>`. Dropping it before the head arrives cancels the request. Upload pumps are a hand-written `Pump` future.
+- **Inbox** is `tokio::sync::mpsc::unbounded_channel`. `ConnShared` does *not* hold the sender (otherwise the actor's own `Arc<ConnShared>` would keep the
+  channel open); `H2Handle` = `Arc<ConnShared>` + sender, and each `StreamShared` holds a sender clone for `Ready`. When every handle and stream is gone the actor sends GOAWAY(NO_ERROR) and exits.
+- **Queues carry boxed payloads.** `RecvEvent`/`SendEvent` hold `Box<BytesView>` etc. (16-byte events): `SegQueue` allocates 31-slot blocks, and a 272-byte `BytesView`
+  slot would make that a ~9 KiB zeroed allocation per stream. Cost: one small allocation per DATA chunk (candidate for a per-stream inline slot later).
+- **Read path.** `Reader` = pooled `BytesBuf` (64 KiB blocks, `buf::memory()` re-fetched per block so the thread-local pool follows the task) + a `peek()` view for parsing.
+  DATA frames are parsed by hand (header only) and sliced with `consume` => zero-copy even when the payload spans blocks. Non-DATA frames go through `decode_frame` on the
+  contiguous bytes; if one straddles two blocks it is copied into a small scratch `Vec` (<= MAX_FRAME_SIZE; control/header frames only). Parsed non-DATA bytes are consumed lazily in one batch (`skip`).
+  The only `unsafe` is `BytesBuf::advance` after `ReadBuf::filled()` (commented).
+- **Header blocks** are copied once into a shared `BytesMut` (split + freeze, so HPACK values are slices of it). CONTINUATION reassembly is bounded: 32 frames and 2x MAX_HEADER_LIST_SIZE, else ENHANCE_YOUR_CALM.
+- **Flow control.** Connection recv window is credited on receipt after each read burst, gated by `buffered <= buffered_budget` (= `initial_conn_window`).
+  `buffered` is decremented from consumer reports. Consumers report (`Ready`) when consumed >= `min(window/4, 32 KiB)`, at end of body, and on cancel; without the 32 KiB cap and
+  end-of-body flush, bytes consumed below the threshold were never reported and the budget leaked, stalling the connection after ~budget bytes (regression test `many_small_responses_never_stall_the_connection_window`).
+  Stream windows use `RecvWindow`'s 25% policy on the actor side. INITIAL_WINDOW_SIZE increases check overflow by iterating live streams (rare) rather than tracking a max offset.
+- **Write path.** As blueprint. Control frames are encoded straight into the arena in arrival order (ahead of any not-yet-scheduled DATA, behind already-queued bytes; DATA scheduling stops at 256 KiB queued).
+  Reads pause only if >1 MiB is queued unwritten; commands pause at 4 MiB. Small payloads (<= 256 B) are copied into the arena.
+- **Completed-early responses**: if the server ends the response before our request body is done, we send RST_STREAM(NO_ERROR) and drop the stream (RFC 9113 8.1).
+- **Errors.** Stream/connection failure => `Retryable` if the stream's HEADERS were fully written, else `Unprocessed`; GOAWAY above last_stream_id and REFUSED_STREAM => `Unprocessed`;
+  RST codes CANCEL/INTERNAL/NO_ERROR/STREAM_CLOSED/CONNECT => `Retryable`, others `Never`.
+- **Extras in `H2Config`:** `keepalive_timeout`, `handshake_timeout`, `connection_info` (attach `ConnectionInfo`; costs ~3 allocations, the pool may prefer to do it).
+- **loom.** `--cfg matier_loom` (not `loom`: tokio disables `net` under `cfg(loom)`). `sync.rs` swaps atomics/Arc/Mutex/AtomicWaker/queue; models: head handoff (value and error), recv queue + waker, QUEUED dedup,
+  cancel vs push accounting, send-credit wakeup, slot accounting. `RUSTFLAGS="--cfg matier_loom" cargo test -p matier-transport --lib --release loom_` (use a separate `CARGO_TARGET_DIR`).
+- Not done: RFC 9218 priority scheduling (round-robin only), BDP estimation, per-connection free list for `StreamShared`, custom MPSC inbox, `Expect: 100-continue` wake, content-length validation of responses.

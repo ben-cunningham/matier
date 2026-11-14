@@ -10,7 +10,7 @@ cooldown = "500ms"
 
 # Small/medium responses across concurrency levels.
 [[group]]
-subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled"]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled", "matier"]
 protocols = ["h1", "h2"]
 concurrency = [1, 64, 512]
 resp_sizes = [64, 16384]
@@ -18,7 +18,7 @@ pool_size = 4
 
 # Large responses: fewer combinations.
 [[group]]
-subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled"]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled", "matier"]
 protocols = ["h1", "h2"]
 concurrency = [1, 64]
 resp_sizes = [1048576]
@@ -26,7 +26,7 @@ pool_size = 4
 
 # POST echo with a 64 KiB request body.
 [[group]]
-subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled"]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled", "matier"]
 protocols = ["h1", "h2"]
 concurrency = [64]
 method = "POST"
@@ -36,7 +36,7 @@ pool_size = 4
 
 # Open loop at a fixed arrival rate (coordinated-omission-correct latency).
 [[group]]
-subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled"]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled", "matier"]
 protocols = ["h1", "h2"]
 rates = [20000.0]
 max_inflight = 4096
@@ -45,7 +45,7 @@ pool_size = 4
 
 # TLS (ALPN) sanity.
 [[group]]
-subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled"]
+subjects = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "fetch-pooled", "matier"]
 protocols = ["h1", "h2"]
 tls = [true]
 concurrency = [64]

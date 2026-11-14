@@ -38,6 +38,11 @@ http-body = "1"
 socket2 = "0.6"
 rustls-platform-verifier = "0.7"
 webpki-roots = "1"
+opentelemetry = { version = "0.33", default-features = false, features = ["metrics", "trace"] }
+opentelemetry_sdk = { version = "0.33", default-features = false, features = ["metrics", "trace", "testing"] }
+pin-project-lite = "0.2"
+smallvec = "1"
+papaya = "0.2"
 
 [profile.release]
 debug = 1          # symbols for profiling/flamegraphs

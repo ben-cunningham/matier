@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  test:
+    name: test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: Install NASM (Windows, for aws-lc-sys)
+        if: runner.os == 'Windows'
+        uses: ilammy/setup-nasm@v1
+      - run: cargo fmt --all -- --check
+        if: runner.os == 'Linux'
+      - run: cargo clippy --workspace --all-targets
+      - run: cargo test --workspace
+
+  msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.95
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo check --workspace --exclude matier-bench --exclude matier-bench-server
+
+  bench-smoke:
+    name: bench smoke (${{ matrix.os }})
+    needs: test
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Install NASM (Windows, for aws-lc-sys)
+        if: runner.os == 'Windows'
+        uses: ilammy/setup-nasm@v1
+      # Shared runners are noisy: this checks the harness runs end to end, it does not gate on performance.
+      - run: cargo run --release -p matier-bench -- matrix --config bench/quick.toml --spawn-server --out bench-results/ci-${{ matrix.os }}.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-${{ matrix.os }}
+          path: bench-results/ci-*.json

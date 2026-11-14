@@ -16,12 +16,14 @@ name = "matier-bench"
 path = "src/main.rs"
 
 [features]
-default = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "count-allocs"]
+default = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "matier", "count-allocs"]
 hyper-legacy = ["dep:hyper", "dep:hyper-util", "dep:http-body-util", "dep:hyper-rustls", "dep:rustls"]
 hyper-pooled = ["hyper-legacy"]
 reqwest = ["dep:reqwest", "dep:rustls"]
 # Microsoft oxidizer `fetch` (subjects: fetch, fetch-standard, fetch-pooled).
 fetch = ["dep:fetch", "dep:http-body-util", "dep:rustls"]
+# The Matier client under development (this repo).
+matier = ["dep:matier", "dep:http-body"]
 # Install a counting global allocator in the binary (adds a few ns per allocation).
 count-allocs = []
 
@@ -42,6 +44,8 @@ http-body-util = { workspace = true, optional = true }
 hyper-rustls = { workspace = true, optional = true, features = ["http1", "http2", "aws-lc-rs"] }
 rustls = { workspace = true, optional = true }
 reqwest = { workspace = true, optional = true, features = ["rustls", "http2"] }
+matier = { path = "../matier", optional = true }
+http-body = { workspace = true, optional = true }
 fetch = { version = "0.21.0", optional = true, features = ["tokio", "rustls"] }
 
 [target.'cfg(unix)'.dependencies]

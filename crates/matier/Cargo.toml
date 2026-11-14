@@ -1,0 +1,20 @@
+[package]
+name = "matier"
+version = "0.0.0"
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+publish.workspace = true
+description = "Matier: a high-performance HTTP/1.1 + HTTP/2 client for tokio"
+
+[dependencies]
+matier-core = { path = "../core" }
+matier-transport = { path = "../transport" }
+matier-pool = { path = "../pool" }
+http = { workspace = true }
+futures-util = { version = "0.3", default-features = false }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["rt-multi-thread", "net", "io-util", "time", "macros", "sync"] }
+http-body = { workspace = true }
+http-body-util = { workspace = true }

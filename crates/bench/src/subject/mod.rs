@@ -13,6 +13,8 @@ pub mod fetch_client;
 pub mod hyper_legacy;
 #[cfg(feature = "hyper-pooled")]
 pub mod hyper_pooled;
+#[cfg(feature = "matier")]
+pub mod matier_client;
 #[cfg(feature = "reqwest")]
 pub mod reqwest_client;
 
@@ -43,7 +45,7 @@ pub trait Subject: Send + Sync + 'static {
 /// Options shared by all subject factories.
 #[derive(Clone, Debug)]
 pub struct SubjectConfig {
-    /// Subject name: `hyper-legacy`, `hyper-pooled`, `reqwest`, `fetch`, `fetch-standard`, `fetch-pooled`.
+    /// Subject name: `hyper-legacy`, `hyper-pooled`, `reqwest`, `fetch`, `fetch-standard`, `fetch-pooled`, `matier`.
     pub name: String,
     pub protocol: Protocol,
     pub tls: bool,
@@ -65,10 +67,8 @@ pub enum AnySubject {
     Reqwest(reqwest_client::ReqwestSubject),
     #[cfg(feature = "fetch")]
     Fetch(fetch_client::FetchSubject),
-    // PLACEHOLDER: add the matier client here once it exists:
-    //   #[cfg(feature = "matier")]
-    //   Matier(matier_client::MatierSubject),
-    // and a matching arm in `build_subject` and the `Subject` impl below.
+    #[cfg(feature = "matier")]
+    Matier(matier_client::MatierSubject),
 }
 
 /// Builds the subject named by `cfg.name`. Must be called inside a tokio runtime.
@@ -84,7 +84,8 @@ pub fn build_subject(cfg: &SubjectConfig) -> Result<AnySubject> {
         "fetch" | "fetch-standard" | "fetch-pooled" => {
             AnySubject::Fetch(fetch_client::FetchSubject::new(cfg)?)
         }
-        // "matier" => AnySubject::Matier(...),
+        #[cfg(feature = "matier")]
+        "matier" => AnySubject::Matier(matier_client::MatierSubject::new(cfg)?),
         other => bail!(
             "unknown or disabled subject {other:?} (available: {})",
             available().join(", ")
@@ -107,6 +108,8 @@ pub fn available() -> Vec<&'static str> {
         "fetch-standard",
         #[cfg(feature = "fetch")]
         "fetch-pooled",
+        #[cfg(feature = "matier")]
+        "matier",
     ]
 }
 
@@ -121,6 +124,8 @@ impl Subject for AnySubject {
             Self::Reqwest(s) => s.name(),
             #[cfg(feature = "fetch")]
             Self::Fetch(s) => s.name(),
+            #[cfg(feature = "matier")]
+            Self::Matier(s) => s.name(),
         }
     }
 
@@ -134,6 +139,8 @@ impl Subject for AnySubject {
             Self::Reqwest(s) => s.request(req).await,
             #[cfg(feature = "fetch")]
             Self::Fetch(s) => s.request(req).await,
+            #[cfg(feature = "matier")]
+            Self::Matier(s) => s.request(req).await,
         }
     }
 }

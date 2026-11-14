@@ -170,8 +170,32 @@ pub mod h2 {
 - `ConnectConfig: Default` (10 s timeout, nodelay, keepalive 60 s, no TLS). `connect_timeout` applies separately to DNS, each TCP attempt and the TLS handshake. `https` without `tls` -> `InvalidRequest`. IP-literal hosts skip DNS (no `Dns` phase reported).
 - Error classification: DNS/TCP failures and timeouts -> `Unprocessed` (kinds `Dns` / `Connect` / `Timeout`); TLS handshake I/O failure -> `Unprocessed`/`Tls`; rustls-level failure (bad cert etc.) -> `Never`/`Tls`.
 - `Io` also has `tcp() -> &TcpStream` and `alpn_protocol()`. `is_write_vectored()` is always true.
-- `Incoming`, `h1::*`, `h2::*` are not implemented yet (`src/h1/mod.rs`, `src/h2/mod.rs` are stubs).
+- `Incoming`, `h1::*` are implemented (see next section); `h2::*` is owned by the h2 actor work.
 
+### Implementation notes (matier-transport h1 + `Incoming`, as built)
+
+- `Incoming { Empty, H1(h1::RecvBody), H2(h2::RecvStream) }` implements `http_body::Body<Data = BytesView, Error = Error>` with `size_hint`/`is_end_stream` delegation (`Empty` is exact 0).
+- `H1Conn` is a `Box<Inner>` (8 bytes to move). `H1Conn::new(io, origin, cfg)` / `new_shared(io, origin, Arc<H1Config>)`; accessors `id()`, `origin()`, `created_at()`, `last_used()`, `requests_sent()`; `is_reusable_now()` (noop-waker `poll_read`; tokio's cached readiness makes it syscall-free in the common case).
+- Send API (deviation: three entry points, all returning `impl Future + Send`, none an `async fn`; see "future sizes" below):
+  - `send(self, req, on_release: impl ReleaseFn)` (contract signature; boxes the closure),
+  - `send_mut(self, &mut req, Arc<dyn Release>)`: borrows the request so that on failure with a replayable body (`Empty`/`Full`) the pool can send it again; allocation-free release (`Release::release(&self, H1Conn)` is implemented by the pool's `OriginPool`),
+  - `Release::closed(&self, conn_id, lifetime)` + `H1Conn::set_owner(Weak<dyn Release>)`: called from `Drop` of the connection so the pool's connection count stays exact when a connection is dropped mid-body, on error, or on `Connection: close` (the pool cannot observe those otherwise).
+- Write path: head encoded synchronously into the reused `Vec` before the first poll. `Full` bodies <= 1 KiB are appended to the head (one `write`); larger ones are written with one `poll_write_vectored` over `[head, body spans...]` (up to 16 iovecs per call, partial writes tracked by offset, body never copied or cloned). `Stream` bodies: head first, then per chunk `[chunk_header, spans, CRLF]` vectored (chunked) or raw spans (exact `Content-Length`); the streaming loop is `Box::pin`ned (cold path, keeps the hot future small). Response trailers and request-side `Expect: 100-continue` waiting are not implemented (1xx are skipped).
+- Read path: a pooled `BytesBuf` (from `buf::memory()`, grabbed once per connection; read size adapts 4 KiB .. `H1Config::max_buffer`). The head is parsed from `rbuf.peek().first_slice()` (copied into a scratch `Vec` only if it spans blocks), then `consume(head_len)`. Bodies are `rbuf.consume(n)` (Length) or `consume(consumed)` + `range(data)` (chunked): zero-copy `BytesView`s of the read blocks.
+- `RecvBody` releases the connection to `on_release` eagerly when the final byte is seen (Length hits 0 / chunked decoder `done`), only if keep-alive, no `must_close` and no extra buffered bytes. Dropping a body early closes the connection (v0; no drain of small remainders).
+- `Empty`/`Length(0)` responses release before `send` returns and yield `Incoming::Empty`.
+- Stale keep-alive: a write error, or EOF/reset before any response byte, on a *reused* connection is `Io`/`Retryable` with a `StaleKeepAlive` source; `h1::is_stale_keepalive(&Error)` detects it. `h1::is_idempotent(&Method)` is public.
+- `H1Config { limits, title_case_headers, max_buffer }` (+ `Default`).
+- **Future sizes**: `async fn` parameters are stored twice in the generated future (upvar + local), which doubled `Request<Body>` (504 B). Hot-path futures are therefore plain `fn`s returning combinators (`futures_util::future::Either`) or `async move` blocks that use captured values in place. Measured by `crates/matier/tests/future_sizes.rs` (budget 1024 B): `H1Conn::send_mut` 344, `H1Conn::send` 616, `Pool::send` / `Client::send` / `Service::execute` 928.
+
+
+
+### Implementation notes (matier-transport h2 actor, as built)
+
+- `H2Config` additionally has `keepalive_timeout`, `handshake_timeout`, `connection_info` (see h2-actor.md "As built"). `handshake(io, origin, cfg, obs: Arc<dyn Observer>)` is as specified; internally generic over any `AsyncRead + AsyncWrite` for tests.
+- `H2Handle::send(&self, slot, req) -> ResponseFuture` is a plain `fn` (not `async fn`): the request is moved into the actor inbox immediately and the returned `'static + Send` future is 16 bytes. Dropping it cancels the request. `ResponseFuture: Future<Output = Result<Response<Incoming>>>`.
+- `H2Handle::slot_released(&self) -> tokio::sync::futures::Notified<'_>`: resolves when a stream slot is released, the peer raises MAX_CONCURRENT_STREAMS, or the connection closes. Waiters must create it and `enable()` it *before* calling `try_reserve()` (the pool does this per connection).
+- Also `conn_id()`, `origin()`; `StreamSlot` releases its permit on drop or when the stream it was sent on ends; `H2Handle: Debug`. `RecvStream` is `http_body::Body<Data = BytesView, Error = Error>`; trailers arrive as a trailers frame.
 
 ## matier-pool
 
@@ -193,6 +217,18 @@ Behaviour (see PLAN §6):
 - **h2:** RCU snapshot of handles; power-of-two-choices on `in_flight` among handles below the target; `try_reserve`; otherwise a coalesced dial if below max, otherwise wait.
 - A request that fails with `Recovery::Unprocessed` on a connection that turned out dead is retried **once** inside the pool, on a different connection.
 
+### Implementation notes (matier-pool, as built)
+
+- Origin map: `papaya::HashMap<Key, Arc<OriginPool>, FxHasher>` (lock-free reads, one insert per origin). Lookup is allocation-free (borrowed `(scheme, host, port)` key through a `dyn` `Borrow`) unless the host has upper-case letters.
+- H1: LIFO `Vec` idle stack + slab-backed doubly-linked FIFO waiter list (O(1) enqueue/cancel/pop, ids guard against slab-key reuse) + connection count, all in one `parking_lot::Mutex` (deviation: `total` is a plain field in the mutex, not an `AtomicUsize`, so reserve/enqueue/pop are atomic with each other). The lock is never held across `.await` or while dropping a connection.
+- Direct handoff: a released connection (or a freed slot, `Handoff::Dial`) goes to the oldest live waiter through a `oneshot`. A cancelled waiter (drop) unlinks itself and re-homes anything that raced into its channel. Connection slots are released in `Release::closed`, so every drop path (error, mid-body drop, over `max_idle`, expired, probe failure) is accounted.
+- Checkout: idle pop -> idle-timeout check -> liveness probe; else reserve a slot and dial; else wait (optionally `checkout_timeout` -> `PoolTimeout`). The slow path is boxed so `Pool::send` stays small; the fast path allocates nothing.
+- Protocol discovery: the first request to an unknown origin holds a per-origin async mutex while it dials; others wait for the verdict (no dial storm against an h2 server). Result cached in an `AtomicU8`.
+- H2: `ArcSwap<Vec<Arc<Entry>>>` snapshot, power-of-two-choices on `in_flight()` among `is_accepting()` handles below `min(max_concurrent_streams, h2_target_streams_per_conn)`, `try_reserve`. If none: wait; `h2_maybe_dial` starts a background (spawned, cancellation-proof) dial when `live + dialing < max_conns` and `dialing < max(1, ceil(waiting / target))`. Dial failures are recorded (kind + message) and returned to the waiters that started waiting before the failure. A watcher task per handle (`handle.closed()`) rebuilds the snapshot and re-establishes `h2_min_conns_per_origin`. Because `H2Handle` has no slot-release notification, h2 waiters also poll every 500 us (TODO: replace by a notification from the actor).
+- H2 requests are sent via a boxed future (`handle.send(slot, req)` borrows the handle and owns the request) and are **not** retried inside the pool: `H2Handle::send` consumes the request, so an `Unprocessed` retry needs the caller (or a retry layer) to clone it.
+- Retry (H1): once, on a fresh connection, if the body is `Empty`/`Full` and (`Recovery::Unprocessed`, or stale-keepalive on an idempotent method).
+- `PoolConfig` defaults: `max_idle_per_origin` 32, `idle_timeout` 90 s, `max_conns_per_origin` 256, `h2_target_streams_per_conn` 128, `h2_min_conns_per_origin` 1, `checkout_timeout` None. `Pool::stats(&Uri) -> Option<OriginStats>` was added for diagnostics/tests. The observer gets `connection_opened/closed`, `request_queued` and `pool_waiters`.
+
 ## matier
 
 ```rust
@@ -203,3 +239,8 @@ impl Service<http::Request<Body>> for Client { type Out = Result<http::Response<
 pub struct ClientBuilder { /* pool, connect, h1, h2 configs; observer; layers */ }
 ```
 v0 stack: `Dispatch` (validation, scheme policy) → `Pool`. Timeout, retry, metrics and decompression layers come in Phase 5.
+
+### Implementation notes (matier, as built)
+
+- `Client` (Clone; wraps `Pool`), `ClientBuilder { pool(), connect(), h1(), h2(), tls(), http2_prior_knowledge(), observer(), build() }`. `Client::send` is a plain `fn` returning `Either<Ready<Err>, Pool::send future>` (validation in `Dispatch` happens before the pool: absolute `http`/`https` URI with a host, else `InvalidRequest`). `impl Service<Request<Body>> for Client` delegates to `send`. Core types are re-exported.
+- Bench subject `matier` (feature `matier`, default-on): `--pool-size` maps to `h2_min_conns_per_origin`; h1 benchmarks set `alpn_h2 = false`.
