@@ -30,8 +30,9 @@ use std::sync::Arc;
 
 use futures_util::future::Either;
 pub use matier_core::{
-    Body, BodySender, BytesView, ConnectionInfo, Error, ErrorKind, NoopObserver, Observer,
-    OriginKey, Priority, Protocol, Recovery, Result, ScaleReason, Scheme, Service,
+    Body, BodySender, BodyTimeout, BytesView, ConnectionInfo, Error, ErrorKind, NoopObserver,
+    Observer, OriginKey, Priority, Protocol, Recovery, ResponseTimeout, Result, ScaleReason,
+    Scheme, Service, UriTemplate,
 };
 pub use matier_pool::{OriginStats, Pool, PoolConfig};
 pub use matier_transport::h1::H1Config;

@@ -1,0 +1,51 @@
+# Leadership summary matrix (~12 min): one build, one run, every client.
+# Run: scripts/bench.sh bench/report.toml report
+url = "http://127.0.0.1:8080"
+tls_url = "https://127.0.0.1:8443"
+ca_cert = "target/bench-server-cert.pem"
+warmup = "1s"
+duration = "4s"
+cooldown = "500ms"
+
+# Small requests (1 KiB responses): latency at c=1, throughput at c=64 / c=256.
+[[group]]
+subjects = ["matier", "hyper-legacy", "hyper-pooled", "fetch", "fetch-pooled"]
+protocols = ["h1", "h2"]
+concurrency = [1, 64, 256]
+resp_sizes = [1024]
+pool_size = 4
+
+# Medium responses (64 KiB).
+[[group]]
+subjects = ["matier", "hyper-legacy", "hyper-pooled", "fetch", "fetch-pooled"]
+protocols = ["h1", "h2"]
+concurrency = [64]
+resp_sizes = [65536]
+pool_size = 4
+
+# Large downloads (1 MiB, 8 MiB).
+[[group]]
+subjects = ["matier", "hyper-legacy", "hyper-pooled", "fetch", "fetch-pooled"]
+protocols = ["h1", "h2"]
+concurrency = [8]
+resp_sizes = [1048576, 8388608]
+pool_size = 4
+
+# Large uploads (1 MiB POST).
+[[group]]
+subjects = ["matier", "hyper-legacy", "hyper-pooled", "fetch", "fetch-pooled"]
+protocols = ["h1", "h2"]
+concurrency = [16]
+method = "POST"
+path = "/echo"
+req_sizes = [1048576]
+pool_size = 4
+
+# TLS (HTTPS) small requests.
+[[group]]
+subjects = ["matier", "hyper-legacy", "hyper-pooled", "fetch", "fetch-pooled"]
+protocols = ["h1", "h2"]
+tls = [true]
+concurrency = [256]
+resp_sizes = [1024]
+pool_size = 4

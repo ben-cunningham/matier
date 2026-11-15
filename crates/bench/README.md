@@ -1,7 +1,8 @@
 # matier-bench
 
-Reproducible, machine-readable HTTP client benchmarks. Subjects today are existing clients
-(baselines); the matier client plugs in through the same `Subject` trait.
+Reproducible, machine-readable HTTP client benchmarks. Subjects: `matier`, `hyper-legacy`
+(one hyper-util client), `hyper-pooled` (N hyper-util clients), `reqwest`, `fetch` and `fetch-pooled`
+(Microsoft's fetch, standard and pooled modes). Each implements the `Subject` trait.
 
 ## Run
 
