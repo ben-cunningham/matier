@@ -1,0 +1,31 @@
+# Remote run against the bench server deployed on Railway (deploy/railway). Real WAN path, Linux server.
+#   plain (h1 + h2c): Railway TCP proxy straight to the server (no intermediary).
+#   tls  (h1 + h2):   Railway's HTTPS edge (terminates TLS, proxies to the server).
+# Run: cargo run --release -p matier-bench -- matrix bench/remote.toml --out bench-results/remote-v1.json
+# `url`/`tls_url` are filled in per deployment; `ca_cert` must hold public roots for the edge (e.g. the macOS
+# system roots exported with `security find-certificate -a -p /System/Library/Keychains/SystemRootCertificates.keychain`).
+url = "http://tokaido.proxy.rlwy.net:54752"
+tls_url = "https://bench-server-production.up.railway.app"
+ca_cert = "target/system-roots.pem"
+warmup = "2s"
+duration = "5s"
+cooldown = "5s"
+timeout = "10s"
+
+# Small responses: per-request overhead and latency under WAN RTT.
+[[group]]
+subjects = ["matier", "hyper-legacy", "hyper-pooled", "fetch-pooled"]
+protocols = ["h1", "h2"]
+tls = [false, true]
+concurrency = [64, 512]
+resp_sizes = [1024]
+pool_size = 4
+
+# Large downloads: throughput and flow control over a real bandwidth-delay product.
+[[group]]
+subjects = ["matier", "hyper-legacy", "hyper-pooled", "fetch-pooled"]
+protocols = ["h2"]
+tls = [false]
+concurrency = [8]
+resp_sizes = [1048576]
+pool_size = 4

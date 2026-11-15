@@ -1,0 +1,5 @@
+target
+bench-results
+.git
+.claude
+**/fuzz/target

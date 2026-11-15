@@ -1,0 +1,72 @@
+[1/36] matier/h1/plain/closed-c64/GET /bytes/1024 req0
+    462 req/s, p99 151126 us, 0 errors
+[2/36] matier/h1/plain/closed-c512/GET /bytes/1024 req0
+    3668 req/s, p99 145752 us, 0 errors
+[3/36] matier/h1/tls/closed-c64/GET /bytes/1024 req0
+    641 req/s, p99 108200 us, 0 errors
+[4/36] matier/h1/tls/closed-c512/GET /bytes/1024 req0
+    4996 req/s, p99 129303 us, 0 errors
+[5/36] matier/h2/plain/closed-c64/GET /bytes/1024 req0
+    467 req/s, p99 141820 us, 0 errors
+[6/36] matier/h2/plain/closed-c512/GET /bytes/1024 req0
+    3650 req/s, p99 147456 us, 0 errors
+[7/36] matier/h2/tls/closed-c64/GET /bytes/1024 req0
+    639 req/s, p99 115999 us, 0 errors
+[8/36] matier/h2/tls/closed-c512/GET /bytes/1024 req0
+    4956 req/s, p99 127730 us, 0 errors
+[9/36] hyper-legacy/h1/plain/closed-c64/GET /bytes/1024 req0
+    464 req/s, p99 141427 us, 0 errors
+[10/36] hyper-legacy/h1/plain/closed-c512/GET /bytes/1024 req0
+    3703 req/s, p99 145228 us, 0 errors
+[11/36] hyper-legacy/h1/tls/closed-c64/GET /bytes/1024 req0
+    636 req/s, p99 123208 us, 0 errors
+[12/36] hyper-legacy/h1/tls/closed-c512/GET /bytes/1024 req0
+    4996 req/s, p99 145228 us, 0 errors
+[13/36] hyper-legacy/h2/plain/closed-c64/GET /bytes/1024 req0
+    453 req/s, p99 190185 us, 0 errors
+[14/36] hyper-legacy/h2/plain/closed-c512/GET /bytes/1024 req0
+    3693 req/s, p99 142606 us, 0 errors
+[15/36] hyper-legacy/h2/tls/closed-c64/GET /bytes/1024 req0
+    635 req/s, p99 121831 us, 0 errors
+[16/36] hyper-legacy/h2/tls/closed-c512/GET /bytes/1024 req0
+    943 req/s, p99 862454 us, 0 errors
+[17/36] hyper-pooled(pool=4)/h1/plain/closed-c64/GET /bytes/1024 req0
+    462 req/s, p99 141296 us, 0 errors
+[18/36] hyper-pooled(pool=4)/h1/plain/closed-c512/GET /bytes/1024 req0
+    3686 req/s, p99 144966 us, 0 errors
+[19/36] hyper-pooled(pool=4)/h1/tls/closed-c64/GET /bytes/1024 req0
+    638 req/s, p99 113115 us, 0 errors
+[20/36] hyper-pooled(pool=4)/h1/tls/closed-c512/GET /bytes/1024 req0
+    4966 req/s, p99 131924 us, 0 errors
+[21/36] hyper-pooled(pool=4)/h2/plain/closed-c64/GET /bytes/1024 req0
+    467 req/s, p99 141951 us, 0 errors
+[22/36] hyper-pooled(pool=4)/h2/plain/closed-c512/GET /bytes/1024 req0
+    3703 req/s, p99 142737 us, 0 errors
+[23/36] hyper-pooled(pool=4)/h2/tls/closed-c64/GET /bytes/1024 req0
+    609 req/s, p99 2004877 us, 0 errors
+[24/36] hyper-pooled(pool=4)/h2/tls/closed-c512/GET /bytes/1024 req0
+    3935 req/s, p99 172622 us, 0 errors
+[25/36] fetch-pooled(pool=4)/h1/plain/closed-c64/GET /bytes/1024 req0
+    462 req/s, p99 145490 us, 0 errors
+[26/36] fetch-pooled(pool=4)/h1/plain/closed-c512/GET /bytes/1024 req0
+    3705 req/s, p99 145359 us, 0 errors
+[27/36] fetch-pooled(pool=4)/h1/tls/closed-c64/GET /bytes/1024 req0
+    641 req/s, p99 112787 us, 0 errors
+[28/36] fetch-pooled(pool=4)/h1/tls/closed-c512/GET /bytes/1024 req0
+    4986 req/s, p99 130417 us, 0 errors
+[29/36] fetch-pooled(pool=4)/h2/plain/closed-c64/GET /bytes/1024 req0
+    397 req/s, p99 209191 us, 0 errors
+[30/36] fetch-pooled(pool=4)/h2/plain/closed-c512/GET /bytes/1024 req0
+    3535 req/s, p99 167772 us, 0 errors
+[31/36] fetch-pooled(pool=4)/h2/tls/closed-c64/GET /bytes/1024 req0
+    555 req/s, p99 427295 us, 0 errors
+[32/36] fetch-pooled(pool=4)/h2/tls/closed-c512/GET /bytes/1024 req0
+    3696 req/s, p99 314835 us, 0 errors
+[33/36] matier/h2/plain/closed-c8/GET /bytes/1048576 req0
+    23 req/s, p99 840434 us, 0 errors
+[34/36] hyper-legacy/h2/plain/closed-c8/GET /bytes/1048576 req0
+    29 req/s, p99 426508 us, 0 errors
+[35/36] hyper-pooled(pool=4)/h2/plain/closed-c8/GET /bytes/1048576 req0
+    20 req/s, p99 1185939 us, 0 errors
+[36/36] fetch-pooled(pool=4)/h2/plain/closed-c8/GET /bytes/1048576 req0
+    22 req/s, p99 1283457 us, 0 errors

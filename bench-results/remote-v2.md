@@ -1,0 +1,39 @@
+| scenario | req/s | p50 us | p99 us | p99.9 us | errs | drops | cpu us/req | allocs/req | rss MB |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| matier/h1/plain/closed-c64/GET /bytes/1024 req0 | 462 | 137757 | 151126 | 157549 | 0 | 0 | 117.1 | 2.0 | 32 |
+| matier/h1/plain/closed-c512/GET /bytes/1024 req0 | 3668 | 138936 | 145752 | 150209 | 0 | 0 | 77.3 | 2.0 | 180 |
+| matier/h1/tls/closed-c64/GET /bytes/1024 req0 | 641 | 99353 | 108200 | 166986 | 0 | 0 | 132.3 | 8.0 | 182 |
+| matier/h1/tls/closed-c512/GET /bytes/1024 req0 | 4996 | 101384 | 129303 | 241304 | 0 | 0 | 86.4 | 8.0 | 229 |
+| matier/h2/plain/closed-c64/GET /bytes/1024 req0 | 467 | 137626 | 141820 | 145883 | 0 | 0 | 117.9 | 4.1 | 229 |
+| matier/h2/plain/closed-c512/GET /bytes/1024 req0 | 3650 | 139854 | 147456 | 216924 | 0 | 0 | 58.0 | 4.0 | 252 |
+| matier/h2/tls/closed-c64/GET /bytes/1024 req0 | 639 | 99549 | 115999 | 187433 | 0 | 0 | 132.3 | 15.0 | 252 |
+| matier/h2/tls/closed-c512/GET /bytes/1024 req0 | 4956 | 102302 | 127730 | 222036 | 0 | 0 | 64.3 | 14.6 | 253 |
+| hyper-legacy/h1/plain/closed-c64/GET /bytes/1024 req0 | 464 | 137232 | 141427 | 144703 | 0 | 0 | 155.2 | 15.0 | 257 |
+| hyper-legacy/h1/plain/closed-c512/GET /bytes/1024 req0 | 3703 | 139198 | 145228 | 147063 | 0 | 0 | 92.8 | 14.0 | 286 |
+| hyper-legacy/h1/tls/closed-c64/GET /bytes/1024 req0 | 636 | 99615 | 123208 | 220332 | 0 | 0 | 192.6 | 20.0 | 286 |
+| hyper-legacy/h1/tls/closed-c512/GET /bytes/1024 req0 | 4996 | 101253 | 145228 | 244449 | 0 | 0 | 98.2 | 20.0 | 302 |
+| hyper-legacy/h2/plain/closed-c64/GET /bytes/1024 req0 | 453 | 137888 | 190185 | 205652 | 0 | 0 | 126.6 | 14.2 | 302 |
+| hyper-legacy/h2/plain/closed-c512/GET /bytes/1024 req0 | 3693 | 138805 | 142606 | 144835 | 0 | 0 | 72.2 | 14.3 | 302 |
+| hyper-legacy/h2/tls/closed-c64/GET /bytes/1024 req0 | 635 | 99746 | 121831 | 231211 | 0 | 0 | 151.9 | 22.0 | 302 |
+| hyper-legacy/h2/tls/closed-c512/GET /bytes/1024 req0 | 943 | 516948 | 862454 | 1190134 | 0 | 0 | 132.3 | 21.9 | 302 |
+| hyper-pooled(pool=4)/h1/plain/closed-c64/GET /bytes/1024 req0 | 462 | 137363 | 141296 | 142606 | 0 | 0 | 150.9 | 14.0 | 302 |
+| hyper-pooled(pool=4)/h1/plain/closed-c512/GET /bytes/1024 req0 | 3686 | 138674 | 144966 | 150340 | 0 | 0 | 96.3 | 14.0 | 308 |
+| hyper-pooled(pool=4)/h1/tls/closed-c64/GET /bytes/1024 req0 | 638 | 99353 | 113115 | 213778 | 0 | 0 | 159.1 | 20.0 | 308 |
+| hyper-pooled(pool=4)/h1/tls/closed-c512/GET /bytes/1024 req0 | 4966 | 101777 | 131924 | 244842 | 0 | 0 | 106.6 | 20.0 | 311 |
+| hyper-pooled(pool=4)/h2/plain/closed-c64/GET /bytes/1024 req0 | 467 | 137757 | 141951 | 143131 | 0 | 0 | 156.3 | 14.0 | 311 |
+| hyper-pooled(pool=4)/h2/plain/closed-c512/GET /bytes/1024 req0 | 3703 | 138150 | 142737 | 146538 | 0 | 0 | 83.8 | 14.2 | 311 |
+| hyper-pooled(pool=4)/h2/tls/closed-c64/GET /bytes/1024 req0 | 609 | 99615 | 2004877 | 2300576 | 0 | 0 | 180.9 | 22.3 | 311 |
+| hyper-pooled(pool=4)/h2/tls/closed-c512/GET /bytes/1024 req0 | 3935 | 128909 | 172622 | 225968 | 0 | 0 | 88.2 | 21.9 | 311 |
+| fetch-pooled(pool=4)/h1/plain/closed-c64/GET /bytes/1024 req0 | 462 | 137495 | 145490 | 147587 | 0 | 0 | 199.4 | 43.0 | 311 |
+| fetch-pooled(pool=4)/h1/plain/closed-c512/GET /bytes/1024 req0 | 3705 | 138674 | 145359 | 153092 | 0 | 0 | 121.2 | 43.0 | 342 |
+| fetch-pooled(pool=4)/h1/tls/closed-c64/GET /bytes/1024 req0 | 641 | 99418 | 112787 | 148111 | 0 | 0 | 193.2 | 49.0 | 342 |
+| fetch-pooled(pool=4)/h1/tls/closed-c512/GET /bytes/1024 req0 | 4986 | 101646 | 130417 | 222167 | 0 | 0 | 131.5 | 49.0 | 342 |
+| fetch-pooled(pool=4)/h2/plain/closed-c64/GET /bytes/1024 req0 | 397 | 152699 | 209191 | 242483 | 0 | 0 | 182.2 | 46.1 | 342 |
+| fetch-pooled(pool=4)/h2/plain/closed-c512/GET /bytes/1024 req0 | 3535 | 142737 | 167772 | 175243 | 0 | 0 | 106.5 | 46.2 | 342 |
+| fetch-pooled(pool=4)/h2/tls/closed-c64/GET /bytes/1024 req0 | 555 | 105185 | 427295 | 634388 | 0 | 0 | 232.6 | 54.2 | 342 |
+| fetch-pooled(pool=4)/h2/tls/closed-c512/GET /bytes/1024 req0 | 3696 | 106234 | 314835 | 809501 | 0 | 0 | 125.3 | 54.0 | 342 |
+| matier/h2/plain/closed-c8/GET /bytes/1048576 req0 | 23 | 300155 | 840434 | 950534 | 0 | 0 | 3811.2 | 5.4 | 342 |
+| hyper-legacy/h2/plain/closed-c8/GET /bytes/1048576 req0 | 29 | 270795 | 426508 | 433062 | 0 | 0 | 2597.8 | 25.8 | 342 |
+| hyper-pooled(pool=4)/h2/plain/closed-c8/GET /bytes/1048576 req0 | 20 | 278397 | 1185939 | 1228931 | 0 | 0 | 4625.7 | 26.5 | 342 |
+| fetch-pooled(pool=4)/h2/plain/closed-c8/GET /bytes/1048576 req0 | 22 | 278921 | 1283457 | 1325400 | 0 | 0 | 4204.1 | 302.2 | 342 |
+
