@@ -35,9 +35,11 @@ pub const SCALE_MIN_IN_FLIGHT: usize = 4;
 /// actor, a second connection splits the per-request actor work even though the actor is not close to
 /// saturation (it alternates between small bursts and waiting on the peer). Measured at c=64 / 1 KiB after the
 /// receive-path work: one connection sits at 45-50 % busy (just under [`BUSY_SATURATED_PERMILLE`]) and carries
-/// 114k req/s, while two carry ~200k. Strictly deeper than half of c=64 so two balanced connections do not
-/// trigger a third, and far above anything a light workload reaches.
-pub const SCALE_DEEP_IN_FLIGHT: usize = 40;
+/// 114k req/s, two ~195k, three ~233k, four or five ~245k (5 runtime workers). At 40 (the old value) c=32 stayed
+/// on one connection (115k vs 176k) and c=64 sometimes stalled at two for seconds. Overshoot is bounded by the
+/// ceiling ([`h2_ceiling`]: never more connections than runtime workers), and an actor with little to do stays
+/// under [`SCALE_DEEP_BUSY_PERMILLE`] however many slow requests it carries.
+pub const SCALE_DEEP_IN_FLIGHT: usize = 16;
 /// Busy fraction (permille) above which a connection with [`SCALE_DEEP_IN_FLIGHT`] streams is saturated.
 pub const SCALE_DEEP_BUSY_PERMILLE: u32 = 250;
 /// Minimum spacing between scale-up dials for one origin. Roughly the time the busy EWMA needs to reflect the
@@ -154,7 +156,8 @@ mod tests {
     #[test]
     fn saturation_signals() {
         assert!(!is_saturated(load(0, 0, 0), 3, 128));
-        assert!(!is_saturated(load(500, 100, 256), 39, 128)); // boundaries are exclusive
+        assert!(!is_saturated(load(250, 100, 256), 39, 128)); // boundaries are exclusive
+        assert!(!is_saturated(load(500, 100, 256), SCALE_DEEP_IN_FLIGHT - 1, 128));
         assert!(is_saturated(load(501, 0, 0), 8, 128));
         assert!(is_saturated(load(10, 101, 0), 8, 128));
         assert!(is_saturated(load(10, 0, 257), 8, 128));
@@ -183,7 +186,8 @@ mod tests {
             128
         ));
         assert!(!is_saturated(load(470, 20, 6), 1, 128));
-        assert!(!is_saturated(load(470, 20, 6), 32, 128)); // two balanced c=64 connections
+        // Two balanced c=64 connections (32 each) still help with a third.
+        assert!(is_saturated(load(430, 20, 6), 32, 128));
     }
 
     #[test]
