@@ -205,9 +205,10 @@ impl Subject for HyperLegacy {
             .method(req.method)
             .uri(req.uri)
             .body(Full::new(req.body))?;
-        let t0 = std::time::Instant::now();
+        let phases = super::phase::enabled();
+        let t0 = phases.then(std::time::Instant::now);
         let resp = self.client.request(req).await?;
-        let t_head = std::time::Instant::now();
+        let t_head = phases.then(std::time::Instant::now);
         let mut frames = 0u64;
         let status = resp.status().as_u16();
         let mut body = resp.into_body();
@@ -218,7 +219,7 @@ impl Subject for HyperLegacy {
                 frames += 1;
             }
         }
-        if super::phase::enabled() {
+        if let (Some(t0), Some(t_head)) = (t0, t_head) {
             super::phase::record(t0, t_head, std::time::Instant::now(), frames);
         }
         Ok(BenchResponse { status, body_len })

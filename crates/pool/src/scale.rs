@@ -157,7 +157,11 @@ mod tests {
     fn saturation_signals() {
         assert!(!is_saturated(load(0, 0, 0), 3, 128));
         assert!(!is_saturated(load(250, 100, 256), 39, 128)); // boundaries are exclusive
-        assert!(!is_saturated(load(500, 100, 256), SCALE_DEEP_IN_FLIGHT - 1, 128));
+        assert!(!is_saturated(
+            load(500, 100, 256),
+            SCALE_DEEP_IN_FLIGHT - 1,
+            128
+        ));
         assert!(is_saturated(load(501, 0, 0), 8, 128));
         assert!(is_saturated(load(10, 101, 0), 8, 128));
         assert!(is_saturated(load(10, 0, 257), 8, 128));

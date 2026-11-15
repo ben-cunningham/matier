@@ -1752,7 +1752,7 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
                         self.core.obs.bytes_read(&self.core.origin, n);
                     }
                     if let Some(k) = &mut self.keepalive {
-                        k.last_read = tokio::time::Instant::now();
+                        k.last_read = self.core.now; // tick time: ample precision for a keepalive interval
                     }
                 }
             }
