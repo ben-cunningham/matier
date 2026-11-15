@@ -210,8 +210,25 @@ Follows the blueprint; deviations and additions:
   later, so early fires are harmless. Defaults in `H2Config`; keep-alive PING defaults to 30 s.
 - **Flood limits.** Leaky buckets (`Leaky`, milli-unit fixed point, tick time) for SETTINGS, PING, RST_STREAM, WINDOW_UPDATE and tiny DATA; overflow is a connection error (GOAWAY ENHANCE_YOUR_CALM).
 - **Response validation.** `content-length` vs DATA bytes (not for HEAD/204/304), 16 interim responses max, no RST for streams we do not know, request trailers filtered like headers.
-- **Write coalescing (`H2Config::coalesce_small_writes`).** If a tick produced < 1 KiB of output from newly opened requests while > 8 streams are in flight, the write is deferred once
-  (self-wake) so concurrent submitters share one `writev`; never twice in a row. Measured +5-10% req/s at c=256 (64 B..64 KiB), no effect below 8 in flight.
+- **Request coalescing (`H2Config::coalesce_requests`, `coalesce_max_hold`).** Root cause of the 64 KiB gap to hyper (95k vs 131k req/s at
+  c=256): the throughput of a loaded connection is set by *how many requests reach the server per socket write*. On a shared multi-thread
+  runtime every consumer that finished a response immediately submitted the next request, the inbox wake put the actor in tokio's LIFO slot,
+  and the actor ran right after that one consumer: one tick per request, one 23-byte `writev` per HEADERS (server saw 1.6 requests per read),
+  partial socket reads (~41 KB), one consumer wake and one thread notify per tick, 28 µs CPU/request. hyper gets ~11 requests per write for free
+  (its per-request `spawn` pushes the connection task out of the LIFO slot, so it runs after the queued consumers) and the server answers them
+  as a batch, which keeps every later read and wake batched too: a self-reinforcing equilibrium. A dedicated single actor thread reached the
+  same equilibrium (31 requests per write, 128k req/s, 16 µs CPU/request) only because the cross-runtime handoff delayed the actor.
+  The fix holds the HEADERS of newly opened requests in the write queue while more than `COALESCE_MIN_IN_FLIGHT` (8) streams are in flight,
+  until the batch reaches `clamp(in_flight / 4, 2, 16)`, more than 1 KiB is queued (a body, control frames), or the oldest held request is
+  `clamp(rtt / 8, 10 µs, coalesce_max_hold = 200 µs)` old, where `rtt` is the connection's EWMA of open -> response-head time
+  (`Core::rtt_ewma_ns`), so the hold is never more than ~12% of the current round trip. The bound is checked on every tick (socket readiness
+  and further requests keep ticks coming); a per-connection `hold_timer` (`Sleep`, ~1 ms granularity) is the fallback when nothing else polls
+  the actor. The inbox is drained with `try_recv` and the waker registered once at the end of the tick (`arm_inbox`: register, then check; a
+  command that raced in re-runs the tick). Measured (5 client threads, zero-config pool, hyper-pooled(4) in parentheses): 64 B c256
+  341-366k -> 467k (205k); 1 KiB c64 207k -> 257k (167k); 1 KiB c256 211k -> 360k (191k); 64 KiB c256 99k -> 135k (134k); CPU/request
+  -20..-35%; c=1 and c=16 unchanged (hold inactive at <= 8 in flight, ~10 µs bound at c=16). Rejected on the way: deferring the write by a
+  self-wake (LIFO: re-polled at once, 1.7 -> 2.0 requests per write), `yield_now`-style deferral (re-polled as soon as the worker ran dry,
+  2.8), tokio `event_interval` 1..4 (no effect), spinning on `yield_now` until K requests or T µs (142k req/s but 2M idle polls/s).
 - **Actor task is `unconstrained`**: it bounds its own work per tick; tokio's coop budget would make a busy actor read `Pending` as "inbox empty".
 - **Vectored TCP reads were tried and rejected** (`readv` over up to 4 blocks via socket2): -20% req/s / +25% CPU per request at 1 MiB, no gain at 64 KiB. `poll_fill` reserves exactly one
   block (the old `max(READ_BLOCK, want)` reserved a second block that the re-wrap dropped unused for every frame larger than a block).

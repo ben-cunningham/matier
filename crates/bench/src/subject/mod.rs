@@ -164,3 +164,41 @@ pub(crate) fn read_ca(cfg: &SubjectConfig) -> Result<Vec<u8>> {
         None => bail!("TLS requires --ca-cert (the server's self-signed certificate)"),
     }
 }
+
+/// Diagnostic per-request phase timing (`BENCH_PHASES=1`): send → response head, head → body end, and
+/// data frames per response, averaged and printed every 100k requests. Off by default (one env read, cached).
+pub mod phase {
+    use std::sync::OnceLock;
+    use std::sync::atomic::{AtomicU64, Ordering::Relaxed};
+    use std::time::Instant;
+
+    static ON: OnceLock<bool> = OnceLock::new();
+    static N: AtomicU64 = AtomicU64::new(0);
+    static HEAD_NS: AtomicU64 = AtomicU64::new(0);
+    static BODY_NS: AtomicU64 = AtomicU64::new(0);
+    static FRAMES: AtomicU64 = AtomicU64::new(0);
+
+    pub fn enabled() -> bool {
+        *ON.get_or_init(|| std::env::var_os("BENCH_PHASES").is_some())
+    }
+
+    pub fn record(start: Instant, head: Instant, end: Instant, frames: u64) {
+        HEAD_NS.fetch_add((head - start).as_nanos() as u64, Relaxed);
+        BODY_NS.fetch_add((end - head).as_nanos() as u64, Relaxed);
+        FRAMES.fetch_add(frames, Relaxed);
+        let n = N.fetch_add(1, Relaxed) + 1;
+        if n.is_multiple_of(100_000) {
+            let (h, b, f) = (
+                HEAD_NS.swap(0, Relaxed),
+                BODY_NS.swap(0, Relaxed),
+                FRAMES.swap(0, Relaxed),
+            );
+            eprintln!(
+                "[phase] send->head {:>6.0}us  head->end {:>6.0}us  frames/resp {:.2}",
+                h as f64 / 100_000.0 / 1e3,
+                b as f64 / 100_000.0 / 1e3,
+                f as f64 / 100_000.0
+            );
+        }
+    }
+}

@@ -7,6 +7,9 @@
 //! - `POST /echo`: reads the whole body, returns its length as text; `?mirror=1` streams it back.
 //! - `GET /delay/{ms}`: sleeps `ms` milliseconds, then returns an empty 200.
 //! - `GET /health`: `ok`.
+//!
+//! `BENCH_SERVER_TRACE_IO=1` prints, when each plain connection closes, how many socket reads/writes it did and
+//! their average sizes (how well the client batches requests, and how the server batches responses).
 
 use std::{convert::Infallible, net::SocketAddr, path::PathBuf, sync::Arc, time::Duration};
 
@@ -149,9 +152,113 @@ async fn serve(
                     Ok(s) => builder.serve_connection(TokioIo::new(s), svc).await,
                     Err(_) => return,
                 },
+                None if trace_io() => {
+                    builder
+                        .serve_connection(TokioIo::new(CountIo::new(stream)), svc)
+                        .await
+                }
                 None => builder.serve_connection(TokioIo::new(stream), svc).await,
             };
         });
+    }
+}
+
+fn trace_io() -> bool {
+    static V: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *V.get_or_init(|| std::env::var_os("BENCH_SERVER_TRACE_IO").is_some())
+}
+
+/// Counts socket reads/writes (`BENCH_SERVER_TRACE_IO=1`); prints the totals when the connection closes.
+struct CountIo<T> {
+    io: T,
+    reads: u64,
+    read_bytes: u64,
+    writes: u64,
+    write_bytes: u64,
+    opened: std::time::Instant,
+}
+
+impl<T> CountIo<T> {
+    fn new(io: T) -> Self {
+        Self {
+            io,
+            reads: 0,
+            read_bytes: 0,
+            writes: 0,
+            write_bytes: 0,
+            opened: std::time::Instant::now(),
+        }
+    }
+}
+
+impl<T> Drop for CountIo<T> {
+    fn drop(&mut self) {
+        eprintln!(
+            "[server-io] conn {:.1}s reads={} avg_read={} writes={} avg_write={}",
+            self.opened.elapsed().as_secs_f64(),
+            self.reads,
+            self.read_bytes / self.reads.max(1),
+            self.writes,
+            self.write_bytes / self.writes.max(1)
+        );
+    }
+}
+
+impl<T: tokio::io::AsyncRead + Unpin> tokio::io::AsyncRead for CountIo<T> {
+    fn poll_read(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+        buf: &mut tokio::io::ReadBuf<'_>,
+    ) -> std::task::Poll<std::io::Result<()>> {
+        let before = buf.filled().len();
+        let r = std::pin::Pin::new(&mut self.io).poll_read(cx, buf);
+        if let std::task::Poll::Ready(Ok(())) = &r {
+            self.reads += 1;
+            self.read_bytes += (buf.filled().len() - before) as u64;
+        }
+        r
+    }
+}
+
+impl<T: tokio::io::AsyncWrite + Unpin> tokio::io::AsyncWrite for CountIo<T> {
+    fn poll_write(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+        buf: &[u8],
+    ) -> std::task::Poll<std::io::Result<usize>> {
+        let r = std::pin::Pin::new(&mut self.io).poll_write(cx, buf);
+        if let std::task::Poll::Ready(Ok(n)) = &r {
+            self.writes += 1;
+            self.write_bytes += *n as u64;
+        }
+        r
+    }
+    fn poll_write_vectored(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+        bufs: &[std::io::IoSlice<'_>],
+    ) -> std::task::Poll<std::io::Result<usize>> {
+        let r = std::pin::Pin::new(&mut self.io).poll_write_vectored(cx, bufs);
+        if let std::task::Poll::Ready(Ok(n)) = &r {
+            self.writes += 1;
+            self.write_bytes += *n as u64;
+        }
+        r
+    }
+    fn is_write_vectored(&self) -> bool {
+        self.io.is_write_vectored()
+    }
+    fn poll_flush(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<std::io::Result<()>> {
+        std::pin::Pin::new(&mut self.io).poll_flush(cx)
+    }
+    fn poll_shutdown(
+        mut self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<std::io::Result<()>> {
+        std::pin::Pin::new(&mut self.io).poll_shutdown(cx)
     }
 }
 

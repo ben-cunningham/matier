@@ -5,7 +5,9 @@
 //! hyper/fetch "pooled" workarounds); only an explicit `--matier-min-conns N` pins
 //! `h2_min_conns_per_origin`. For h1 the pool grows to the concurrency of the run.
 //!
-//! `MATIER_BENCH_TRACE_POOL=1` prints every pool scaling decision (time, connection count, reason) to stderr.
+//! `MATIER_BENCH_NO_COALESCE=1` turns request coalescing off (`H2Config::coalesce_requests`) for A/B runs.
+//! `MATIER_BENCH_TRACE_POOL=1` prints every pool scaling decision (time, connection count, reason) and, every
+//! 50k actor ticks, socket read/write counts and sizes (`[io]`) to stderr.
 
 use std::sync::Arc;
 use std::time::Instant;
@@ -29,6 +31,9 @@ static RD_N: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0)
 static RD_B: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 static WR_N: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 static WR_B: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+static RST_N: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+static DS_N: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+static DS_NS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 impl Observer for PoolTrace {
     fn enabled(&self) -> bool {
         true
@@ -37,6 +42,15 @@ impl Observer for PoolTrace {
         RD_N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         RD_B.fetch_add(n as u64, std::sync::atomic::Ordering::Relaxed);
     }
+    fn h2_rst_stream(&self, _o: &OriginKey, _code: u32, sent: bool) {
+        if sent {
+            RST_N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        }
+    }
+    fn request_dispatched(&self, _o: &OriginKey, d: std::time::Duration) {
+        DS_N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        DS_NS.fetch_add(d.as_nanos() as u64, std::sync::atomic::Ordering::Relaxed);
+    }
     fn write_batch(&self, _o: &OriginKey, bytes: usize, _i: usize) {
         WR_N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         WR_B.fetch_add(bytes as u64, std::sync::atomic::Ordering::Relaxed);
@@ -44,17 +58,23 @@ impl Observer for PoolTrace {
     fn actor_tick(&self, _o: &OriginKey, _b: std::time::Duration, _q: usize) {
         static T: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
         let t = T.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        if t.is_multiple_of(200_000) {
+        if t.is_multiple_of(50_000) {
             let (rn, rb, wn, wb) = (
                 RD_N.load(std::sync::atomic::Ordering::Relaxed),
                 RD_B.load(std::sync::atomic::Ordering::Relaxed),
                 WR_N.load(std::sync::atomic::Ordering::Relaxed),
                 WR_B.load(std::sync::atomic::Ordering::Relaxed),
             );
+            let (dn, dns) = (
+                DS_N.swap(0, std::sync::atomic::Ordering::Relaxed),
+                DS_NS.swap(0, std::sync::atomic::Ordering::Relaxed),
+            );
             eprintln!(
-                "[io] ticks={t} reads={rn} avg_read={} writes={wn} avg_write={}",
+                "[io] ticks={t} reads={rn} avg_read={} writes={wn} avg_write={} dispatch_avg={}us rst_sent={} disp={dn}",
                 rb / rn.max(1),
-                wb / wn.max(1)
+                wb / wn.max(1),
+                dns / dn.max(1) / 1000,
+                RST_N.load(std::sync::atomic::Ordering::Relaxed)
             );
         }
     }
@@ -98,6 +118,7 @@ impl MatierSubject {
                 initial_stream_window: H2_STREAM_WINDOW,
                 initial_conn_window: H2_CONN_WINDOW,
                 max_frame_size: H2_MAX_FRAME,
+                coalesce_requests: std::env::var_os("MATIER_BENCH_NO_COALESCE").is_none(),
                 ..H2Config::default()
             });
         if std::env::var_os("MATIER_BENCH_TRACE_POOL").is_some() {
@@ -128,7 +149,10 @@ impl Subject for MatierSubject {
             .method(req.method)
             .uri(req.uri)
             .body(body)?;
+        let t0 = std::time::Instant::now();
         let resp = self.client.send(req).await.map_err(|e| anyhow!("{e:?}"))?;
+        let t_head = std::time::Instant::now();
+        let mut frames = 0u64;
         let status = resp.status().as_u16();
         let mut body = resp.into_body();
         let mut body_len = 0u64;
@@ -139,7 +163,11 @@ impl Subject for MatierSubject {
         {
             if let Some(data) = frame.map_err(|e| anyhow!("{e:?}"))?.data_ref() {
                 body_len += data.len() as u64;
+                frames += 1;
             }
+        }
+        if super::phase::enabled() {
+            super::phase::record(t0, t_head, std::time::Instant::now(), frames);
         }
         Ok(BenchResponse { status, body_len })
     }

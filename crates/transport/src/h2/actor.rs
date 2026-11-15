@@ -47,10 +47,21 @@ const WRITE_HIGH_WATER: usize = 256 * 1024;
 const READ_PAUSE_PENDING: usize = 1 << 20;
 /// Stop pulling new commands beyond this much queued output.
 const INBOX_PAUSE_PENDING: usize = 4 << 20;
-/// Small-write deferral: only when fewer than this many bytes are queued ...
-const DEFER_MAX_PENDING: usize = 1024;
-/// ... and more than this many streams are in flight.
-const DEFER_MIN_IN_FLIGHT: usize = 8;
+/// Request coalescing (`H2Config::coalesce_requests`): hold queued request HEADERS only while at most this
+/// much is queued for the socket (anything bigger, e.g. a request body, is written at once) ...
+const COALESCE_MAX_PENDING: usize = 1024;
+/// ... and more than this many streams are in flight ...
+const COALESCE_MIN_IN_FLIGHT: usize = 8;
+/// ... until the batch reaches `clamp(in_flight / COALESCE_BATCH_DIV, 2, COALESCE_MAX_BATCH)` requests ...
+const COALESCE_MAX_BATCH: u32 = 16;
+const COALESCE_BATCH_DIV: usize = 4;
+/// ... or the oldest held request is `clamp(rtt / COALESCE_RTT_DIV, COALESCE_MIN_HOLD, cfg.coalesce_max_hold)`
+/// old (rtt = smoothed open -> response-head time). Checked on every tick (socket readiness and further
+/// requests keep ticks coming); `hold_timer` is the fallback when nothing else polls the actor (tokio
+/// timers have millisecond granularity, so that bound is ~1 ms).
+const COALESCE_RTT_DIV: u32 = 8;
+const COALESCE_MIN_HOLD: Duration = Duration::from_micros(10);
+const HOLD_TIMER_FALLBACK: Duration = Duration::from_millis(1);
 
 const READ_BLOCK: usize = 64 * 1024;
 const MIN_READ_TAIL: usize = 4096;
@@ -349,6 +360,8 @@ struct StreamEntry {
     stall_since: Option<Instant>,
     /// Last request/response progress on this stream (tick time).
     activity: TInstant,
+    /// When the request was opened (tick time); feeds `Core::rtt_ewma_ns`.
+    opened_at: TInstant,
     /// Absolute response-head deadline (from a `ResponseTimeout` extension).
     head_abs: Option<TInstant>,
     /// Max time without progress while waiting for the response head.
@@ -431,6 +444,8 @@ pub(crate) struct Core {
     policy: WindowUpdatePolicy,
     marks: VecDeque<(u64, Instant)>,
     meter: LoadMeter,
+    /// Smoothed request-open -> response-head time (ns); bounds the request-coalescing hold.
+    rtt_ewma_ns: u64,
     ping_acked: bool,
     ping_seq: u64,
     ping_out: Option<[u8; 8]>,
@@ -486,9 +501,12 @@ impl Core {
             buffered_budget: u64::from(conn_target),
             goaway: None,
             state: ConnState::Open,
-            policy: WindowUpdatePolicy::default(),
+            policy: WindowUpdatePolicy {
+                threshold_ratio: 0.25,
+            },
             marks: VecDeque::new(),
             meter: LoadMeter::new(Instant::now()),
+            rtt_ewma_ns: 0,
             ping_acked: false,
             ping_seq: 0,
             ping_out: None,
@@ -801,6 +819,7 @@ impl Core {
             hdr_end,
             stall_since: None,
             activity: now,
+            opened_at: now,
             head_abs,
             head_idle,
             body_idle,
@@ -1294,9 +1313,15 @@ impl Core {
                     });
                 }
                 st.recv = RecvState::Body;
+                let rtt = now.saturating_duration_since(st.opened_at).as_nanos() as u64;
                 if let Some(d) = st.body_idle {
                     self.want_timer(now + d);
                 }
+                self.rtt_ewma_ns = if self.rtt_ewma_ns == 0 {
+                    rtt
+                } else {
+                    self.rtt_ewma_ns - self.rtt_ewma_ns / 16 + rtt / 16
+                };
                 let st = &self.streams[k];
                 StreamShared::publish_head_deferred(&st.shared, Ok(parts), &mut self.dirty);
                 if end_stream {
@@ -1679,8 +1704,11 @@ pub(crate) struct Actor<T> {
     keepalive: Option<Keepalive>,
     /// Requests opened in the current tick (input to the small-write deferral).
     opened_this_tick: u32,
-    /// The previous tick's write was deferred (never defer twice in a row).
-    deferred: bool,
+    /// Opened requests whose HEADERS are queued but held back (request coalescing).
+    held: u32,
+    hold_since: Instant,
+    hold_timer: Pin<Box<Sleep>>,
+    hold_armed: bool,
     /// The one timer for all stream/header-block deadlines (see `Core::scan_timeouts`).
     timer: Pin<Box<Sleep>>,
     torn_down: bool,
@@ -1816,27 +1844,54 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
         Ok(())
     }
 
-    fn inbox_phase(&mut self, cx: &mut Context<'_>) -> bool {
+    /// Drains queued commands without registering the inbox waker (see `arm_inbox`). Returns true if the
+    /// budget was exhausted with commands left.
+    fn inbox_phase(&mut self) -> bool {
         let mut n = 0;
         while n < CMD_BUDGET {
             if self.core.wq.pending() > INBOX_PAUSE_PENDING {
                 return false;
             }
-            match self.rx.poll_recv(cx) {
-                Poll::Ready(Some(Command::Open(o))) => {
-                    self.opened_this_tick += 1;
-                    self.core.open(o);
-                }
-                Poll::Ready(Some(Command::Ready(s))) => self.core.on_ready(&s),
-                Poll::Ready(None) => {
+            match self.rx.try_recv() {
+                Ok(c) => self.handle_cmd(c),
+                Err(mpsc::error::TryRecvError::Disconnected) => {
                     self.inbox_closed = true;
                     return false;
                 }
-                Poll::Pending => return false,
+                Err(mpsc::error::TryRecvError::Empty) => return false,
             }
             n += 1;
         }
         true
+    }
+
+    fn handle_cmd(&mut self, c: Command) {
+        match c {
+            Command::Open(o) => {
+                self.opened_this_tick += 1;
+                self.core.open(o);
+            }
+            Command::Ready(s) => self.core.on_ready(&s),
+        }
+    }
+
+    /// Registers the inbox waker (register, then check). A command that raced in is handled now; the caller
+    /// re-runs the tick for it.
+    fn arm_inbox(&mut self, cx: &mut Context<'_>) -> bool {
+        if self.inbox_closed {
+            return false;
+        }
+        match self.rx.poll_recv(cx) {
+            Poll::Ready(Some(c)) => {
+                self.handle_cmd(c);
+                true
+            }
+            Poll::Ready(None) => {
+                self.inbox_closed = true;
+                false
+            }
+            Poll::Pending => false,
+        }
     }
 
     fn write_phase(&mut self, cx: &mut Context<'_>) -> io::Result<bool> {
@@ -2019,7 +2074,7 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
         }
         if this.core.state == ConnState::Open {
             // 2. INBOX
-            again |= this.inbox_phase(cx);
+            again |= this.inbox_phase();
             this.poll_deadlines(cx);
             // keepalive
             if let Err(Fail::Io(e)) = this.poll_keepalive(cx) {
@@ -2038,23 +2093,41 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
             }
         }
 
-        // 4. WRITE. A tick that only produced a few small request frames while many streams are in flight
-        // yields once before writing: the submitters that run meanwhile add their requests to the same
-        // `writev` instead of paying one syscall each. Bounded (once per tick pair) and never when
-        // control traffic is queued beyond a few KiB.
+        // 4. WRITE, with request coalescing (see the COALESCE_* constants): HEADERS of newly opened requests
+        // are held back while the batch is small, for a bounded time, when many streams are in flight and
+        // nothing bigger is queued. One `writev` then carries the whole batch and the server receives (and
+        // answers) the requests together, which is what keeps every later read and wake batched too.
         let pending = this.core.wq.pending();
-        let defer = this.core.cfg.coalesce_small_writes
-            && !this.deferred
-            && this.core.state == ConnState::Open
-            && this.opened_this_tick > 0
-            && pending > 0
-            && pending < DEFER_MAX_PENDING
-            && this.core.shared.in_flight.load(Ordering::Relaxed) > DEFER_MIN_IN_FLIGHT;
+        let in_flight = this.core.shared.in_flight.load(Ordering::Relaxed);
+        if this.opened_this_tick > 0 {
+            if this.held == 0 {
+                this.hold_since = t0;
+            }
+            this.held += this.opened_this_tick;
+        }
         this.opened_this_tick = 0;
-        this.deferred = defer;
-        if defer {
-            again = true;
-        } else {
+        let mut hold = this.core.cfg.coalesce_requests
+            && this.core.state == ConnState::Open
+            && this.held > 0
+            && pending <= COALESCE_MAX_PENDING
+            && in_flight > COALESCE_MIN_IN_FLIGHT
+            && this.held < coalesce_batch(in_flight)
+            && t0.saturating_duration_since(this.hold_since)
+                < coalesce_hold(this.core.rtt_ewma_ns, this.core.cfg.coalesce_max_hold);
+        if hold {
+            if !this.hold_armed {
+                this.hold_armed = true;
+                this.hold_timer
+                    .as_mut()
+                    .reset(TInstant::now() + HOLD_TIMER_FALLBACK);
+            }
+            if this.hold_timer.as_mut().poll(cx).is_ready() {
+                hold = false;
+            }
+        }
+        if !hold {
+            this.held = 0;
+            this.hold_armed = false;
             match this.write_phase(cx) {
                 Ok(y) => again |= y,
                 Err(e) => {
@@ -2064,6 +2137,11 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
             }
         }
         again |= this.core.can_schedule() && this.core.state == ConnState::Open;
+        // The inbox was drained without a waker; register it now (register, then check: a command that raced
+        // in is handled and the tick re-runs).
+        if this.core.state == ConnState::Open && this.arm_inbox(cx) {
+            again = true;
+        }
 
         let t1 = Instant::now();
         let inbox = this.rx.len();
@@ -2215,12 +2293,28 @@ where
         inbox_closed: false,
         keepalive,
         opened_this_tick: 0,
-        deferred: false,
+        held: 0,
+        hold_since: Instant::now(),
+        hold_timer: Box::pin(tokio::time::sleep(Duration::from_secs(86_400))),
+        hold_armed: false,
         timer: Box::pin(tokio::time::sleep(Duration::from_secs(86_400))),
         torn_down: false,
     };
     // The actor bounds its own per-tick work (frames, bytes, commands). tokio's cooperative budget would
     // only make a busy actor read `Pending` from its inbox/socket as "empty"/"not ready" and re-wake.
-    tokio::spawn(tokio::task::unconstrained(actor));
+    drop(tokio::spawn(tokio::task::unconstrained(actor)));
     Ok(H2Handle::new(shared, tx))
+}
+
+/// Request-coalescing batch target for the current load (see `COALESCE_BATCH_DIV`).
+fn coalesce_batch(in_flight: usize) -> u32 {
+    u32::try_from(in_flight / COALESCE_BATCH_DIV)
+        .unwrap_or(u32::MAX)
+        .clamp(2, COALESCE_MAX_BATCH)
+}
+
+/// Request-coalescing hold bound: a small fraction of the connection's current round trip.
+fn coalesce_hold(rtt_ewma_ns: u64, max: Duration) -> Duration {
+    Duration::from_nanos(rtt_ewma_ns / u64::from(COALESCE_RTT_DIV))
+        .clamp(COALESCE_MIN_HOLD, max.max(COALESCE_MIN_HOLD))
 }

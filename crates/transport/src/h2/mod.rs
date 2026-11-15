@@ -60,11 +60,17 @@ pub struct H2Config {
     pub body_idle_timeout: Option<Duration>,
     /// Deadline for a header block (HEADERS + CONTINUATIONs) to complete; exceeding it closes the connection.
     pub header_block_timeout: Duration,
-    /// Yield once before a socket write when the tick only produced a few small request frames while many
-    /// streams are in flight, so concurrent submitters share one `writev` (measured: +5-10% req/s at c=256,
-    /// no effect at low concurrency). Bounded: at most one deferred tick in a row, and never with more than
-    /// 1 KiB queued.
-    pub coalesce_small_writes: bool,
+    /// Request coalescing. While more than 8 streams are in flight, the HEADERS of newly submitted requests
+    /// are held back (not yet written) until the batch reaches `clamp(in_flight / 4, 2, 16)` requests, more
+    /// than 1 KiB is queued, or the oldest held request is `clamp(rtt / 8, 10 µs, coalesce_max_hold)` old
+    /// (rtt = smoothed request -> response-head time of this connection). The batch then leaves in one
+    /// `writev`, and the server receives and answers it as a batch, which keeps the response reads and
+    /// consumer wakes batched too. No effect at <= 8 in flight. Measured on the shared multi-thread runtime
+    /// at c=256: +30-70% req/s and -20-35% CPU/request from 64 B to 64 KiB; none at c=1/c=16.
+    pub coalesce_requests: bool,
+    /// Upper bound on the request-coalescing hold (the adaptive bound is rtt / 8). A tick checks the bound
+    /// whenever the actor runs; when nothing else wakes it, a timer ends the hold within ~1 ms.
+    pub coalesce_max_hold: Duration,
     /// Also attach `ConnectionInfo` to the response's `http::Extensions` (three allocations per response). Off by
     /// default: use `Incoming::connection_info()`. Layers that only see `http::Response<B>` need this on.
     pub connection_info: bool,
@@ -84,7 +90,8 @@ impl Default for H2Config {
             response_head_timeout: Some(Duration::from_secs(30)),
             body_idle_timeout: Some(Duration::from_secs(60)),
             header_block_timeout: Duration::from_secs(10),
-            coalesce_small_writes: true,
+            coalesce_requests: true,
+            coalesce_max_hold: Duration::from_micros(200),
             connection_info: false,
         }
     }

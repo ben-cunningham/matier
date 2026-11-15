@@ -17,7 +17,7 @@ path = "src/main.rs"
 
 [features]
 default = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "matier", "count-allocs"]
-hyper-legacy = ["dep:hyper", "dep:hyper-util", "dep:http-body-util", "dep:hyper-rustls", "dep:rustls"]
+hyper-legacy = ["dep:hyper", "dep:hyper-util", "dep:http-body-util", "dep:hyper-rustls", "dep:rustls", "dep:tower-service"]
 hyper-pooled = ["hyper-legacy"]
 reqwest = ["dep:reqwest", "dep:rustls"]
 # Microsoft oxidizer `fetch` (subjects: fetch, fetch-standard, fetch-pooled).
@@ -42,6 +42,7 @@ hyper = { workspace = true, optional = true, features = ["client", "http1", "htt
 hyper-util = { workspace = true, optional = true, features = ["client-legacy", "http1", "http2", "tokio"] }
 http-body-util = { workspace = true, optional = true }
 hyper-rustls = { workspace = true, optional = true, features = ["http1", "http2", "aws-lc-rs"] }
+tower-service = { version = "0.3", optional = true }
 rustls = { workspace = true, optional = true }
 reqwest = { workspace = true, optional = true, features = ["rustls", "http2"] }
 matier = { path = "../matier", optional = true }
