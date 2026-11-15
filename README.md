@@ -40,45 +40,52 @@ It also includes:
 
 ## Performance
 
-Requests per second with a fixed number of requests in flight (c). Matier uses default settings. "hyper" is
-`hyper-util`'s client, alone and as 4 clients side by side; "fetch" is Microsoft's fetch in its standard and
-pooled modes. Higher is better.
+Requests per second with a fixed number of requests in flight (c). Higher is better. Matier runs with its
+default settings. "hyper" is `hyper-util`'s client, alone and as 4 clients side by side; "fetch" is Microsoft's
+fetch in its standard and pooled modes. Both are given the same HTTP/2 frame size and flow-control windows as
+Matier's defaults (fetch accepts only the stream window); left at 16 KiB frames, they would be about half as
+fast on large bodies.
 
-| Protocol | Workload | c | **Matier** | hyper | hyper ×4 | fetch | fetch ×4 |
+| Protocol | Workload | c | Matier | hyper | hyper ×4 | fetch | fetch ×4 |
 |---|---|--:|--:|--:|--:|--:|--:|
-| HTTP/2 | 1 KiB responses | 1 | **32,308** | 24,380 | 24,593 | 22,606 | 22,163 |
-| HTTP/2 | 1 KiB responses | 64 | **259,946** | 79,423 | 163,333 | 66,504 | 116,594 |
-| HTTP/2 | 1 KiB responses | 256 | **379,164** | 82,025 | 188,300 | 65,894 | 125,183 |
-| HTTP/2 + TLS | 1 KiB responses | 256 | **359,777** | 80,259 | 183,298 | 65,375 | 122,722 |
-| HTTP/2 | 64 KiB responses | 64 | **124,458** | 55,898 | 107,643 | 29,787 | 66,885 |
-| HTTP/2 | 1 MiB responses | 8 | **10,088** | 6,562 | 9,670 | 2,660 | 4,388 |
-| HTTP/2 | 8 MiB responses | 8 | **1,238** | 804 | 1,216 | 313 | 530 |
-| HTTP/2 | 1 MiB uploads | 16 | **9,472** | 5,997 | 8,905 | 6,362 | 9,122 |
-| HTTP/1.1 | 1 KiB responses | 1 | **37,617** | 33,512 | 28,766 | 30,608 | 25,961 |
-| HTTP/1.1 | 1 KiB responses | 256 | **158,550** | 153,347 | 151,156 | 121,398 | 133,613 |
-| HTTP/1.1 + TLS | 1 KiB responses | 256 | **154,588** | 151,264 | 151,369 | 116,313 | 129,825 |
-| HTTP/1.1 | 8 MiB responses | 8 | **1,228** | 1,170 | 1,181 | 1,176 | 1,132 |
+| HTTP/2 | 1 KiB responses | 1 | **32,848** | 25,432 | 24,154 | 21,862 | 22,268 |
+| HTTP/2 | 1 KiB responses | 64 | **260,141** | 78,003 | 164,964 | 64,294 | 115,896 |
+| HTTP/2 | 1 KiB responses | 256 | **380,085** | 82,271 | 188,776 | 62,506 | 125,132 |
+| HTTP/2 + TLS | 1 KiB responses | 256 | **347,391** | 80,407 | 185,018 | 62,968 | 122,984 |
+| HTTP/2 | 64 KiB responses | 64 | **120,032** | 56,379 | 99,158 | 28,336 | 67,560 |
+| HTTP/2 | 1 MiB responses | 8 | 10,035 | 6,303 | 9,992 | 2,686 | 4,775 |
+| HTTP/2 | 8 MiB responses | 8 | 1,118 | 822 | 1,085 | 326 | 506 |
+| HTTP/2 | 1 MiB uploads | 16 | 9,258 | 6,194 | 8,739 | 6,106 | 9,117 |
+| HTTP/1.1 | 1 KiB responses | 1 | **36,469** | 31,362 | 28,924 | 28,103 | 26,558 |
+| HTTP/1.1 | 1 KiB responses | 256 | 161,645 | 160,669 | 145,087 | 121,975 | 137,578 |
+| HTTP/1.1 + TLS | 1 KiB responses | 256 | 156,190 | 147,923 | 153,231 | 117,230 | 126,298 |
+| HTTP/1.1 | 8 MiB responses | 8 | 1,177 | 1,196 | 1,188 | 1,202 | 1,186 |
+
+Bold marks a lead of more than 5%, which is the run-to-run noise. The other rows are ties with the best
+alternative.
 
 Latency and efficiency against hyper ×4, the strongest alternative:
 
 | Protocol | Workload | c | p99 latency | CPU per request | Allocations per request |
 |---|---|--:|--:|--:|--:|
-| HTTP/2 | 1 KiB responses | 256 | 1.29 ms vs 2.50 ms | 9.7 µs vs 20.9 µs | 4 vs 14 |
-| HTTP/2 | 64 KiB responses | 64 | 0.76 ms vs 0.94 ms | 23.7 µs vs 37.2 µs | 4 vs 17 |
-| HTTP/2 | 8 MiB responses | 8 | 8.06 ms vs 8.02 ms | 1,609 µs vs 1,537 µs | 4 vs 110 |
-| HTTP/1.1 | 1 KiB responses | 256 | 1.97 ms vs 2.23 ms | 21.7 µs vs 28.0 µs | 2 vs 14 |
-| HTTP/1.1 | 8 MiB responses | 8 | 8.95 ms vs 9.24 ms | 1,484 µs vs 1,728 µs | 2 vs 15 |
+| HTTP/2 | 1 KiB responses | 256 | 1.29 ms vs 2.49 ms | 9.3 µs vs 20.8 µs | 4 vs 14 |
+| HTTP/2 | 64 KiB responses | 64 | 0.94 ms vs 1.08 ms | 23.4 µs vs 37.2 µs | 4 vs 17 |
+| HTTP/2 | 8 MiB responses | 8 | 10.4 ms vs 9.5 ms | 1,725 µs vs 1,624 µs | 4 vs 110 |
+| HTTP/1.1 | 1 KiB responses | 256 | 2.01 ms vs 3.82 ms | 19.9 µs vs 26.0 µs | 2 vs 14 |
+| HTTP/1.1 | 8 MiB responses | 8 | 9.4 ms vs 9.0 ms | 1,543 µs vs 1,687 µs | 2 vs 15 |
 
 How to read these numbers:
 
 - All runs used one 10-core Apple Silicon Mac, with client and server on the same machine over loopback. They
   compare clients against each other; they are not production capacity figures.
-- The test server is built on hyper. On HTTP/1.1 it saturates near 155k requests/s, so every client hits the
+- The test server is built on hyper. On HTTP/1.1 it saturates near 160k requests/s, so every client hits the
   same ceiling and the differences show up in CPU and allocations instead.
-- Repeated runs vary by about 5%. Rows within that margin, such as HTTP/1.1 64 KiB and 1 MiB uploads, should
-  be read as ties.
-- Matier is not ahead everywhere. On HTTP/2 8 MiB downloads, a single hyper client uses less CPU per request
-  (1,184 µs vs 1,609 µs), though it completes about a third fewer requests.
+- Matier is not ahead everywhere. Large HTTP/2 downloads are a tie on throughput, and Matier uses about 6%
+  more CPU per request than hyper ×4 there (a single hyper client uses less still, 1,132 µs, at a quarter less
+  throughput).
+- The frame size matters more than any other setting for large bodies: at 16 KiB frames every client spends
+  about twice the CPU per byte, mostly in extra socket reads. Some servers (nginx, Envoy) send small frames
+  whatever the client asks for.
 - The full matrix covers 16 scenarios across all five clients. It is in
   [`bench-results/report.md`](bench-results/report.md), and [`bench/report.toml`](bench/report.toml)
   reproduces it.
@@ -116,8 +123,28 @@ async fn main() -> matier::Result<()> {
 }
 ```
 
-`Client::builder()` exposes pool, HTTP/1.1, HTTP/2, TLS and connection settings, and accepts an `Observer` for
-telemetry. HTTPS uses the operating system's trust store by default. Per-request options go in the request's
+The defaults are tuned and need no changes for most uses. `Client::builder()` has a method for every setting:
+
+```rust
+use std::time::Duration;
+
+let client = matier::Client::builder()
+    .connect_timeout(Duration::from_secs(5))
+    .max_connection_lifetime(Some(Duration::from_secs(300))) // follow DNS and load-balancer changes
+    .http2_initial_stream_window_size(8 << 20)               // long fat pipes
+    .build()?;
+```
+
+| Area | Settings (defaults) |
+|---|---|
+| Connections | `connect_timeout` (10 s), `tcp_nodelay` (on), `tcp_keepalive` (60 s), `tcp_send_buffer_size` / `tcp_recv_buffer_size` (OS), `local_address`, `http1_only`, `http2_prior_knowledge` |
+| Pool | `pool_idle_timeout` (90 s), `pool_max_idle_per_origin` (256), `http1_max_connections_per_origin` (256), `max_connection_lifetime` (none), `pool_checkout_timeout` (30 s), `http2_connections_per_origin` (1 to the worker count, scaled by load) |
+| Timeouts | `response_head_timeout` (30 s), `body_idle_timeout` (60 s) |
+| HTTP/1.1 | `http1_max_response_head_size` (64 KiB), `http1_max_buf_size` (64 KiB), `http1_title_case_headers`, `http1_allow_obsolete_multiline_headers_in_responses` |
+| HTTP/2 | `http2_max_frame_size` (256 KiB), `http2_initial_stream_window_size` (4 MiB), `http2_initial_connection_window_size` (16 MiB), `http2_max_header_list_size` (64 KiB), `http2_keep_alive_interval` (30 s) / `_timeout` (20 s), `http2_max_streams_per_connection` (128), `http2_request_coalescing` (on) |
+| Other | `tls`, `observer`, `connection_info` |
+
+HTTPS uses the operating system's trust store by default. Per-request options go in the request's
 extensions: `ResponseTimeout`, `BodyTimeout`, `Priority` (RFC 9218) and `UriTemplate` (a low-cardinality route
 name for telemetry).
 
@@ -140,12 +167,14 @@ Done:
 - HTTP/1.1 and HTTP/2 over plain TCP and TLS (ALPN), with HTTP/2 prior knowledge as an option.
 - Automatic HTTP/2 connection scaling, GOAWAY handling and connection draining.
 - Flow control, request and response streaming, trailers.
-- Response-head, body-idle, keepalive and header-block timeouts.
+- Response-head, body-idle, keepalive and header-block timeouts; connection lifetime limits.
 - Flood limits for SETTINGS, PING, RST_STREAM and empty DATA frames.
 - OpenTelemetry metrics and tracing.
 
 Not done yet:
-- Middleware for redirects, retries and decompression.
+- Middleware for redirects, retries, hedging, circuit breaking and decompression, and a total request
+  timeout. `fetch` has these.
+- Adaptive (BDP-based) HTTP/2 flow-control windows.
 - Proxies (HTTP CONNECT, SOCKS5).
 - Happy Eyeballs: connection attempts are sequential.
 - kTLS.

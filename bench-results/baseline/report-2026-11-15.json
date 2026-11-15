@@ -1,8 +1,8 @@
 [
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:31:26Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:42:13Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -33,52 +33,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 150468,
+      "requests": 145877,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 37617.0,
-      "resp_bytes_per_sec": 38519808.0,
+      "req_per_sec": 36469.25,
+      "resp_bytes_per_sec": 37344512.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 26.223,
-      "p90_us": 30.383,
-      "p99_us": 47.295,
-      "p99_9_us": 78.463,
-      "p99_99_us": 112.255,
-      "max_us": 132.095,
-      "mean_us": 26.528465932955818
+      "p50_us": 26.511,
+      "p90_us": 32.383,
+      "p99_us": 51.263,
+      "p99_9_us": 84.671,
+      "p99_99_us": 113.023,
+      "max_us": 158.847,
+      "mean_us": 27.364283307169735
     },
     "service_time": {
-      "p50_us": 26.223,
-      "p90_us": 30.383,
-      "p99_us": 47.295,
-      "p99_9_us": 78.463,
-      "p99_99_us": 112.255,
-      "max_us": 132.095,
-      "mean_us": 26.528465932955818
+      "p50_us": 26.511,
+      "p90_us": 32.383,
+      "p99_us": 51.263,
+      "p99_9_us": 84.671,
+      "p99_99_us": 113.023,
+      "max_us": 158.847,
+      "mean_us": 27.364283307169735
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.529243,
-      "cpu_sys_secs": 1.06337,
-      "cpu_cores": 0.39815325,
-      "cpu_us_per_req": 10.584396682351064,
-      "peak_rss_bytes": 10076160,
+      "cpu_user_secs": 0.510069,
+      "cpu_sys_secs": 1.063272,
+      "cpu_cores": 0.39333525,
+      "cpu_us_per_req": 10.785394544719182,
+      "peak_rss_bytes": 10371072,
       "alloc_counting": true,
-      "allocs_per_req": 1.9995480766674643,
-      "alloc_bytes_per_req": 215.95119228008613,
-      "deallocs_per_req": 1.9995613685301858
+      "allocs_per_req": 1.9996161149461533,
+      "alloc_bytes_per_req": 215.95854041418454,
+      "deallocs_per_req": 1.9996298251266478
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:31:32Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:42:19Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -109,52 +109,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 634081,
+      "requests": 642555,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 158520.25,
-      "resp_bytes_per_sec": 162324736.0,
+      "req_per_sec": 160638.75,
+      "resp_bytes_per_sec": 164494080.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 399.359,
-      "p90_us": 490.495,
-      "p99_us": 604.671,
-      "p99_9_us": 720.383,
-      "p99_99_us": 897.023,
-      "max_us": 10493.951,
-      "mean_us": 403.59207250808583
+      "p50_us": 391.935,
+      "p90_us": 483.839,
+      "p99_us": 600.575,
+      "p99_9_us": 750.079,
+      "p99_99_us": 10354.687,
+      "max_us": 10756.095,
+      "mean_us": 398.2755614694463
     },
     "service_time": {
-      "p50_us": 399.359,
-      "p90_us": 490.495,
-      "p99_us": 604.671,
-      "p99_9_us": 720.383,
-      "p99_99_us": 897.023,
-      "max_us": 10493.951,
-      "mean_us": 403.59207250808583
+      "p50_us": 391.935,
+      "p90_us": 483.839,
+      "p99_us": 600.575,
+      "p99_9_us": 750.079,
+      "p99_99_us": 10354.687,
+      "max_us": 10756.095,
+      "mean_us": 398.2755614694463
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 2.8280760000000003,
-      "cpu_sys_secs": 10.490565,
-      "cpu_cores": 3.32966025,
-      "cpu_us_per_req": 21.004636631597542,
-      "peak_rss_bytes": 37126144,
+      "cpu_user_secs": 2.6776910000000003,
+      "cpu_sys_secs": 9.9832,
+      "cpu_cores": 3.16522275,
+      "cpu_us_per_req": 19.70398020402923,
+      "peak_rss_bytes": 37175296,
       "alloc_counting": true,
-      "allocs_per_req": 2.0000378500538574,
-      "alloc_bytes_per_req": 216.0043527561936,
-      "deallocs_per_req": 2.000039427139435
+      "allocs_per_req": 1.999730762347192,
+      "alloc_bytes_per_req": 215.97181252966672,
+      "deallocs_per_req": 1.9998039078366832
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:31:37Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:42:24Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -185,52 +185,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 634198,
+      "requests": 646581,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 158549.5,
-      "resp_bytes_per_sec": 162354688.0,
+      "req_per_sec": 161645.25,
+      "resp_bytes_per_sec": 165524736.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1607.679,
-      "p90_us": 1764.351,
-      "p99_us": 1967.103,
-      "p99_9_us": 2715.647,
-      "p99_99_us": 3862.527,
-      "max_us": 6119.423,
-      "mean_us": 1614.512098543355
+      "p50_us": 1577.983,
+      "p90_us": 1746.943,
+      "p99_us": 2007.039,
+      "p99_9_us": 2689.023,
+      "p99_99_us": 11214.847,
+      "max_us": 11902.975,
+      "mean_us": 1583.5187147658235
     },
     "service_time": {
-      "p50_us": 1607.679,
-      "p90_us": 1764.351,
-      "p99_us": 1967.103,
-      "p99_9_us": 2715.647,
-      "p99_99_us": 3862.527,
-      "max_us": 6119.423,
-      "mean_us": 1614.512098543355
+      "p50_us": 1577.983,
+      "p90_us": 1746.943,
+      "p99_us": 2007.039,
+      "p99_9_us": 2689.023,
+      "p99_99_us": 11214.847,
+      "max_us": 11902.975,
+      "mean_us": 1583.5187147658235
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 2.6932,
-      "cpu_sys_secs": 11.096736,
-      "cpu_cores": 3.447484,
-      "cpu_us_per_req": 21.743897016389205,
-      "peak_rss_bytes": 121765888,
+      "cpu_user_secs": 2.5775360000000003,
+      "cpu_sys_secs": 10.290244,
+      "cpu_cores": 3.216945,
+      "cpu_us_per_req": 19.901265270708542,
+      "peak_rss_bytes": 116801536,
       "alloc_counting": true,
-      "allocs_per_req": 2.000042573454978,
-      "alloc_bytes_per_req": 216.01000318512516,
-      "deallocs_per_req": 2.000042573454978
+      "allocs_per_req": 2.0001562062603138,
+      "alloc_bytes_per_req": 216.02217200938475,
+      "deallocs_per_req": 2.0001562062603138
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:31:43Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:42:30Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -261,52 +261,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 129231,
+      "requests": 131393,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 32307.75,
-      "resp_bytes_per_sec": 33083136.0,
+      "req_per_sec": 32848.25,
+      "resp_bytes_per_sec": 33636608.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 30.175,
-      "p90_us": 34.975,
-      "p99_us": 53.055,
-      "p99_9_us": 89.727,
-      "p99_99_us": 126.911,
-      "max_us": 166.399,
-      "mean_us": 30.895231082325438
+      "p50_us": 29.967,
+      "p90_us": 34.431,
+      "p99_us": 47.807,
+      "p99_9_us": 77.631,
+      "p99_99_us": 126.335,
+      "max_us": 162.303,
+      "mean_us": 30.391950560532095
     },
     "service_time": {
-      "p50_us": 30.175,
-      "p90_us": 34.975,
-      "p99_us": 53.055,
-      "p99_9_us": 89.727,
-      "p99_99_us": 126.911,
-      "max_us": 166.399,
-      "mean_us": 30.895231082325438
+      "p50_us": 29.967,
+      "p90_us": 34.431,
+      "p99_us": 47.807,
+      "p99_9_us": 77.631,
+      "p99_99_us": 126.335,
+      "max_us": 162.303,
+      "mean_us": 30.391950560532095
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.587622,
-      "cpu_sys_secs": 0.973976,
-      "cpu_cores": 0.3903995,
-      "cpu_us_per_req": 12.083772469453924,
-      "peak_rss_bytes": 122126336,
+      "cpu_user_secs": 0.580827,
+      "cpu_sys_secs": 0.971582,
+      "cpu_cores": 0.38810225,
+      "cpu_us_per_req": 11.81500536558264,
+      "peak_rss_bytes": 117211136,
       "alloc_counting": true,
-      "allocs_per_req": 3.9997214290688765,
-      "alloc_bytes_per_req": 2767.6710696349946,
-      "deallocs_per_req": 3.999690476743196
+      "allocs_per_req": 3.999703180534732,
+      "alloc_bytes_per_req": 2767.65687669815,
+      "deallocs_per_req": 3.999665126757133
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:31:48Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:42:35Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -337,52 +337,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 1039783,
+      "requests": 1040564,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 259945.75,
-      "resp_bytes_per_sec": 266184448.0,
+      "req_per_sec": 260141.0,
+      "resp_bytes_per_sec": 266384384.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
       "p50_us": 240.895,
-      "p90_us": 340.223,
-      "p99_us": 444.671,
-      "p99_9_us": 533.503,
-      "p99_99_us": 627.199,
-      "max_us": 1128.447,
-      "mean_us": 246.0846829155703
+      "p90_us": 339.455,
+      "p99_us": 445.439,
+      "p99_9_us": 537.599,
+      "p99_99_us": 625.151,
+      "max_us": 798.719,
+      "mean_us": 245.90662053271106
     },
     "service_time": {
       "p50_us": 240.895,
-      "p90_us": 340.223,
-      "p99_us": 444.671,
-      "p99_9_us": 533.503,
-      "p99_99_us": 627.199,
-      "max_us": 1128.447,
-      "mean_us": 246.0846829155703
+      "p90_us": 339.455,
+      "p99_us": 445.439,
+      "p99_9_us": 537.599,
+      "p99_99_us": 625.151,
+      "max_us": 798.719,
+      "mean_us": 245.90662053271106
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 7.380453,
-      "cpu_sys_secs": 6.542242,
-      "cpu_cores": 3.4806737500000002,
-      "cpu_us_per_req": 13.390000605895652,
-      "peak_rss_bytes": 127729664,
+      "cpu_user_secs": 7.152788,
+      "cpu_sys_secs": 6.191613,
+      "cpu_cores": 3.33610025,
+      "cpu_us_per_req": 12.824200145305815,
+      "peak_rss_bytes": 119816192,
       "alloc_counting": true,
-      "allocs_per_req": 4.000800166957913,
-      "alloc_bytes_per_req": 2770.246449499559,
-      "deallocs_per_req": 4.000945389566861
+      "allocs_per_req": 4.0006967375384885,
+      "alloc_bytes_per_req": 2770.2137725310504,
+      "deallocs_per_req": 4.000843773184542
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:31:54Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:42:41Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -413,52 +413,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 1516654,
+      "requests": 1520339,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 379163.5,
-      "resp_bytes_per_sec": 388263424.0,
+      "req_per_sec": 380084.75,
+      "resp_bytes_per_sec": 389206784.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 648.703,
-      "p90_us": 958.975,
-      "p99_us": 1286.143,
-      "p99_9_us": 1556.479,
-      "p99_99_us": 1786.879,
-      "max_us": 2000.895,
-      "mean_us": 675.0215893987694
+      "p50_us": 647.167,
+      "p90_us": 962.047,
+      "p99_us": 1292.287,
+      "p99_9_us": 1570.815,
+      "p99_99_us": 1847.295,
+      "max_us": 2340.863,
+      "mean_us": 673.4075698433033
     },
     "service_time": {
-      "p50_us": 648.703,
-      "p90_us": 958.975,
-      "p99_us": 1286.143,
-      "p99_9_us": 1556.479,
-      "p99_99_us": 1786.879,
-      "max_us": 2000.895,
-      "mean_us": 675.0215893987694
+      "p50_us": 647.167,
+      "p90_us": 962.047,
+      "p99_us": 1292.287,
+      "p99_9_us": 1570.815,
+      "p99_99_us": 1847.295,
+      "max_us": 2340.863,
+      "mean_us": 673.4075698433033
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 9.843453,
-      "cpu_sys_secs": 4.909411,
-      "cpu_cores": 3.688216,
-      "cpu_us_per_req": 9.727244315447031,
-      "peak_rss_bytes": 133382144,
+      "cpu_user_secs": 9.410755,
+      "cpu_sys_secs": 4.696111,
+      "cpu_cores": 3.5267165,
+      "cpu_us_per_req": 9.278763486301411,
+      "peak_rss_bytes": 152027136,
       "alloc_counting": true,
-      "allocs_per_req": 4.001380670871537,
-      "alloc_bytes_per_req": 2771.0804692434795,
-      "deallocs_per_req": 4.001647046722588
+      "allocs_per_req": 4.001199732428097,
+      "alloc_bytes_per_req": 2771.0287278034702,
+      "deallocs_per_req": 4.001514135992038
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:31:59Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:42:46Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -489,52 +489,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 134050,
+      "requests": 125447,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 33512.5,
-      "resp_bytes_per_sec": 34316800.0,
+      "req_per_sec": 31361.75,
+      "resp_bytes_per_sec": 32114432.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 28.847,
-      "p90_us": 34.399,
-      "p99_us": 56.479,
-      "p99_9_us": 93.311,
-      "p99_99_us": 122.879,
-      "max_us": 183.551,
-      "mean_us": 29.781428899664277
+      "p50_us": 29.551,
+      "p90_us": 40.255,
+      "p99_us": 70.911,
+      "p99_9_us": 121.215,
+      "p99_99_us": 465.663,
+      "max_us": 2504.703,
+      "mean_us": 31.814530949325214
     },
     "service_time": {
-      "p50_us": 28.847,
-      "p90_us": 34.399,
-      "p99_us": 56.479,
-      "p99_9_us": 93.311,
-      "p99_99_us": 122.879,
-      "max_us": 183.551,
-      "mean_us": 29.781428899664277
+      "p50_us": 29.551,
+      "p90_us": 40.255,
+      "p99_us": 70.911,
+      "p99_9_us": 121.215,
+      "p99_99_us": 465.663,
+      "max_us": 2504.703,
+      "mean_us": 31.814530949325214
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.728663,
-      "cpu_sys_secs": 1.009876,
-      "cpu_cores": 0.43463474999999996,
-      "cpu_us_per_req": 12.969332338679596,
-      "peak_rss_bytes": 133955584,
+      "cpu_user_secs": 0.711394,
+      "cpu_sys_secs": 1.005113,
+      "cpu_cores": 0.42912675,
+      "cpu_us_per_req": 13.683125144483327,
+      "peak_rss_bytes": 152535040,
       "alloc_counting": true,
-      "allocs_per_req": 14.998716896680342,
-      "alloc_bytes_per_req": 13429.865199552405,
-      "deallocs_per_req": 14.998761656098472
+      "allocs_per_req": 14.997911468588327,
+      "alloc_bytes_per_req": 13429.144985531739,
+      "deallocs_per_req": 14.997959297551954
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:32:05Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:42:52Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -565,52 +565,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 598394,
+      "requests": 601458,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 149598.5,
-      "resp_bytes_per_sec": 153188864.0,
+      "req_per_sec": 150364.5,
+      "resp_bytes_per_sec": 153973248.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 420.607,
-      "p90_us": 579.583,
-      "p99_us": 750.591,
-      "p99_9_us": 904.191,
-      "p99_99_us": 1043.967,
-      "max_us": 1413.119,
-      "mean_us": 427.66364094559754
+      "p50_us": 417.279,
+      "p90_us": 569.855,
+      "p99_us": 740.863,
+      "p99_9_us": 912.895,
+      "p99_99_us": 1139.711,
+      "max_us": 1896.447,
+      "mean_us": 425.4870165497844
     },
     "service_time": {
-      "p50_us": 420.607,
-      "p90_us": 579.583,
-      "p99_us": 750.591,
-      "p99_9_us": 904.191,
-      "p99_99_us": 1043.967,
-      "max_us": 1413.119,
-      "mean_us": 427.66364094559754
+      "p50_us": 417.279,
+      "p90_us": 569.855,
+      "p99_us": 740.863,
+      "p99_9_us": 912.895,
+      "p99_99_us": 1139.711,
+      "max_us": 1896.447,
+      "mean_us": 425.4870165497844
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 6.361704,
-      "cpu_sys_secs": 9.812442,
-      "cpu_cores": 4.0435365,
-      "cpu_us_per_req": 27.02925831475583,
-      "peak_rss_bytes": 137478144,
+      "cpu_user_secs": 6.146101,
+      "cpu_sys_secs": 9.60524,
+      "cpu_cores": 3.93783525,
+      "cpu_us_per_req": 26.188596709994712,
+      "peak_rss_bytes": 155598848,
       "alloc_counting": true,
-      "allocs_per_req": 13.99974932903739,
-      "alloc_bytes_per_req": 13142.93161863254,
-      "deallocs_per_req": 14.000038436214266
+      "allocs_per_req": 13.999697401979855,
+      "alloc_bytes_per_req": 13142.884269558306,
+      "deallocs_per_req": 13.999966747470314
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:32:10Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:42:57Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -641,52 +641,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 613388,
+      "requests": 642676,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 153347.0,
-      "resp_bytes_per_sec": 157027328.0,
+      "req_per_sec": 160669.0,
+      "resp_bytes_per_sec": 164525056.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1626.111,
-      "p90_us": 2400.255,
-      "p99_us": 3305.471,
-      "p99_9_us": 4167.679,
-      "p99_99_us": 4866.047,
-      "max_us": 5685.247,
-      "mean_us": 1669.1966197447643
+      "p50_us": 1567.743,
+      "p90_us": 2078.719,
+      "p99_us": 2707.455,
+      "p99_9_us": 3334.143,
+      "p99_99_us": 3938.303,
+      "max_us": 5443.583,
+      "mean_us": 1593.2316510590038
     },
     "service_time": {
-      "p50_us": 1626.111,
-      "p90_us": 2400.255,
-      "p99_us": 3305.471,
-      "p99_9_us": 4167.679,
-      "p99_99_us": 4866.047,
-      "max_us": 5685.247,
-      "mean_us": 1669.1966197447643
+      "p50_us": 1567.743,
+      "p90_us": 2078.719,
+      "p99_us": 2707.455,
+      "p99_9_us": 3334.143,
+      "p99_99_us": 3938.303,
+      "max_us": 5443.583,
+      "mean_us": 1593.2316510590038
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 6.758886,
-      "cpu_sys_secs": 10.319463,
-      "cpu_cores": 4.26958725,
-      "cpu_us_per_req": 27.84265261139768,
-      "peak_rss_bytes": 146980864,
+      "cpu_user_secs": 6.56381,
+      "cpu_sys_secs": 10.294837,
+      "cpu_cores": 4.21466175,
+      "cpu_us_per_req": 26.23195358158699,
+      "peak_rss_bytes": 191430656,
       "alloc_counting": true,
-      "allocs_per_req": 13.998317541262626,
-      "alloc_bytes_per_req": 13142.442144287139,
-      "deallocs_per_req": 14.000017933184216
+      "allocs_per_req": 14.000575717780032,
+      "alloc_bytes_per_req": 13144.10400419496,
+      "deallocs_per_req": 14.001521762132086
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:32:16Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:43:03Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -717,52 +717,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 97519,
+      "requests": 101730,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 24379.75,
-      "resp_bytes_per_sec": 24964864.0,
+      "req_per_sec": 25432.5,
+      "resp_bytes_per_sec": 26042880.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 39.359,
-      "p90_us": 49.887,
-      "p99_us": 74.367,
-      "p99_9_us": 105.151,
-      "p99_99_us": 160.383,
-      "max_us": 1166.335,
-      "mean_us": 40.92278353961796
+      "p50_us": 38.527,
+      "p90_us": 45.855,
+      "p99_us": 71.167,
+      "p99_9_us": 108.863,
+      "p99_99_us": 132.351,
+      "max_us": 157.311,
+      "mean_us": 39.24982781873586
     },
     "service_time": {
-      "p50_us": 39.359,
-      "p90_us": 49.887,
-      "p99_us": 74.367,
-      "p99_9_us": 105.151,
-      "p99_99_us": 160.383,
-      "max_us": 1166.335,
-      "mean_us": 40.92278353961796
+      "p50_us": 38.527,
+      "p90_us": 45.855,
+      "p99_us": 71.167,
+      "p99_9_us": 108.863,
+      "p99_99_us": 132.351,
+      "max_us": 157.311,
+      "mean_us": 39.24982781873586
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.898917,
-      "cpu_sys_secs": 1.3005849999999999,
-      "cpu_cores": 0.5498755,
-      "cpu_us_per_req": 22.554599616484992,
-      "peak_rss_bytes": 147374080,
+      "cpu_user_secs": 0.879529,
+      "cpu_sys_secs": 1.301218,
+      "cpu_cores": 0.54518675,
+      "cpu_us_per_req": 21.43661653396245,
+      "peak_rss_bytes": 191791104,
       "alloc_counting": true,
-      "allocs_per_req": 13.99986669264451,
-      "alloc_bytes_per_req": 7416.865154482716,
-      "deallocs_per_req": 13.999876947056471
+      "allocs_per_req": 13.997807922933255,
+      "alloc_bytes_per_req": 7415.777106065074,
+      "deallocs_per_req": 13.997817752875259
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:32:21Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:43:08Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -793,52 +793,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 317692,
+      "requests": 312013,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 79423.0,
-      "resp_bytes_per_sec": 81329152.0,
+      "req_per_sec": 78003.25,
+      "resp_bytes_per_sec": 79875328.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 798.719,
-      "p90_us": 1014.783,
-      "p99_us": 1240.063,
-      "p99_9_us": 1426.431,
-      "p99_99_us": 1569.791,
-      "max_us": 1782.783,
-      "mean_us": 805.6458476763644
+      "p50_us": 814.079,
+      "p90_us": 1032.703,
+      "p99_us": 1261.567,
+      "p99_9_us": 1449.983,
+      "p99_99_us": 1625.087,
+      "max_us": 1780.735,
+      "mean_us": 820.345511654964
     },
     "service_time": {
-      "p50_us": 798.719,
-      "p90_us": 1014.783,
-      "p99_us": 1240.063,
-      "p99_9_us": 1426.431,
-      "p99_99_us": 1569.791,
-      "max_us": 1782.783,
-      "mean_us": 805.6458476763644
+      "p50_us": 814.079,
+      "p90_us": 1032.703,
+      "p99_us": 1261.567,
+      "p99_9_us": 1449.983,
+      "p99_99_us": 1625.087,
+      "max_us": 1780.735,
+      "mean_us": 820.345511654964
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 4.271927,
-      "cpu_sys_secs": 8.404493,
-      "cpu_cores": 3.169105,
-      "cpu_us_per_req": 39.90160281026907,
-      "peak_rss_bytes": 148062208,
+      "cpu_user_secs": 4.287083,
+      "cpu_sys_secs": 8.399662,
+      "cpu_cores": 3.17168625,
+      "cpu_us_per_req": 40.66095002451821,
+      "peak_rss_bytes": 192315392,
       "alloc_counting": true,
-      "allocs_per_req": 14.266874834745602,
-      "alloc_bytes_per_req": 8527.668288782847,
-      "deallocs_per_req": 14.268266119386071
+      "allocs_per_req": 14.269216346754783,
+      "alloc_bytes_per_req": 8528.470550906533,
+      "deallocs_per_req": 14.269171476829491
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:32:27Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:43:14Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -869,52 +869,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 328099,
+      "requests": 329084,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 82024.75,
-      "resp_bytes_per_sec": 83993344.0,
+      "req_per_sec": 82271.0,
+      "resp_bytes_per_sec": 84245504.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 3119.103,
-      "p90_us": 3645.439,
-      "p99_us": 4288.511,
-      "p99_9_us": 4829.183,
-      "p99_99_us": 5402.623,
-      "max_us": 5832.703,
-      "mean_us": 3120.6339936177756
+      "p50_us": 3106.815,
+      "p90_us": 3637.247,
+      "p99_us": 4259.839,
+      "p99_9_us": 4755.455,
+      "p99_99_us": 5177.343,
+      "max_us": 5586.943,
+      "mean_us": 3111.4175456236107
     },
     "service_time": {
-      "p50_us": 3119.103,
-      "p90_us": 3645.439,
-      "p99_us": 4288.511,
-      "p99_9_us": 4829.183,
-      "p99_99_us": 5402.623,
-      "max_us": 5832.703,
-      "mean_us": 3120.6339936177756
+      "p50_us": 3106.815,
+      "p90_us": 3637.247,
+      "p99_us": 4259.839,
+      "p99_9_us": 4755.455,
+      "p99_99_us": 5177.343,
+      "max_us": 5586.943,
+      "mean_us": 3111.4175456236107
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 4.390388,
-      "cpu_sys_secs": 8.98815,
-      "cpu_cores": 3.3446345,
-      "cpu_us_per_req": 40.77591824418849,
-      "peak_rss_bytes": 156696576,
+      "cpu_user_secs": 4.418241,
+      "cpu_sys_secs": 9.001085,
+      "cpu_cores": 3.3548315,
+      "cpu_us_per_req": 40.77781356735666,
+      "peak_rss_bytes": 193347584,
       "alloc_counting": true,
-      "allocs_per_req": 14.28112856180604,
-      "alloc_bytes_per_req": 8585.541050109876,
-      "deallocs_per_req": 14.28123523692544
+      "allocs_per_req": 14.27934205248508,
+      "alloc_bytes_per_req": 8582.619364660695,
+      "deallocs_per_req": 14.280132124320842
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:32:32Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:43:19Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -945,52 +945,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 115064,
+      "requests": 115694,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 28766.0,
-      "resp_bytes_per_sec": 29456384.0,
+      "req_per_sec": 28923.5,
+      "resp_bytes_per_sec": 29617664.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 33.279,
-      "p90_us": 43.647,
-      "p99_us": 66.175,
-      "p99_9_us": 95.935,
-      "p99_99_us": 123.391,
-      "max_us": 146.431,
-      "mean_us": 34.66420239171242
+      "p50_us": 32.671,
+      "p90_us": 42.143,
+      "p99_us": 69.375,
+      "p99_9_us": 128.639,
+      "p99_99_us": 936.447,
+      "max_us": 12771.327,
+      "mean_us": 34.48736867944747
     },
     "service_time": {
-      "p50_us": 33.279,
-      "p90_us": 43.647,
-      "p99_us": 66.175,
-      "p99_9_us": 95.935,
-      "p99_99_us": 123.391,
-      "max_us": 146.431,
-      "mean_us": 34.66420239171242
+      "p50_us": 32.671,
+      "p90_us": 42.143,
+      "p99_us": 69.375,
+      "p99_9_us": 128.639,
+      "p99_99_us": 936.447,
+      "max_us": 12771.327,
+      "mean_us": 34.48736867944747
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.864872,
-      "cpu_sys_secs": 1.3737110000000001,
-      "cpu_cores": 0.55964575,
-      "cpu_us_per_req": 19.455111937704235,
-      "peak_rss_bytes": 156762112,
+      "cpu_user_secs": 0.847468,
+      "cpu_sys_secs": 1.408695,
+      "cpu_cores": 0.56404075,
+      "cpu_us_per_req": 19.50112365377634,
+      "peak_rss_bytes": 193478656,
       "alloc_counting": true,
-      "allocs_per_req": 14.999287353125217,
-      "alloc_bytes_per_req": 13430.378311200722,
-      "deallocs_per_req": 14.999339498018495
+      "allocs_per_req": 14.998513319618995,
+      "alloc_bytes_per_req": 13429.685152211869,
+      "deallocs_per_req": 14.998565180562519
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:32:38Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:43:25Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1021,52 +1021,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 607363,
+      "requests": 592516,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 151840.75,
-      "resp_bytes_per_sec": 155484928.0,
+      "req_per_sec": 148129.0,
+      "resp_bytes_per_sec": 151684096.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 414.975,
-      "p90_us": 539.647,
-      "p99_us": 685.567,
-      "p99_9_us": 818.687,
-      "p99_99_us": 933.375,
-      "max_us": 1172.479,
-      "mean_us": 421.35995245018165
+      "p50_us": 421.631,
+      "p90_us": 570.879,
+      "p99_us": 759.807,
+      "p99_9_us": 937.983,
+      "p99_99_us": 1096.703,
+      "max_us": 1363.967,
+      "mean_us": 431.8884252779687
     },
     "service_time": {
-      "p50_us": 414.975,
-      "p90_us": 539.647,
-      "p99_us": 685.567,
-      "p99_9_us": 818.687,
-      "p99_99_us": 933.375,
-      "max_us": 1172.479,
-      "mean_us": 421.35995245018165
+      "p50_us": 421.631,
+      "p90_us": 570.879,
+      "p99_us": 759.807,
+      "p99_9_us": 937.983,
+      "p99_99_us": 1096.703,
+      "max_us": 1363.967,
+      "mean_us": 431.8884252779687
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 6.570406,
-      "cpu_sys_secs": 9.744464,
-      "cpu_cores": 4.0787175,
-      "cpu_us_per_req": 26.86181081165629,
-      "peak_rss_bytes": 156778496,
+      "cpu_user_secs": 6.34031,
+      "cpu_sys_secs": 9.181537,
+      "cpu_cores": 3.88046175,
+      "cpu_us_per_req": 26.19650271047533,
+      "peak_rss_bytes": 193495040,
       "alloc_counting": true,
-      "allocs_per_req": 14.000202514805808,
-      "alloc_bytes_per_req": 13143.306745718788,
-      "deallocs_per_req": 14.000390211455093
+      "allocs_per_req": 13.997635506889265,
+      "alloc_bytes_per_req": 13141.059286162737,
+      "deallocs_per_req": 13.998278527499679
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:32:43Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:43:30Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1097,52 +1097,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 604624,
+      "requests": 580348,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 151156.0,
-      "resp_bytes_per_sec": 154783744.0,
+      "req_per_sec": 145087.0,
+      "resp_bytes_per_sec": 148569088.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1682.431,
-      "p90_us": 1924.095,
-      "p99_us": 2234.367,
-      "p99_9_us": 2662.399,
-      "p99_99_us": 3409.919,
-      "max_us": 4968.447,
-      "mean_us": 1693.4382664267418
+      "p50_us": 1688.575,
+      "p90_us": 2105.343,
+      "p99_us": 3821.567,
+      "p99_9_us": 8454.143,
+      "p99_99_us": 16695.295,
+      "max_us": 22233.087,
+      "mean_us": 1764.1556366593843
     },
     "service_time": {
-      "p50_us": 1682.431,
-      "p90_us": 1924.095,
-      "p99_us": 2234.367,
-      "p99_9_us": 2662.399,
-      "p99_99_us": 3409.919,
-      "max_us": 4968.447,
-      "mean_us": 1693.4382664267418
+      "p50_us": 1688.575,
+      "p90_us": 2105.343,
+      "p99_us": 3821.567,
+      "p99_9_us": 8454.143,
+      "p99_99_us": 16695.295,
+      "max_us": 22233.087,
+      "mean_us": 1764.1556366593843
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 6.567518,
-      "cpu_sys_secs": 10.3869,
-      "cpu_cores": 4.2386045,
-      "cpu_us_per_req": 28.041258699621583,
-      "peak_rss_bytes": 159285248,
+      "cpu_user_secs": 6.0654959999999996,
+      "cpu_sys_secs": 9.019529,
+      "cpu_cores": 3.77125625,
+      "cpu_us_per_req": 25.993067952332048,
+      "peak_rss_bytes": 196591616,
       "alloc_counting": true,
-      "allocs_per_req": 13.998936529148693,
-      "alloc_bytes_per_req": 13142.957294119982,
-      "deallocs_per_req": 13.9998908412501
+      "allocs_per_req": 13.999122940029086,
+      "alloc_bytes_per_req": 13142.767803111237,
+      "deallocs_per_req": 13.999626086417114
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:32:49Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:43:36Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1173,52 +1173,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 98371,
+      "requests": 96614,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 24592.75,
-      "resp_bytes_per_sec": 25182976.0,
+      "req_per_sec": 24153.5,
+      "resp_bytes_per_sec": 24733184.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 39.391,
-      "p90_us": 48.607,
-      "p99_us": 70.463,
-      "p99_9_us": 102.335,
-      "p99_99_us": 126.463,
-      "max_us": 141.055,
-      "mean_us": 40.5781668174564
+      "p50_us": 39.615,
+      "p90_us": 50.335,
+      "p99_us": 77.759,
+      "p99_9_us": 108.991,
+      "p99_99_us": 128.255,
+      "max_us": 190.847,
+      "mean_us": 41.31562862525099
     },
     "service_time": {
-      "p50_us": 39.391,
-      "p90_us": 48.607,
-      "p99_us": 70.463,
-      "p99_9_us": 102.335,
-      "p99_99_us": 126.463,
-      "max_us": 141.055,
-      "mean_us": 40.5781668174564
+      "p50_us": 39.615,
+      "p90_us": 50.335,
+      "p99_us": 77.759,
+      "p99_9_us": 108.991,
+      "p99_99_us": 128.255,
+      "max_us": 190.847,
+      "mean_us": 41.31562862525099
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.929312,
-      "cpu_sys_secs": 1.287505,
-      "cpu_cores": 0.55420425,
-      "cpu_us_per_req": 22.535269540819957,
-      "peak_rss_bytes": 159318016,
+      "cpu_user_secs": 0.916151,
+      "cpu_sys_secs": 1.302867,
+      "cpu_cores": 0.5547545,
+      "cpu_us_per_req": 22.967872151034012,
+      "peak_rss_bytes": 196706304,
       "alloc_counting": true,
-      "allocs_per_req": 13.997438269408667,
-      "alloc_bytes_per_req": 7415.45778735603,
-      "deallocs_per_req": 13.99720446066422
+      "allocs_per_req": 13.998406028111868,
+      "alloc_bytes_per_req": 7415.967126917424,
+      "deallocs_per_req": 13.998167967375329
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:32:54Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:43:41Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1249,52 +1249,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 653332,
+      "requests": 659854,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 163333.0,
-      "resp_bytes_per_sec": 167252992.0,
+      "req_per_sec": 164963.5,
+      "resp_bytes_per_sec": 168922624.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 381.183,
-      "p90_us": 565.759,
-      "p99_us": 747.519,
-      "p99_9_us": 889.343,
-      "p99_99_us": 999.423,
-      "max_us": 1176.575,
-      "mean_us": 391.6972450882556
+      "p50_us": 377.343,
+      "p90_us": 560.127,
+      "p99_us": 738.815,
+      "p99_9_us": 876.543,
+      "p99_99_us": 994.815,
+      "max_us": 1184.767,
+      "mean_us": 387.8279412112378
     },
     "service_time": {
-      "p50_us": 381.183,
-      "p90_us": 565.759,
-      "p99_us": 747.519,
-      "p99_9_us": 889.343,
-      "p99_99_us": 999.423,
-      "max_us": 1176.575,
-      "mean_us": 391.6972450882556
+      "p50_us": 377.343,
+      "p90_us": 560.127,
+      "p99_us": 738.815,
+      "p99_9_us": 876.543,
+      "p99_99_us": 994.815,
+      "max_us": 1184.767,
+      "mean_us": 387.8279412112378
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 8.894812,
-      "cpu_sys_secs": 6.88183,
-      "cpu_cores": 3.9441605,
-      "cpu_us_per_req": 24.147970710144307,
-      "peak_rss_bytes": 159514624,
+      "cpu_user_secs": 8.89293,
+      "cpu_sys_secs": 6.916336,
+      "cpu_cores": 3.9523165000000002,
+      "cpu_us_per_req": 23.958733295547198,
+      "peak_rss_bytes": 196919296,
       "alloc_counting": true,
-      "allocs_per_req": 14.252670923818211,
-      "alloc_bytes_per_req": 8463.689950897859,
-      "deallocs_per_req": 14.253393374272193
+      "allocs_per_req": 14.252686200280667,
+      "alloc_bytes_per_req": 8466.74173983942,
+      "deallocs_per_req": 14.253422726845635
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:33:00Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:43:47Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1325,52 +1325,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 753202,
+      "requests": 755102,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 188300.5,
-      "resp_bytes_per_sec": 192819712.0,
+      "req_per_sec": 188775.5,
+      "resp_bytes_per_sec": 193306112.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1325.055,
-      "p90_us": 1907.711,
-      "p99_us": 2502.655,
-      "p99_9_us": 2994.175,
-      "p99_99_us": 3422.207,
-      "max_us": 3979.263,
-      "mean_us": 1359.3622689052888
+      "p50_us": 1321.983,
+      "p90_us": 1899.519,
+      "p99_us": 2492.415,
+      "p99_9_us": 2969.599,
+      "p99_99_us": 3346.431,
+      "max_us": 4259.839,
+      "mean_us": 1355.9289701894588
     },
     "service_time": {
-      "p50_us": 1325.055,
-      "p90_us": 1907.711,
-      "p99_us": 2502.655,
-      "p99_9_us": 2994.175,
-      "p99_99_us": 3422.207,
-      "max_us": 3979.263,
-      "mean_us": 1359.3622689052888
+      "p50_us": 1321.983,
+      "p90_us": 1899.519,
+      "p99_us": 2492.415,
+      "p99_9_us": 2969.599,
+      "p99_99_us": 3346.431,
+      "max_us": 4259.839,
+      "mean_us": 1355.9289701894588
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 9.565932,
-      "cpu_sys_secs": 6.151944,
-      "cpu_cores": 3.929469,
-      "cpu_us_per_req": 20.868075230814576,
-      "peak_rss_bytes": 160251904,
+      "cpu_user_secs": 9.579726,
+      "cpu_sys_secs": 6.095015,
+      "cpu_cores": 3.9186852500000002,
+      "cpu_us_per_req": 20.758441905861723,
+      "peak_rss_bytes": 197181440,
       "alloc_counting": true,
-      "allocs_per_req": 14.277094325293879,
-      "alloc_bytes_per_req": 8559.776575208245,
-      "deallocs_per_req": 14.278334364486552
+      "allocs_per_req": 14.277000987946,
+      "alloc_bytes_per_req": 8560.685278280285,
+      "deallocs_per_req": 14.27906958265241
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:33:05Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:43:52Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1401,52 +1401,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 122430,
+      "requests": 112412,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 30607.5,
-      "resp_bytes_per_sec": 31342080.0,
+      "req_per_sec": 28103.0,
+      "resp_bytes_per_sec": 28777472.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 31.759,
-      "p90_us": 37.023,
-      "p99_us": 56.127,
-      "p99_9_us": 96.703,
-      "p99_99_us": 124.159,
-      "max_us": 177.151,
-      "mean_us": 32.61275530507229
+      "p50_us": 32.719,
+      "p90_us": 45.567,
+      "p99_us": 79.871,
+      "p99_9_us": 137.983,
+      "p99_99_us": 686.079,
+      "max_us": 2768.895,
+      "mean_us": 35.49461203430235
     },
     "service_time": {
-      "p50_us": 31.759,
-      "p90_us": 37.023,
-      "p99_us": 56.127,
-      "p99_9_us": 96.703,
-      "p99_99_us": 124.159,
-      "max_us": 177.151,
-      "mean_us": 32.61275530507229
+      "p50_us": 32.719,
+      "p90_us": 45.567,
+      "p99_us": 79.871,
+      "p99_9_us": 137.983,
+      "p99_99_us": 686.079,
+      "max_us": 2768.895,
+      "mean_us": 35.49461203430235
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.006222,
-      "cpu_sys_secs": 0.951039,
-      "cpu_cores": 0.48931525,
-      "cpu_us_per_req": 15.986776116964796,
-      "peak_rss_bytes": 160940032,
+      "cpu_user_secs": 0.979833,
+      "cpu_sys_secs": 0.935272,
+      "cpu_cores": 0.47877625,
+      "cpu_us_per_req": 17.03648187026296,
+      "peak_rss_bytes": 197918720,
       "alloc_counting": true,
-      "allocs_per_req": 43.9943477905742,
-      "alloc_bytes_per_req": 17497.78815649759,
-      "deallocs_per_req": 43.994494813362735
+      "allocs_per_req": 43.99736682916414,
+      "alloc_bytes_per_req": 17498.992136070883,
+      "deallocs_per_req": 43.99752695441768
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:33:11Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:43:58Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1477,52 +1477,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 475217,
+      "requests": 476385,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 118804.25,
-      "resp_bytes_per_sec": 121655552.0,
+      "req_per_sec": 119096.25,
+      "resp_bytes_per_sec": 121954560.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 529.919,
-      "p90_us": 781.311,
-      "p99_us": 1034.239,
-      "p99_9_us": 1235.967,
-      "p99_99_us": 1402.879,
-      "max_us": 1741.823,
-      "mean_us": 538.56682884661
+      "p50_us": 526.335,
+      "p90_us": 782.847,
+      "p99_us": 1045.503,
+      "p99_9_us": 1307.647,
+      "p99_99_us": 2703.359,
+      "max_us": 4251.647,
+      "mean_us": 537.2176721601227
     },
     "service_time": {
-      "p50_us": 529.919,
-      "p90_us": 781.311,
-      "p99_us": 1034.239,
-      "p99_9_us": 1235.967,
-      "p99_99_us": 1402.879,
-      "max_us": 1741.823,
-      "mean_us": 538.56682884661
+      "p50_us": 526.335,
+      "p90_us": 782.847,
+      "p99_us": 1045.503,
+      "p99_9_us": 1307.647,
+      "p99_99_us": 2703.359,
+      "max_us": 4251.647,
+      "mean_us": 537.2176721601227
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 11.642965,
-      "cpu_sys_secs": 6.132994,
-      "cpu_cores": 4.44398975,
-      "cpu_us_per_req": 37.40598295094662,
-      "peak_rss_bytes": 164773888,
+      "cpu_user_secs": 11.307184,
+      "cpu_sys_secs": 6.161154,
+      "cpu_cores": 4.3670845,
+      "cpu_us_per_req": 36.668530705206926,
+      "peak_rss_bytes": 203194368,
       "alloc_counting": true,
-      "allocs_per_req": 42.9906253353731,
-      "alloc_bytes_per_req": 17208.890111254437,
-      "deallocs_per_req": 42.99348087294857
+      "allocs_per_req": 42.995323110509354,
+      "alloc_bytes_per_req": 17210.751337678557,
+      "deallocs_per_req": 42.99801631033723
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:33:16Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:44:03Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1553,52 +1553,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 485590,
+      "requests": 487901,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 121397.5,
-      "resp_bytes_per_sec": 124311040.0,
+      "req_per_sec": 121975.25,
+      "resp_bytes_per_sec": 124902656.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 2046.975,
-      "p90_us": 3381.247,
-      "p99_us": 4907.007,
-      "p99_9_us": 6119.423,
-      "p99_99_us": 7127.039,
-      "max_us": 8937.471,
-      "mean_us": 2108.621817813383
+      "p50_us": 2016.255,
+      "p90_us": 3395.583,
+      "p99_us": 4952.063,
+      "p99_9_us": 6270.975,
+      "p99_99_us": 7352.319,
+      "max_us": 9109.503,
+      "mean_us": 2098.7250505655884
     },
     "service_time": {
-      "p50_us": 2046.975,
-      "p90_us": 3381.247,
-      "p99_us": 4907.007,
-      "p99_9_us": 6119.423,
-      "p99_99_us": 7127.039,
-      "max_us": 8937.471,
-      "mean_us": 2108.621817813383
+      "p50_us": 2016.255,
+      "p90_us": 3395.583,
+      "p99_us": 4952.063,
+      "p99_9_us": 6270.975,
+      "p99_99_us": 7352.319,
+      "max_us": 9109.503,
+      "mean_us": 2098.7250505655884
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 12.043468,
-      "cpu_sys_secs": 6.377229,
-      "cpu_cores": 4.60517425,
-      "cpu_us_per_req": 37.934671224695734,
-      "peak_rss_bytes": 181469184,
+      "cpu_user_secs": 11.757294,
+      "cpu_sys_secs": 6.350316,
+      "cpu_cores": 4.5269025,
+      "cpu_us_per_req": 37.11328732673227,
+      "peak_rss_bytes": 218071040,
       "alloc_counting": true,
-      "allocs_per_req": 42.99473424082044,
-      "alloc_bytes_per_req": 17212.173823596037,
-      "deallocs_per_req": 43.004324636009805
+      "allocs_per_req": 42.99935232762384,
+      "alloc_bytes_per_req": 17213.590953902534,
+      "deallocs_per_req": 43.0070383131004
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:33:22Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:44:09Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1629,52 +1629,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 90423,
+      "requests": 87450,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 22605.75,
-      "resp_bytes_per_sec": 23148288.0,
+      "req_per_sec": 21862.5,
+      "resp_bytes_per_sec": 22387200.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 42.943,
-      "p90_us": 51.167,
-      "p99_us": 75.903,
-      "p99_9_us": 114.175,
-      "p99_99_us": 144.767,
-      "max_us": 160.511,
-      "mean_us": 44.15905670017584
+      "p50_us": 43.423,
+      "p90_us": 55.487,
+      "p99_us": 88.511,
+      "p99_9_us": 127.423,
+      "p99_99_us": 166.271,
+      "max_us": 197.247,
+      "mean_us": 45.65854636935401
     },
     "service_time": {
-      "p50_us": 42.943,
-      "p90_us": 51.167,
-      "p99_us": 75.903,
-      "p99_9_us": 114.175,
-      "p99_99_us": 144.767,
-      "max_us": 160.511,
-      "mean_us": 44.15905670017584
+      "p50_us": 43.423,
+      "p90_us": 55.487,
+      "p99_us": 88.511,
+      "p99_9_us": 127.423,
+      "p99_99_us": 166.271,
+      "max_us": 197.247,
+      "mean_us": 45.65854636935401
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.120282,
-      "cpu_sys_secs": 1.169101,
-      "cpu_cores": 0.57234575,
-      "cpu_us_per_req": 25.31859150879754,
-      "peak_rss_bytes": 181501952,
+      "cpu_user_secs": 1.118793,
+      "cpu_sys_secs": 1.200258,
+      "cpu_cores": 0.57976275,
+      "cpu_us_per_req": 26.518593481989708,
+      "peak_rss_bytes": 218087424,
       "alloc_counting": true,
-      "allocs_per_req": 45.993088041759286,
-      "alloc_bytes_per_req": 11668.21346338874,
-      "deallocs_per_req": 45.99326498789025
+      "allocs_per_req": 45.997061177815894,
+      "alloc_bytes_per_req": 11669.220308747856,
+      "deallocs_per_req": 45.99724413950829
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:33:27Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:44:15Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1705,52 +1705,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 266014,
+      "requests": 257176,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 66503.5,
-      "resp_bytes_per_sec": 68099584.0,
+      "req_per_sec": 64294.0,
+      "resp_bytes_per_sec": 65837056.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 956.415,
-      "p90_us": 1187.839,
-      "p99_us": 1418.239,
-      "p99_9_us": 1601.535,
-      "p99_99_us": 1763.327,
-      "max_us": 1951.743,
-      "mean_us": 962.1994018359928
+      "p50_us": 986.111,
+      "p90_us": 1229.823,
+      "p99_us": 1517.567,
+      "p99_9_us": 2142.207,
+      "p99_99_us": 3301.375,
+      "max_us": 3833.855,
+      "mean_us": 995.2729278626304
     },
     "service_time": {
-      "p50_us": 956.415,
-      "p90_us": 1187.839,
-      "p99_us": 1418.239,
-      "p99_9_us": 1601.535,
-      "p99_99_us": 1763.327,
-      "max_us": 1951.743,
-      "mean_us": 962.1994018359928
+      "p50_us": 986.111,
+      "p90_us": 1229.823,
+      "p99_us": 1517.567,
+      "p99_9_us": 2142.207,
+      "p99_99_us": 3301.375,
+      "max_us": 3833.855,
+      "mean_us": 995.2729278626304
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 6.576751,
-      "cpu_sys_secs": 6.989763,
-      "cpu_cores": 3.3916285,
-      "cpu_us_per_req": 50.999248159871286,
-      "peak_rss_bytes": 184778752,
+      "cpu_user_secs": 6.59428,
+      "cpu_sys_secs": 6.833217,
+      "cpu_cores": 3.35687425,
+      "cpu_us_per_req": 52.2113144305845,
+      "peak_rss_bytes": 218202112,
       "alloc_counting": true,
-      "allocs_per_req": 46.26592961272715,
-      "alloc_bytes_per_req": 12780.82324614494,
-      "deallocs_per_req": 46.27074138955093
+      "allocs_per_req": 46.2662806793791,
+      "alloc_bytes_per_req": 12780.513274955672,
+      "deallocs_per_req": 46.26799156997542
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:33:33Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:44:20Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1781,52 +1781,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 263578,
+      "requests": 250024,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 65894.5,
-      "resp_bytes_per_sec": 67475968.0,
+      "req_per_sec": 62506.0,
+      "resp_bytes_per_sec": 64006144.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 3885.055,
-      "p90_us": 4222.975,
-      "p99_us": 4538.367,
-      "p99_9_us": 4812.799,
-      "p99_99_us": 5021.695,
-      "max_us": 5316.607,
-      "mean_us": 3884.89946177602
+      "p50_us": 4034.559,
+      "p90_us": 4456.447,
+      "p99_us": 5505.023,
+      "p99_9_us": 15089.663,
+      "p99_99_us": 23560.191,
+      "max_us": 23740.415,
+      "mean_us": 4095.4792784052784
     },
     "service_time": {
-      "p50_us": 3885.055,
-      "p90_us": 4222.975,
-      "p99_us": 4538.367,
-      "p99_9_us": 4812.799,
-      "p99_99_us": 5021.695,
-      "max_us": 5316.607,
-      "mean_us": 3884.89946177602
+      "p50_us": 4034.559,
+      "p90_us": 4456.447,
+      "p99_us": 5505.023,
+      "p99_9_us": 15089.663,
+      "p99_99_us": 23560.191,
+      "max_us": 23740.415,
+      "mean_us": 4095.4792784052784
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 6.64297,
-      "cpu_sys_secs": 6.97385,
-      "cpu_cores": 3.404205,
-      "cpu_us_per_req": 51.6614436713231,
-      "peak_rss_bytes": 184926208,
+      "cpu_user_secs": 6.535663,
+      "cpu_sys_secs": 6.771368,
+      "cpu_cores": 3.32675775,
+      "cpu_us_per_req": 53.223014590599306,
+      "peak_rss_bytes": 218775552,
       "alloc_counting": true,
-      "allocs_per_req": 46.26484759729568,
-      "alloc_bytes_per_req": 12783.280459674175,
-      "deallocs_per_req": 46.26552671315512
+      "allocs_per_req": 46.26466259239113,
+      "alloc_bytes_per_req": 12788.766574408857,
+      "deallocs_per_req": 46.268742200748726
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:33:38Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:44:26Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1857,52 +1857,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 103844,
+      "requests": 106231,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 25961.0,
-      "resp_bytes_per_sec": 26584064.0,
+      "req_per_sec": 26557.75,
+      "resp_bytes_per_sec": 27195136.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 37.439,
-      "p90_us": 45.695,
-      "p99_us": 68.287,
-      "p99_9_us": 101.247,
-      "p99_99_us": 130.047,
-      "max_us": 176.127,
-      "mean_us": 38.43640822772626
+      "p50_us": 36.959,
+      "p90_us": 43.807,
+      "p99_us": 63.615,
+      "p99_9_us": 107.455,
+      "p99_99_us": 136.191,
+      "max_us": 161.919,
+      "mean_us": 37.59098801668061
     },
     "service_time": {
-      "p50_us": 37.439,
-      "p90_us": 45.695,
-      "p99_us": 68.287,
-      "p99_9_us": 101.247,
-      "p99_99_us": 130.047,
-      "max_us": 176.127,
-      "mean_us": 38.43640822772626
+      "p50_us": 36.959,
+      "p90_us": 43.807,
+      "p99_us": 63.615,
+      "p99_9_us": 107.455,
+      "p99_99_us": 136.191,
+      "max_us": 161.919,
+      "mean_us": 37.59098801668061
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.10561,
-      "cpu_sys_secs": 1.257215,
-      "cpu_cores": 0.59070625,
-      "cpu_us_per_req": 22.753601556180424,
-      "peak_rss_bytes": 184926208,
+      "cpu_user_secs": 1.0848,
+      "cpu_sys_secs": 1.261962,
+      "cpu_cores": 0.5866905,
+      "cpu_us_per_req": 22.091122177142264,
+      "peak_rss_bytes": 218791936,
       "alloc_counting": true,
-      "allocs_per_req": 43.9996918454605,
-      "alloc_bytes_per_req": 17499.920110935633,
-      "deallocs_per_req": 43.999865182388966
+      "allocs_per_req": 43.99969876966234,
+      "alloc_bytes_per_req": 17499.92190603496,
+      "deallocs_per_req": 43.999868211727275
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:33:44Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:44:31Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -1933,52 +1933,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 514825,
+      "requests": 518874,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 128706.25,
-      "resp_bytes_per_sec": 131795200.0,
+      "req_per_sec": 129718.5,
+      "resp_bytes_per_sec": 132831744.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 487.423,
-      "p90_us": 714.751,
-      "p99_us": 942.591,
-      "p99_9_us": 1126.399,
-      "p99_99_us": 1292.287,
-      "max_us": 1523.711,
-      "mean_us": 497.1254605273638
+      "p50_us": 483.583,
+      "p90_us": 711.679,
+      "p99_us": 938.495,
+      "p99_9_us": 1128.447,
+      "p99_99_us": 1267.711,
+      "max_us": 1614.847,
+      "mean_us": 493.26736158682144
     },
     "service_time": {
-      "p50_us": 487.423,
-      "p90_us": 714.751,
-      "p99_us": 942.591,
-      "p99_9_us": 1126.399,
-      "p99_99_us": 1292.287,
-      "max_us": 1523.711,
-      "mean_us": 497.1254605273638
+      "p50_us": 483.583,
+      "p90_us": 711.679,
+      "p99_us": 938.495,
+      "p99_9_us": 1128.447,
+      "p99_99_us": 1267.711,
+      "max_us": 1614.847,
+      "mean_us": 493.26736158682144
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 12.115865,
-      "cpu_sys_secs": 6.290919,
-      "cpu_cores": 4.601696,
-      "cpu_us_per_req": 35.75347739523139,
-      "peak_rss_bytes": 184942592,
+      "cpu_user_secs": 12.279936,
+      "cpu_sys_secs": 6.200255,
+      "cpu_cores": 4.62004775,
+      "cpu_us_per_req": 35.61595107868192,
+      "peak_rss_bytes": 218791936,
       "alloc_counting": true,
-      "allocs_per_req": 42.993467683193316,
-      "alloc_bytes_per_req": 17210.117587529745,
-      "deallocs_per_req": 42.99590151993396
+      "allocs_per_req": 42.99076268997869,
+      "alloc_bytes_per_req": 17208.90357196545,
+      "deallocs_per_req": 42.99322957018467
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:33:50Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:44:37Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2009,52 +2009,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 534451,
+      "requests": 550313,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 133612.75,
-      "resp_bytes_per_sec": 136819456.0,
+      "req_per_sec": 137578.25,
+      "resp_bytes_per_sec": 140880128.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1847.295,
-      "p90_us": 3047.423,
-      "p99_us": 4370.431,
-      "p99_9_us": 5447.679,
-      "p99_99_us": 6520.831,
-      "max_us": 7401.471,
-      "mean_us": 1915.8218833157734
+      "p50_us": 1801.215,
+      "p90_us": 2963.455,
+      "p99_us": 4198.399,
+      "p99_9_us": 5197.823,
+      "p99_99_us": 6098.943,
+      "max_us": 7090.175,
+      "mean_us": 1860.692614392172
     },
     "service_time": {
-      "p50_us": 1847.295,
-      "p90_us": 3047.423,
-      "p99_us": 4370.431,
-      "p99_9_us": 5447.679,
-      "p99_99_us": 6520.831,
-      "max_us": 7401.471,
-      "mean_us": 1915.8218833157734
+      "p50_us": 1801.215,
+      "p90_us": 2963.455,
+      "p99_us": 4198.399,
+      "p99_9_us": 5197.823,
+      "p99_99_us": 6098.943,
+      "max_us": 7090.175,
+      "mean_us": 1860.692614392172
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 12.54431,
-      "cpu_sys_secs": 6.830274,
-      "cpu_cores": 4.843646,
-      "cpu_us_per_req": 36.2513757107761,
-      "peak_rss_bytes": 188088320,
+      "cpu_user_secs": 12.75335,
+      "cpu_sys_secs": 6.698227,
+      "cpu_cores": 4.86289425,
+      "cpu_us_per_req": 35.34638832809692,
+      "peak_rss_bytes": 231899136,
       "alloc_counting": true,
-      "allocs_per_req": 42.99677800209935,
-      "alloc_bytes_per_req": 17212.060974719854,
-      "deallocs_per_req": 43.00190101618296
+      "allocs_per_req": 42.99928767810319,
+      "alloc_bytes_per_req": 17212.469311101137,
+      "deallocs_per_req": 43.0025567268082
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:33:55Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:44:42Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2085,52 +2085,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 88651,
+      "requests": 89073,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 22162.75,
-      "resp_bytes_per_sec": 22694656.0,
+      "req_per_sec": 22268.25,
+      "resp_bytes_per_sec": 22802688.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 43.551,
-      "p90_us": 53.311,
-      "p99_us": 77.567,
-      "p99_9_us": 113.535,
-      "p99_99_us": 143.871,
-      "max_us": 175.743,
-      "mean_us": 45.04644992160265
+      "p50_us": 43.423,
+      "p90_us": 51.935,
+      "p99_us": 79.615,
+      "p99_9_us": 123.711,
+      "p99_99_us": 145.151,
+      "max_us": 161.407,
+      "mean_us": 44.842666936108564
     },
     "service_time": {
-      "p50_us": 43.551,
-      "p90_us": 53.311,
-      "p99_us": 77.567,
-      "p99_9_us": 113.535,
-      "p99_99_us": 143.871,
-      "max_us": 175.743,
-      "mean_us": 45.04644992160265
+      "p50_us": 43.423,
+      "p90_us": 51.935,
+      "p99_us": 79.615,
+      "p99_9_us": 123.711,
+      "p99_99_us": 145.151,
+      "max_us": 161.407,
+      "mean_us": 44.842666936108564
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.151302,
-      "cpu_sys_secs": 1.172072,
-      "cpu_cores": 0.5808435,
-      "cpu_us_per_req": 26.20809691938049,
-      "peak_rss_bytes": 188088320,
+      "cpu_user_secs": 1.132913,
+      "cpu_sys_secs": 1.169483,
+      "cpu_cores": 0.575599,
+      "cpu_us_per_req": 25.848416467391914,
+      "peak_rss_bytes": 231899136,
       "alloc_counting": true,
-      "allocs_per_req": 45.997924445296725,
-      "alloc_bytes_per_req": 11669.389177787052,
-      "deallocs_per_req": 45.99783420378789
+      "allocs_per_req": 45.99122068415794,
+      "alloc_bytes_per_req": 11667.688861944696,
+      "deallocs_per_req": 45.99113087018513
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:34:01Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:44:48Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2161,52 +2161,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 466376,
+      "requests": 463582,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 116594.0,
-      "resp_bytes_per_sec": 119392256.0,
+      "req_per_sec": 115895.5,
+      "resp_bytes_per_sec": 118676992.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 539.135,
-      "p90_us": 791.551,
-      "p99_us": 1036.287,
-      "p99_9_us": 1225.727,
-      "p99_99_us": 1463.295,
-      "max_us": 2500.607,
-      "mean_us": 548.775565089112
+      "p50_us": 543.231,
+      "p90_us": 794.111,
+      "p99_us": 1037.823,
+      "p99_9_us": 1222.655,
+      "p99_99_us": 1374.207,
+      "max_us": 1602.559,
+      "mean_us": 552.0734797123271
     },
     "service_time": {
-      "p50_us": 539.135,
-      "p90_us": 791.551,
-      "p99_us": 1036.287,
-      "p99_9_us": 1225.727,
-      "p99_99_us": 1463.295,
-      "max_us": 2500.607,
-      "mean_us": 548.775565089112
+      "p50_us": 543.231,
+      "p90_us": 794.111,
+      "p99_us": 1037.823,
+      "p99_9_us": 1222.655,
+      "p99_99_us": 1374.207,
+      "max_us": 1602.559,
+      "mean_us": 552.0734797123271
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 12.978774,
-      "cpu_sys_secs": 3.980987,
-      "cpu_cores": 4.23994025,
-      "cpu_us_per_req": 36.36499519700842,
-      "peak_rss_bytes": 188088320,
+      "cpu_user_secs": 13.005134,
+      "cpu_sys_secs": 3.982432,
+      "cpu_cores": 4.2468915,
+      "cpu_us_per_req": 36.644144940916604,
+      "peak_rss_bytes": 231899136,
       "alloc_counting": true,
-      "allocs_per_req": 46.253576513371186,
-      "alloc_bytes_per_req": 12732.30323172719,
-      "deallocs_per_req": 46.25638754995969
+      "allocs_per_req": 46.250216790125585,
+      "alloc_bytes_per_req": 12732.936291745582,
+      "deallocs_per_req": 46.25345677787317
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:34:06Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:44:53Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2237,52 +2237,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 500733,
+      "requests": 500529,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 125183.25,
-      "resp_bytes_per_sec": 128187648.0,
+      "req_per_sec": 125132.25,
+      "resp_bytes_per_sec": 128135424.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 2009.087,
-      "p90_us": 2867.199,
-      "p99_us": 3768.319,
-      "p99_9_us": 4468.735,
-      "p99_99_us": 5087.231,
-      "max_us": 5574.655,
-      "mean_us": 2044.7289317700272
+      "p50_us": 2010.111,
+      "p90_us": 2859.007,
+      "p99_us": 3700.735,
+      "p99_9_us": 4308.991,
+      "p99_99_us": 4845.567,
+      "max_us": 5292.031,
+      "mean_us": 2045.6091173937969
     },
     "service_time": {
-      "p50_us": 2009.087,
-      "p90_us": 2867.199,
-      "p99_us": 3768.319,
-      "p99_9_us": 4468.735,
-      "p99_99_us": 5087.231,
-      "max_us": 5574.655,
-      "mean_us": 2044.7289317700272
+      "p50_us": 2010.111,
+      "p90_us": 2859.007,
+      "p99_us": 3700.735,
+      "p99_9_us": 4308.991,
+      "p99_99_us": 4845.567,
+      "max_us": 5292.031,
+      "mean_us": 2045.6091173937969
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 13.864709,
-      "cpu_sys_secs": 3.233192,
-      "cpu_cores": 4.27447525,
-      "cpu_us_per_req": 34.14574433879932,
-      "peak_rss_bytes": 188350464,
+      "cpu_user_secs": 13.85874,
+      "cpu_sys_secs": 3.238988,
+      "cpu_cores": 4.274432,
+      "cpu_us_per_req": 34.159315444259974,
+      "peak_rss_bytes": 234602496,
       "alloc_counting": true,
-      "allocs_per_req": 46.26162445854378,
-      "alloc_bytes_per_req": 12813.286501988085,
-      "deallocs_per_req": 46.273343278753345
+      "allocs_per_req": 46.26720529679599,
+      "alloc_bytes_per_req": 12814.78226036853,
+      "deallocs_per_req": 46.27405804658671
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:34:12Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:44:59Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2313,52 +2313,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 363489,
+      "requests": 384084,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 90872.25,
-      "resp_bytes_per_sec": 5955403776.0,
+      "req_per_sec": 96021.0,
+      "resp_bytes_per_sec": 6292832256.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 699.903,
-      "p90_us": 785.919,
-      "p99_us": 869.375,
-      "p99_9_us": 943.615,
-      "p99_99_us": 1010.687,
-      "max_us": 1853.439,
-      "mean_us": 704.11538272685
+      "p50_us": 662.015,
+      "p90_us": 742.911,
+      "p99_us": 827.391,
+      "p99_9_us": 917.503,
+      "p99_99_us": 1087.487,
+      "max_us": 7512.063,
+      "mean_us": 666.3585858926701
     },
     "service_time": {
-      "p50_us": 699.903,
-      "p90_us": 785.919,
-      "p99_us": 869.375,
-      "p99_9_us": 943.615,
-      "p99_99_us": 1010.687,
-      "max_us": 1853.439,
-      "mean_us": 704.11538272685
+      "p50_us": 662.015,
+      "p90_us": 742.911,
+      "p99_us": 827.391,
+      "p99_9_us": 917.503,
+      "p99_99_us": 1087.487,
+      "max_us": 7512.063,
+      "mean_us": 666.3585858926701
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 2.04889,
-      "cpu_sys_secs": 7.719953,
-      "cpu_cores": 2.44221075,
-      "cpu_us_per_req": 26.87520942862095,
-      "peak_rss_bytes": 188399616,
+      "cpu_user_secs": 2.167013,
+      "cpu_sys_secs": 8.138449,
+      "cpu_cores": 2.5763655,
+      "cpu_us_per_req": 26.831271284406537,
+      "peak_rss_bytes": 234651648,
       "alloc_counting": true,
-      "allocs_per_req": 1.9999779910808855,
-      "alloc_bytes_per_req": 215.99907562539718,
-      "deallocs_per_req": 1.999980742195775
+      "allocs_per_req": 2.000013017985649,
+      "alloc_bytes_per_req": 216.00289520000834,
+      "deallocs_per_req": 2.0001822517990857
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:34:17Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:45:04Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2389,52 +2389,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 497833,
+      "requests": 480127,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 124458.25,
-      "resp_bytes_per_sec": 8156495872.0,
+      "req_per_sec": 120031.75,
+      "resp_bytes_per_sec": 7866400768.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 511.999,
-      "p90_us": 628.223,
-      "p99_us": 759.807,
-      "p99_9_us": 893.439,
-      "p99_99_us": 1052.671,
-      "max_us": 1236.991,
-      "mean_us": 514.0826214091877
+      "p50_us": 519.935,
+      "p90_us": 657.407,
+      "p99_us": 934.911,
+      "p99_9_us": 2400.255,
+      "p99_99_us": 4012.031,
+      "max_us": 5685.247,
+      "mean_us": 533.0191979705371
     },
     "service_time": {
-      "p50_us": 511.999,
-      "p90_us": 628.223,
-      "p99_us": 759.807,
-      "p99_9_us": 893.439,
-      "p99_99_us": 1052.671,
-      "max_us": 1236.991,
-      "mean_us": 514.0826214091877
+      "p50_us": 519.935,
+      "p90_us": 657.407,
+      "p99_us": 934.911,
+      "p99_9_us": 2400.255,
+      "p99_99_us": 4012.031,
+      "max_us": 5685.247,
+      "mean_us": 533.0191979705371
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 4.104498,
-      "cpu_sys_secs": 7.67066,
-      "cpu_cores": 2.9437895,
-      "cpu_us_per_req": 23.652827353751157,
-      "peak_rss_bytes": 188416000,
+      "cpu_user_secs": 3.8912269999999998,
+      "cpu_sys_secs": 7.362706,
+      "cpu_cores": 2.81348325,
+      "cpu_us_per_req": 23.43949205106149,
+      "peak_rss_bytes": 234668032,
       "alloc_counting": true,
-      "allocs_per_req": 4.001653164816314,
-      "alloc_bytes_per_req": 2771.0411724413607,
-      "deallocs_per_req": 4.001560764352704
+      "allocs_per_req": 4.00124133822926,
+      "alloc_bytes_per_req": 2770.7159064164275,
+      "deallocs_per_req": 4.001557921133367
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:34:23Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:45:10Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2465,52 +2465,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 369808,
+      "requests": 370841,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 92452.0,
-      "resp_bytes_per_sec": 6058934272.0,
+      "req_per_sec": 92710.25,
+      "resp_bytes_per_sec": 6075858944.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 688.127,
-      "p90_us": 773.119,
-      "p99_us": 862.207,
-      "p99_9_us": 947.711,
-      "p99_99_us": 1200.127,
-      "max_us": 1388.543,
-      "mean_us": 692.0742051659252
+      "p50_us": 683.519,
+      "p90_us": 777.727,
+      "p99_us": 908.287,
+      "p99_9_us": 1443.839,
+      "p99_99_us": 2336.767,
+      "max_us": 3868.671,
+      "mean_us": 690.1406812731095
     },
     "service_time": {
-      "p50_us": 688.127,
-      "p90_us": 773.119,
-      "p99_us": 862.207,
-      "p99_9_us": 947.711,
-      "p99_99_us": 1200.127,
-      "max_us": 1388.543,
-      "mean_us": 692.0742051659252
+      "p50_us": 683.519,
+      "p90_us": 777.727,
+      "p99_us": 908.287,
+      "p99_9_us": 1443.839,
+      "p99_99_us": 2336.767,
+      "max_us": 3868.671,
+      "mean_us": 690.1406812731095
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 4.381584,
-      "cpu_sys_secs": 8.115815,
-      "cpu_cores": 3.12434975,
-      "cpu_us_per_req": 33.794290550772295,
-      "peak_rss_bytes": 188448768,
+      "cpu_user_secs": 4.336228,
+      "cpu_sys_secs": 8.163667,
+      "cpu_cores": 3.12497375,
+      "cpu_us_per_req": 33.70688516102589,
+      "peak_rss_bytes": 235716608,
       "alloc_counting": true,
-      "allocs_per_req": 14.009740189503743,
-      "alloc_bytes_per_req": 130013.34761551941,
-      "deallocs_per_req": 14.01040539955869
+      "allocs_per_req": 14.002626462554032,
+      "alloc_bytes_per_req": 130698.06593391777,
+      "deallocs_per_req": 14.002879940459659
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:34:28Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:45:15Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2541,52 +2541,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 223591,
+      "requests": 225515,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 55897.75,
-      "resp_bytes_per_sec": 3663314944.0,
+      "req_per_sec": 56378.75,
+      "resp_bytes_per_sec": 3694837760.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1133.567,
-      "p90_us": 1417.215,
-      "p99_us": 1753.087,
-      "p99_9_us": 1986.559,
-      "p99_99_us": 2142.207,
-      "max_us": 2306.047,
-      "mean_us": 1144.8465434118564
+      "p50_us": 1124.351,
+      "p90_us": 1398.783,
+      "p99_us": 1720.319,
+      "p99_9_us": 1941.503,
+      "p99_99_us": 2119.679,
+      "max_us": 2340.863,
+      "mean_us": 1135.0370008558211
     },
     "service_time": {
-      "p50_us": 1133.567,
-      "p90_us": 1417.215,
-      "p99_us": 1753.087,
-      "p99_9_us": 1986.559,
-      "p99_99_us": 2142.207,
-      "max_us": 2306.047,
-      "mean_us": 1144.8465434118564
+      "p50_us": 1124.351,
+      "p90_us": 1398.783,
+      "p99_us": 1720.319,
+      "p99_9_us": 1941.503,
+      "p99_99_us": 2119.679,
+      "max_us": 2340.863,
+      "mean_us": 1135.0370008558211
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 3.76273,
-      "cpu_sys_secs": 6.618254,
-      "cpu_cores": 2.595246,
-      "cpu_us_per_req": 46.42845195021267,
-      "peak_rss_bytes": 188448768,
+      "cpu_user_secs": 3.7711360000000003,
+      "cpu_sys_secs": 6.640721,
+      "cpu_cores": 2.60296425,
+      "cpu_us_per_req": 46.169243731015676,
+      "peak_rss_bytes": 235765760,
       "alloc_counting": true,
-      "allocs_per_req": 16.999297825046625,
-      "alloc_bytes_per_req": 81212.74889865871,
-      "deallocs_per_req": 16.999879243797828
+      "allocs_per_req": 16.998855951932246,
+      "alloc_bytes_per_req": 81216.25952153958,
+      "deallocs_per_req": 17.000434560893954
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:34:34Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:45:21Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2617,52 +2617,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 359727,
+      "requests": 368463,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 89931.75,
-      "resp_bytes_per_sec": 5893767168.0,
+      "req_per_sec": 92115.75,
+      "resp_bytes_per_sec": 6036897792.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 708.095,
-      "p90_us": 791.551,
-      "p99_us": 876.031,
-      "p99_9_us": 955.391,
-      "p99_99_us": 1044.479,
-      "max_us": 1129.471,
-      "mean_us": 711.5009703691964
+      "p50_us": 688.639,
+      "p90_us": 786.943,
+      "p99_us": 896.511,
+      "p99_9_us": 1017.855,
+      "p99_99_us": 1188.863,
+      "max_us": 1613.823,
+      "mean_us": 694.5878024984863
     },
     "service_time": {
-      "p50_us": 708.095,
-      "p90_us": 791.551,
-      "p99_us": 876.031,
-      "p99_9_us": 955.391,
-      "p99_99_us": 1044.479,
-      "max_us": 1129.471,
-      "mean_us": 711.5009703691964
+      "p50_us": 688.639,
+      "p90_us": 786.943,
+      "p99_us": 896.511,
+      "p99_9_us": 1017.855,
+      "p99_99_us": 1188.863,
+      "max_us": 1613.823,
+      "mean_us": 694.5878024984863
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 4.43005,
-      "cpu_sys_secs": 7.928299,
-      "cpu_cores": 3.08958725,
-      "cpu_us_per_req": 34.35479961192794,
-      "peak_rss_bytes": 188514304,
+      "cpu_user_secs": 4.470425,
+      "cpu_sys_secs": 8.153635,
+      "cpu_cores": 3.156015,
+      "cpu_us_per_req": 34.26140480862393,
+      "peak_rss_bytes": 235831296,
       "alloc_counting": true,
-      "allocs_per_req": 14.020843584162435,
-      "alloc_bytes_per_req": 128974.44016990662,
-      "deallocs_per_req": 14.021249447497686
+      "allocs_per_req": 14.00132984858724,
+      "alloc_bytes_per_req": 130197.09984991708,
+      "deallocs_per_req": 14.002372015643362
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:34:39Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:45:26Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2693,52 +2693,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 430571,
+      "requests": 396633,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 107642.75,
-      "resp_bytes_per_sec": 7054475264.0,
+      "req_per_sec": 99158.25,
+      "resp_bytes_per_sec": 6498435072.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 598.527,
-      "p90_us": 768.511,
-      "p99_us": 943.615,
-      "p99_9_us": 1117.183,
-      "p99_99_us": 1284.095,
-      "max_us": 1547.263,
-      "mean_us": 594.3919290802222
+      "p50_us": 644.095,
+      "p90_us": 838.655,
+      "p99_us": 1080.319,
+      "p99_9_us": 1343.487,
+      "p99_99_us": 1604.607,
+      "max_us": 1963.007,
+      "mean_us": 645.2293822450476
     },
     "service_time": {
-      "p50_us": 598.527,
-      "p90_us": 768.511,
-      "p99_us": 943.615,
-      "p99_9_us": 1117.183,
-      "p99_99_us": 1284.095,
-      "max_us": 1547.263,
-      "mean_us": 594.3919290802222
+      "p50_us": 644.095,
+      "p90_us": 838.655,
+      "p99_us": 1080.319,
+      "p99_9_us": 1343.487,
+      "p99_99_us": 1604.607,
+      "max_us": 1963.007,
+      "mean_us": 645.2293822450476
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 7.597991,
-      "cpu_sys_secs": 8.437998,
-      "cpu_cores": 4.00899725,
-      "cpu_us_per_req": 37.24354171553588,
-      "peak_rss_bytes": 188514304,
+      "cpu_user_secs": 6.769977,
+      "cpu_sys_secs": 7.975804,
+      "cpu_cores": 3.6864452500000002,
+      "cpu_us_per_req": 37.17739320732264,
+      "peak_rss_bytes": 235831296,
       "alloc_counting": true,
-      "allocs_per_req": 16.998571664139014,
-      "alloc_bytes_per_req": 81209.91972984711,
-      "deallocs_per_req": 16.999012938632653
+      "allocs_per_req": 16.99816202887808,
+      "alloc_bytes_per_req": 81209.81796270104,
+      "deallocs_per_req": 16.999450373519096
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:34:45Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:45:32Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2769,52 +2769,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 352689,
+      "requests": 364126,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 88172.25,
-      "resp_bytes_per_sec": 5778456576.0,
+      "req_per_sec": 91031.5,
+      "resp_bytes_per_sec": 5965840384.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 722.943,
-      "p90_us": 816.127,
-      "p99_us": 922.623,
-      "p99_9_us": 1056.767,
-      "p99_99_us": 1231.871,
-      "max_us": 1790.975,
-      "mean_us": 725.6974883594336
+      "p50_us": 694.271,
+      "p90_us": 820.223,
+      "p99_us": 992.255,
+      "p99_9_us": 1233.919,
+      "p99_99_us": 1776.639,
+      "max_us": 2281.471,
+      "mean_us": 702.8632573999113
     },
     "service_time": {
-      "p50_us": 722.943,
-      "p90_us": 816.127,
-      "p99_us": 922.623,
-      "p99_9_us": 1056.767,
-      "p99_99_us": 1231.871,
-      "max_us": 1790.975,
-      "mean_us": 725.6974883594336
+      "p50_us": 694.271,
+      "p90_us": 820.223,
+      "p99_us": 992.255,
+      "p99_9_us": 1233.919,
+      "p99_99_us": 1776.639,
+      "max_us": 2281.471,
+      "mean_us": 702.8632573999113
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 8.248378,
-      "cpu_sys_secs": 7.641378,
-      "cpu_cores": 3.972439,
-      "cpu_us_per_req": 45.053165820311946,
-      "peak_rss_bytes": 188514304,
+      "cpu_user_secs": 8.301216,
+      "cpu_sys_secs": 7.775495,
+      "cpu_cores": 4.01917775,
+      "cpu_us_per_req": 44.15150524818332,
+      "peak_rss_bytes": 235913216,
       "alloc_counting": true,
-      "allocs_per_req": 43.05511654743981,
-      "alloc_bytes_per_req": 134830.9603985381,
-      "deallocs_per_req": 43.057002061306136
+      "allocs_per_req": 43.02217913579366,
+      "alloc_bytes_per_req": 137038.951720009,
+      "deallocs_per_req": 43.024420118310694
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:34:50Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:45:37Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2845,52 +2845,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 119147,
+      "requests": 113343,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 29786.75,
-      "resp_bytes_per_sec": 1952104448.0,
+      "req_per_sec": 28335.75,
+      "resp_bytes_per_sec": 1857011712.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 2136.063,
-      "p90_us": 2650.111,
-      "p99_us": 3229.695,
-      "p99_9_us": 3680.255,
-      "p99_99_us": 3985.407,
-      "max_us": 4255.743,
-      "mean_us": 2148.1893886375638
+      "p50_us": 2246.655,
+      "p90_us": 2775.039,
+      "p99_us": 3377.151,
+      "p99_9_us": 3823.615,
+      "p99_99_us": 4028.415,
+      "max_us": 4423.679,
+      "mean_us": 2258.7753429501595
     },
     "service_time": {
-      "p50_us": 2136.063,
-      "p90_us": 2650.111,
-      "p99_us": 3229.695,
-      "p99_9_us": 3680.255,
-      "p99_99_us": 3985.407,
-      "max_us": 4255.743,
-      "mean_us": 2148.1893886375638
+      "p50_us": 2246.655,
+      "p90_us": 2775.039,
+      "p99_us": 3377.151,
+      "p99_9_us": 3823.615,
+      "p99_99_us": 4028.415,
+      "max_us": 4423.679,
+      "mean_us": 2258.7753429501595
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 4.310062,
-      "cpu_sys_secs": 6.44107,
-      "cpu_cores": 2.687783,
-      "cpu_us_per_req": 90.23418130544621,
-      "peak_rss_bytes": 188907520,
+      "cpu_user_secs": 4.309508,
+      "cpu_sys_secs": 6.436179,
+      "cpu_cores": 2.68642175,
+      "cpu_us_per_req": 94.80679883186434,
+      "peak_rss_bytes": 235913216,
       "alloc_counting": true,
-      "allocs_per_req": 60.996265117879595,
-      "alloc_bytes_per_req": 110313.73658589809,
-      "deallocs_per_req": 61.00331523244395
+      "allocs_per_req": 60.995809180981624,
+      "alloc_bytes_per_req": 110294.9104311691,
+      "deallocs_per_req": 60.99168894417829
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:34:56Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:45:43Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2921,52 +2921,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 366193,
+      "requests": 367444,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 91548.25,
-      "resp_bytes_per_sec": 5999706112.0,
+      "req_per_sec": 91861.0,
+      "resp_bytes_per_sec": 6020202496.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 696.319,
-      "p90_us": 786.431,
-      "p99_us": 890.367,
-      "p99_9_us": 1018.879,
-      "p99_99_us": 1190.911,
-      "max_us": 1454.079,
-      "mean_us": 698.9390835106076
+      "p50_us": 691.711,
+      "p90_us": 785.919,
+      "p99_us": 931.839,
+      "p99_9_us": 1306.623,
+      "p99_99_us": 1852.415,
+      "max_us": 2748.415,
+      "mean_us": 696.5425741936195
     },
     "service_time": {
-      "p50_us": 696.319,
-      "p90_us": 786.431,
-      "p99_us": 890.367,
-      "p99_9_us": 1018.879,
-      "p99_99_us": 1190.911,
-      "max_us": 1454.079,
-      "mean_us": 698.9390835106076
+      "p50_us": 691.711,
+      "p90_us": 785.919,
+      "p99_us": 931.839,
+      "p99_9_us": 1306.623,
+      "p99_99_us": 1852.415,
+      "max_us": 2748.415,
+      "mean_us": 696.5425741936195
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 8.510141,
-      "cpu_sys_secs": 7.673127,
-      "cpu_cores": 4.0458169999999996,
-      "cpu_us_per_req": 44.19327513087361,
-      "peak_rss_bytes": 188923904,
+      "cpu_user_secs": 8.384054,
+      "cpu_sys_secs": 7.694873,
+      "cpu_cores": 4.01973175,
+      "cpu_us_per_req": 43.75885032821328,
+      "peak_rss_bytes": 235913216,
       "alloc_counting": true,
-      "allocs_per_req": 43.03296622272954,
-      "alloc_bytes_per_req": 135756.95591941953,
-      "deallocs_per_req": 43.03534201909922
+      "allocs_per_req": 43.03592384145611,
+      "alloc_bytes_per_req": 135789.75683913738,
+      "deallocs_per_req": 43.036117068179095
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:35:01Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:45:48Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -2997,52 +2997,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 267539,
+      "requests": 270239,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 66884.75,
-      "resp_bytes_per_sec": 4383358976.0,
+      "req_per_sec": 67559.75,
+      "resp_bytes_per_sec": 4427595776.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 930.815,
-      "p90_us": 1320.959,
-      "p99_us": 1713.151,
-      "p99_9_us": 2070.527,
-      "p99_99_us": 2473.983,
-      "max_us": 2883.583,
-      "mean_us": 956.6460769607437
+      "p50_us": 922.111,
+      "p90_us": 1303.551,
+      "p99_us": 1669.119,
+      "p99_9_us": 1984.511,
+      "p99_99_us": 2265.087,
+      "max_us": 2725.887,
+      "mean_us": 947.159252187879
     },
     "service_time": {
-      "p50_us": 930.815,
-      "p90_us": 1320.959,
-      "p99_us": 1713.151,
-      "p99_9_us": 2070.527,
-      "p99_99_us": 2473.983,
-      "max_us": 2883.583,
-      "mean_us": 956.6460769607437
+      "p50_us": 922.111,
+      "p90_us": 1303.551,
+      "p99_us": 1669.119,
+      "p99_9_us": 1984.511,
+      "p99_99_us": 2265.087,
+      "max_us": 2725.887,
+      "mean_us": 947.159252187879
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 9.686834,
-      "cpu_sys_secs": 7.415533,
-      "cpu_cores": 4.27559175,
-      "cpu_us_per_req": 63.92476237109356,
-      "peak_rss_bytes": 191496192,
+      "cpu_user_secs": 9.715304,
+      "cpu_sys_secs": 7.330738,
+      "cpu_cores": 4.2615105,
+      "cpu_us_per_req": 63.077653484508154,
+      "peak_rss_bytes": 235929600,
       "alloc_counting": true,
-      "allocs_per_req": 60.99122370944049,
-      "alloc_bytes_per_req": 110306.0279062118,
-      "deallocs_per_req": 60.995559525900894
+      "allocs_per_req": 60.993187511795114,
+      "alloc_bytes_per_req": 110305.86449772239,
+      "deallocs_per_req": 60.997746439263025
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:35:07Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:45:54Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3073,52 +3073,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 42889,
+      "requests": 42915,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 10722.25,
-      "resp_bytes_per_sec": 11243094016.0,
+      "req_per_sec": 10728.75,
+      "resp_bytes_per_sec": 11249909760.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 748.543,
-      "p90_us": 941.567,
-      "p99_us": 1127.423,
-      "p99_9_us": 1247.231,
-      "p99_99_us": 1309.695,
-      "max_us": 1412.095,
-      "mean_us": 745.9256853738722
+      "p50_us": 747.519,
+      "p90_us": 940.543,
+      "p99_us": 1125.375,
+      "p99_9_us": 1248.255,
+      "p99_99_us": 1372.159,
+      "max_us": 1615.871,
+      "mean_us": 745.4515316322979
     },
     "service_time": {
-      "p50_us": 748.543,
-      "p90_us": 941.567,
-      "p99_us": 1127.423,
-      "p99_9_us": 1247.231,
-      "p99_99_us": 1309.695,
-      "max_us": 1412.095,
-      "mean_us": 745.9256853738722
+      "p50_us": 747.519,
+      "p90_us": 940.543,
+      "p99_us": 1125.375,
+      "p99_9_us": 1248.255,
+      "p99_99_us": 1372.159,
+      "max_us": 1615.871,
+      "mean_us": 745.4515316322979
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.209954,
-      "cpu_sys_secs": 6.692418,
-      "cpu_cores": 1.975593,
-      "cpu_us_per_req": 184.25171955513068,
-      "peak_rss_bytes": 191496192,
+      "cpu_user_secs": 1.168075,
+      "cpu_sys_secs": 6.544007,
+      "cpu_cores": 1.9280205,
+      "cpu_us_per_req": 179.70597693114297,
+      "peak_rss_bytes": 235929600,
       "alloc_counting": true,
-      "allocs_per_req": 1.9999300519946839,
-      "alloc_bytes_per_req": 215.9914197113479,
-      "deallocs_per_req": 2.0001398960106322
+      "allocs_per_req": 2.000046603751602,
+      "alloc_bytes_per_req": 216.00503320517302,
+      "deallocs_per_req": 2.000046603751602
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:35:12Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:45:59Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3149,52 +3149,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 4911,
+      "requests": 4709,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 1227.75,
-      "resp_bytes_per_sec": 10299113472.0,
+      "req_per_sec": 1177.25,
+      "resp_bytes_per_sec": 9875488768.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 6479.871,
-      "p90_us": 7589.887,
-      "p99_us": 8945.663,
-      "p99_9_us": 10461.183,
-      "p99_99_us": 11255.807,
-      "max_us": 11255.807,
-      "mean_us": 6512.49299938913
+      "p50_us": 6828.031,
+      "p90_us": 7864.319,
+      "p99_us": 9428.991,
+      "p99_9_us": 10780.671,
+      "p99_99_us": 11223.039,
+      "max_us": 11223.039,
+      "mean_us": 6796.189383733271
     },
     "service_time": {
-      "p50_us": 6479.871,
-      "p90_us": 7589.887,
-      "p99_us": 8945.663,
-      "p99_9_us": 10461.183,
-      "p99_99_us": 11255.807,
-      "max_us": 11255.807,
-      "mean_us": 6512.49299938913
+      "p50_us": 6828.031,
+      "p90_us": 7864.319,
+      "p99_us": 9428.991,
+      "p99_9_us": 10780.671,
+      "p99_99_us": 11223.039,
+      "max_us": 11223.039,
+      "mean_us": 6796.189383733271
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.024393,
-      "cpu_sys_secs": 6.261925,
-      "cpu_cores": 1.8215795,
-      "cpu_us_per_req": 1483.6729790266747,
-      "peak_rss_bytes": 191496192,
+      "cpu_user_secs": 0.990519,
+      "cpu_sys_secs": 6.273312,
+      "cpu_cores": 1.81595775,
+      "cpu_us_per_req": 1542.5421533234232,
+      "peak_rss_bytes": 235929600,
       "alloc_counting": true,
-      "allocs_per_req": 2.0048869883934026,
-      "alloc_bytes_per_req": 216.32254123396456,
-      "deallocs_per_req": 2.0032579922622684
+      "allocs_per_req": 2.0021235931195585,
+      "alloc_bytes_per_req": 216.01528987046083,
+      "deallocs_per_req": 2.0004247186239117
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:35:18Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:46:05Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3225,52 +3225,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 40352,
+      "requests": 40139,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 10088.0,
-      "resp_bytes_per_sec": 10578034688.0,
+      "req_per_sec": 10034.75,
+      "resp_bytes_per_sec": 10522198016.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 773.119,
-      "p90_us": 1012.223,
-      "p99_us": 1252.351,
-      "p99_9_us": 1430.527,
-      "p99_99_us": 1555.455,
-      "max_us": 1601.535,
-      "mean_us": 792.8654988104694
+      "p50_us": 776.191,
+      "p90_us": 1036.287,
+      "p99_us": 1286.143,
+      "p99_9_us": 1484.799,
+      "p99_99_us": 1698.815,
+      "max_us": 1817.599,
+      "mean_us": 797.032561448965
     },
     "service_time": {
-      "p50_us": 773.119,
-      "p90_us": 1012.223,
-      "p99_us": 1252.351,
-      "p99_9_us": 1430.527,
-      "p99_99_us": 1555.455,
-      "max_us": 1601.535,
-      "mean_us": 792.8654988104694
+      "p50_us": 776.191,
+      "p90_us": 1036.287,
+      "p99_us": 1286.143,
+      "p99_9_us": 1484.799,
+      "p99_99_us": 1698.815,
+      "max_us": 1817.599,
+      "mean_us": 797.032561448965
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.344392,
-      "cpu_sys_secs": 6.788878,
-      "cpu_cores": 2.0333175,
-      "cpu_us_per_req": 201.55803925455987,
-      "peak_rss_bytes": 191496192,
+      "cpu_user_secs": 1.346835,
+      "cpu_sys_secs": 6.92501,
+      "cpu_cores": 2.06796125,
+      "cpu_us_per_req": 206.07999701038892,
+      "peak_rss_bytes": 235929600,
       "alloc_counting": true,
-      "allocs_per_req": 4.002007335448057,
-      "alloc_bytes_per_req": 2770.929222839017,
-      "deallocs_per_req": 4.001858643933386
+      "allocs_per_req": 4.001644286105782,
+      "alloc_bytes_per_req": 2768.2126610030145,
+      "deallocs_per_req": 4.0009467101821174
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:35:23Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:46:11Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3301,52 +3301,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 4953,
+      "requests": 4471,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 1238.25,
-      "resp_bytes_per_sec": 10387193856.0,
+      "req_per_sec": 1117.75,
+      "resp_bytes_per_sec": 9376366592.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 6410.239,
-      "p90_us": 7266.303,
-      "p99_us": 8056.831,
-      "p99_9_us": 8593.407,
-      "p99_99_us": 8880.127,
-      "max_us": 8880.127,
-      "mean_us": 6460.218146577827
+      "p50_us": 7151.615,
+      "p90_us": 8945.663,
+      "p99_us": 10371.071,
+      "p99_9_us": 11263.999,
+      "p99_99_us": 12148.735,
+      "max_us": 12148.735,
+      "mean_us": 7154.3554462089
     },
     "service_time": {
-      "p50_us": 6410.239,
-      "p90_us": 7266.303,
-      "p99_us": 8056.831,
-      "p99_9_us": 8593.407,
-      "p99_99_us": 8880.127,
-      "max_us": 8880.127,
-      "mean_us": 6460.218146577827
+      "p50_us": 7151.615,
+      "p90_us": 8945.663,
+      "p99_us": 10371.071,
+      "p99_9_us": 11263.999,
+      "p99_99_us": 12148.735,
+      "max_us": 12148.735,
+      "mean_us": 7154.3554462089
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.202209,
-      "cpu_sys_secs": 6.767285,
-      "cpu_cores": 1.9923735,
-      "cpu_us_per_req": 1609.023622047244,
-      "peak_rss_bytes": 191496192,
+      "cpu_user_secs": 1.104335,
+      "cpu_sys_secs": 6.606838,
+      "cpu_cores": 1.9277932500000001,
+      "cpu_us_per_req": 1724.7087899798705,
+      "peak_rss_bytes": 235929600,
       "alloc_counting": true,
-      "allocs_per_req": 4.013930950938825,
-      "alloc_bytes_per_req": 2772.8923884514434,
-      "deallocs_per_req": 4.007268322228952
+      "allocs_per_req": 4.017445761574592,
+      "alloc_bytes_per_req": 2770.9988816819505,
+      "deallocs_per_req": 4.009841198836949
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:35:29Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:46:16Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3377,52 +3377,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 41165,
+      "requests": 40787,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 10291.25,
-      "resp_bytes_per_sec": 10791157760.0,
+      "req_per_sec": 10196.75,
+      "resp_bytes_per_sec": 10692067328.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 776.703,
-      "p90_us": 984.575,
-      "p99_us": 1162.239,
-      "p99_9_us": 1262.591,
-      "p99_99_us": 1334.271,
-      "max_us": 1403.903,
-      "mean_us": 777.2120385764604
+      "p50_us": 767.487,
+      "p90_us": 978.943,
+      "p99_us": 1167.359,
+      "p99_9_us": 4845.567,
+      "p99_99_us": 26951.679,
+      "max_us": 29523.967,
+      "mean_us": 784.2715767278793
     },
     "service_time": {
-      "p50_us": 776.703,
-      "p90_us": 984.575,
-      "p99_us": 1162.239,
-      "p99_9_us": 1262.591,
-      "p99_99_us": 1334.271,
-      "max_us": 1403.903,
-      "mean_us": 777.2120385764604
+      "p50_us": 767.487,
+      "p90_us": 978.943,
+      "p99_us": 1167.359,
+      "p99_9_us": 4845.567,
+      "p99_99_us": 26951.679,
+      "max_us": 29523.967,
+      "mean_us": 784.2715767278793
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.590848,
-      "cpu_sys_secs": 8.000579,
-      "cpu_cores": 2.39785675,
-      "cpu_us_per_req": 232.99956273533343,
-      "peak_rss_bytes": 191496192,
+      "cpu_user_secs": 1.5264820000000001,
+      "cpu_sys_secs": 7.701042,
+      "cpu_cores": 2.306881,
+      "cpu_us_per_req": 226.2368892048937,
+      "peak_rss_bytes": 235945984,
       "alloc_counting": true,
-      "allocs_per_req": 15.287671565650431,
-      "alloc_bytes_per_req": 288378.5000850237,
-      "deallocs_per_req": 15.288594679946556
+      "allocs_per_req": 15.285826366244146,
+      "alloc_bytes_per_req": 289980.08022163925,
+      "deallocs_per_req": 15.286414789025915
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:35:34Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:46:22Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3453,52 +3453,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 4678,
+      "requests": 4784,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 1169.5,
-      "resp_bytes_per_sec": 9810477056.0,
+      "req_per_sec": 1196.0,
+      "resp_bytes_per_sec": 10032775168.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 6840.319,
-      "p90_us": 8036.351,
-      "p99_us": 9158.655,
-      "p99_9_us": 10510.335,
-      "p99_99_us": 10887.167,
-      "max_us": 10887.167,
-      "mean_us": 6838.045769987163
+      "p50_us": 6664.191,
+      "p90_us": 7831.551,
+      "p99_us": 9101.311,
+      "p99_9_us": 10641.407,
+      "p99_99_us": 11747.327,
+      "max_us": 11747.327,
+      "mean_us": 6687.800936454855
     },
     "service_time": {
-      "p50_us": 6840.319,
-      "p90_us": 8036.351,
-      "p99_us": 9158.655,
-      "p99_9_us": 10510.335,
-      "p99_99_us": 10887.167,
-      "max_us": 10887.167,
-      "mean_us": 6838.045769987163
+      "p50_us": 6664.191,
+      "p90_us": 7831.551,
+      "p99_us": 9101.311,
+      "p99_9_us": 10641.407,
+      "p99_99_us": 11747.327,
+      "max_us": 11747.327,
+      "mean_us": 6687.800936454855
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.053104,
-      "cpu_sys_secs": 7.163185,
-      "cpu_cores": 2.05407225,
-      "cpu_us_per_req": 1756.3678922616502,
-      "peak_rss_bytes": 191512576,
+      "cpu_user_secs": 1.011554,
+      "cpu_sys_secs": 7.028597,
+      "cpu_cores": 2.01003775,
+      "cpu_us_per_req": 1680.6335702341137,
+      "peak_rss_bytes": 235945984,
       "alloc_counting": true,
-      "allocs_per_req": 14.752030782385635,
-      "alloc_bytes_per_req": 200584.33561351005,
-      "deallocs_per_req": 14.753740914920906
+      "allocs_per_req": 14.728678929765886,
+      "alloc_bytes_per_req": 193843.40969899666,
+      "deallocs_per_req": 14.730560200668897
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:35:40Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:46:27Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3529,52 +3529,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 26248,
+      "requests": 25213,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 6562.0,
-      "resp_bytes_per_sec": 6880755712.0,
+      "req_per_sec": 6303.25,
+      "resp_bytes_per_sec": 6609436672.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1221.631,
-      "p90_us": 1620.991,
-      "p99_us": 2164.735,
-      "p99_9_us": 2351.103,
-      "p99_99_us": 2488.319,
-      "max_us": 2557.951,
-      "mean_us": 1218.792521792134
+      "p50_us": 1252.351,
+      "p90_us": 1767.423,
+      "p99_us": 2303.999,
+      "p99_9_us": 5390.335,
+      "p99_99_us": 8740.863,
+      "max_us": 8781.823,
+      "mean_us": 1269.023265140999
     },
     "service_time": {
-      "p50_us": 1221.631,
-      "p90_us": 1620.991,
-      "p99_us": 2164.735,
-      "p99_9_us": 2351.103,
-      "p99_99_us": 2488.319,
-      "max_us": 2557.951,
-      "mean_us": 1218.792521792134
+      "p50_us": 1252.351,
+      "p90_us": 1767.423,
+      "p99_us": 2303.999,
+      "p99_9_us": 5390.335,
+      "p99_99_us": 8740.863,
+      "max_us": 8781.823,
+      "mean_us": 1269.023265140999
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.816384,
-      "cpu_sys_secs": 3.680505,
-      "cpu_cores": 1.12422225,
-      "cpu_us_per_req": 171.32311033221578,
-      "peak_rss_bytes": 191512576,
+      "cpu_user_secs": 0.829099,
+      "cpu_sys_secs": 3.563799,
+      "cpu_cores": 1.0982245,
+      "cpu_us_per_req": 174.23146789354698,
+      "peak_rss_bytes": 235945984,
       "alloc_counting": true,
-      "allocs_per_req": 25.99889515391649,
-      "alloc_bytes_per_req": 1089042.8066138371,
-      "deallocs_per_req": 25.999695214873515
+      "allocs_per_req": 25.99924642049736,
+      "alloc_bytes_per_req": 1089013.8692341254,
+      "deallocs_per_req": 26.000872565739897
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:35:45Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:46:33Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3605,52 +3605,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 3215,
+      "requests": 3286,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 803.75,
-      "resp_bytes_per_sec": 6742343680.0,
+      "req_per_sec": 821.5,
+      "resp_bytes_per_sec": 6891241472.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 10035.199,
-      "p90_us": 11141.119,
-      "p99_us": 11952.127,
-      "p99_9_us": 12673.023,
-      "p99_99_us": 12861.439,
-      "max_us": 12861.439,
-      "mean_us": 9954.501155832042
+      "p50_us": 9748.479,
+      "p90_us": 12009.471,
+      "p99_us": 14016.511,
+      "p99_9_us": 15097.855,
+      "p99_99_us": 15990.783,
+      "max_us": 15990.783,
+      "mean_us": 9742.299851491183
     },
     "service_time": {
-      "p50_us": 10035.199,
-      "p90_us": 11141.119,
-      "p99_us": 11952.127,
-      "p99_9_us": 12673.023,
-      "p99_99_us": 12861.439,
-      "max_us": 12861.439,
-      "mean_us": 9954.501155832042
+      "p50_us": 9748.479,
+      "p90_us": 12009.471,
+      "p99_us": 14016.511,
+      "p99_9_us": 15097.855,
+      "p99_99_us": 15990.783,
+      "max_us": 15990.783,
+      "mean_us": 9742.299851491183
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.570485,
-      "cpu_sys_secs": 3.23494,
-      "cpu_cores": 0.95135625,
-      "cpu_us_per_req": 1183.646967340591,
-      "peak_rss_bytes": 191512576,
+      "cpu_user_secs": 0.559327,
+      "cpu_sys_secs": 3.161305,
+      "cpu_cores": 0.930158,
+      "cpu_us_per_req": 1132.2678027997565,
+      "peak_rss_bytes": 235978752,
       "alloc_counting": true,
-      "allocs_per_req": 109.96734059097979,
-      "alloc_bytes_per_req": 8656567.433592536,
-      "deallocs_per_req": 109.96547433903577
+      "allocs_per_req": 110.68989653073646,
+      "alloc_bytes_per_req": 8656084.35727328,
+      "deallocs_per_req": 110.6911138161899
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:35:51Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:46:38Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3681,52 +3681,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 41309,
+      "requests": 41212,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 10327.25,
-      "resp_bytes_per_sec": 10828906496.0,
+      "req_per_sec": 10303.0,
+      "resp_bytes_per_sec": 10803478528.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 773.119,
-      "p90_us": 983.551,
-      "p99_us": 1150.975,
-      "p99_9_us": 1251.327,
-      "p99_99_us": 1347.583,
-      "max_us": 1683.455,
-      "mean_us": 774.35408032148
+      "p50_us": 761.343,
+      "p90_us": 979.455,
+      "p99_us": 1303.551,
+      "p99_9_us": 3612.671,
+      "p99_99_us": 5951.487,
+      "max_us": 7516.159,
+      "mean_us": 776.1955546928089
     },
     "service_time": {
-      "p50_us": 773.119,
-      "p90_us": 983.551,
-      "p99_us": 1150.975,
-      "p99_9_us": 1251.327,
-      "p99_99_us": 1347.583,
-      "max_us": 1683.455,
-      "mean_us": 774.35408032148
+      "p50_us": 761.343,
+      "p90_us": 979.455,
+      "p99_us": 1303.551,
+      "p99_9_us": 3612.671,
+      "p99_99_us": 5951.487,
+      "max_us": 7516.159,
+      "mean_us": 776.1955546928089
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.6129799999999999,
-      "cpu_sys_secs": 8.065939,
-      "cpu_cores": 2.41972975,
-      "cpu_us_per_req": 234.3053329782856,
-      "peak_rss_bytes": 191512576,
+      "cpu_user_secs": 1.531067,
+      "cpu_sys_secs": 7.711097,
+      "cpu_cores": 2.310541,
+      "cpu_us_per_req": 224.259050761914,
+      "peak_rss_bytes": 235978752,
       "alloc_counting": true,
-      "allocs_per_req": 15.315161344985354,
-      "alloc_bytes_per_req": 289321.9328959791,
-      "deallocs_per_req": 15.315500254181897
+      "allocs_per_req": 15.315733281568475,
+      "alloc_bytes_per_req": 297298.2014704455,
+      "deallocs_per_req": 15.314908279141997
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:35:57Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:46:44Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3757,52 +3757,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 4724,
+      "requests": 4754,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 1181.0,
-      "resp_bytes_per_sec": 9906946048.0,
+      "req_per_sec": 1188.5,
+      "resp_bytes_per_sec": 9969860608.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 6725.631,
-      "p90_us": 7856.127,
-      "p99_us": 9240.575,
-      "p99_9_us": 10813.439,
-      "p99_99_us": 11608.063,
-      "max_us": 11608.063,
-      "mean_us": 6772.772091447916
+      "p50_us": 6729.727,
+      "p90_us": 7745.535,
+      "p99_us": 8953.855,
+      "p99_9_us": 10174.463,
+      "p99_99_us": 10477.567,
+      "max_us": 10477.567,
+      "mean_us": 6731.282847286494
     },
     "service_time": {
-      "p50_us": 6725.631,
-      "p90_us": 7856.127,
-      "p99_us": 9240.575,
-      "p99_9_us": 10813.439,
-      "p99_99_us": 11608.063,
-      "max_us": 11608.063,
-      "mean_us": 6772.772091447916
+      "p50_us": 6729.727,
+      "p90_us": 7745.535,
+      "p99_us": 8953.855,
+      "p99_9_us": 10174.463,
+      "p99_99_us": 10477.567,
+      "max_us": 10477.567,
+      "mean_us": 6731.282847286494
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.028171,
-      "cpu_sys_secs": 7.136941,
-      "cpu_cores": 2.041278,
-      "cpu_us_per_req": 1728.4318374259105,
-      "peak_rss_bytes": 191594496,
+      "cpu_user_secs": 1.006979,
+      "cpu_sys_secs": 7.01322,
+      "cpu_cores": 2.00504975,
+      "cpu_us_per_req": 1687.0422801851073,
+      "peak_rss_bytes": 235978752,
       "alloc_counting": true,
-      "allocs_per_req": 14.889500423370025,
-      "alloc_bytes_per_req": 202756.98581710414,
-      "deallocs_per_req": 14.892040643522439
+      "allocs_per_req": 14.856962557846025,
+      "alloc_bytes_per_req": 189341.6983592764,
+      "deallocs_per_req": 14.857593605384938
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:36:02Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:46:49Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3833,52 +3833,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 38679,
+      "requests": 39966,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 9669.75,
-      "resp_bytes_per_sec": 10139467776.0,
+      "req_per_sec": 9991.5,
+      "resp_bytes_per_sec": 10476847104.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 808.959,
-      "p90_us": 1055.743,
-      "p99_us": 1295.359,
-      "p99_9_us": 1421.311,
-      "p99_99_us": 1501.183,
-      "max_us": 1527.807,
-      "mean_us": 827.1464722459223
+      "p50_us": 781.311,
+      "p90_us": 1054.719,
+      "p99_us": 1257.471,
+      "p99_9_us": 1390.591,
+      "p99_99_us": 1495.039,
+      "max_us": 1607.679,
+      "mean_us": 800.4813083120646
     },
     "service_time": {
-      "p50_us": 808.959,
-      "p90_us": 1055.743,
-      "p99_us": 1295.359,
-      "p99_9_us": 1421.311,
-      "p99_99_us": 1501.183,
-      "max_us": 1527.807,
-      "mean_us": 827.1464722459223
+      "p50_us": 781.311,
+      "p90_us": 1054.719,
+      "p99_us": 1257.471,
+      "p99_9_us": 1390.591,
+      "p99_99_us": 1495.039,
+      "max_us": 1607.679,
+      "mean_us": 800.4813083120646
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.660065,
-      "cpu_sys_secs": 6.518391,
-      "cpu_cores": 2.044614,
-      "cpu_us_per_req": 211.44434964709535,
-      "peak_rss_bytes": 191594496,
+      "cpu_user_secs": 1.694677,
+      "cpu_sys_secs": 6.526347,
+      "cpu_cores": 2.055256,
+      "cpu_us_per_req": 205.7004453785718,
+      "peak_rss_bytes": 235978752,
       "alloc_counting": true,
-      "allocs_per_req": 25.99702681041392,
-      "alloc_bytes_per_req": 1088875.7862147419,
-      "deallocs_per_req": 25.99710437188138
+      "allocs_per_req": 25.997197617975278,
+      "alloc_bytes_per_req": 1088879.5778161436,
+      "deallocs_per_req": 25.99757293699645
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:36:08Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:46:55Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3909,52 +3909,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 4865,
+      "requests": 4339,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 1216.25,
-      "resp_bytes_per_sec": 10202644480.0,
+      "req_per_sec": 1084.75,
+      "resp_bytes_per_sec": 9099542528.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 6512.639,
-      "p90_us": 7311.359,
-      "p99_us": 8024.063,
-      "p99_9_us": 8486.911,
-      "p99_99_us": 8691.711,
-      "max_us": 8691.711,
-      "mean_us": 6577.2090409044185
+      "p50_us": 7401.471,
+      "p90_us": 8445.951,
+      "p99_us": 9543.679,
+      "p99_9_us": 10371.071,
+      "p99_99_us": 11116.543,
+      "max_us": 11116.543,
+      "mean_us": 7372.790324037803
     },
     "service_time": {
-      "p50_us": 6512.639,
-      "p90_us": 7311.359,
-      "p99_us": 8024.063,
-      "p99_9_us": 8486.911,
-      "p99_99_us": 8691.711,
-      "max_us": 8691.711,
-      "mean_us": 6577.2090409044185
+      "p50_us": 7401.471,
+      "p90_us": 8445.951,
+      "p99_us": 9543.679,
+      "p99_9_us": 10371.071,
+      "p99_99_us": 11116.543,
+      "max_us": 11116.543,
+      "mean_us": 7372.790324037803
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.242107,
-      "cpu_sys_secs": 6.23365,
-      "cpu_cores": 1.86893925,
-      "cpu_us_per_req": 1536.640698869476,
-      "peak_rss_bytes": 191594496,
+      "cpu_user_secs": 1.125684,
+      "cpu_sys_secs": 5.922387,
+      "cpu_cores": 1.76201775,
+      "cpu_us_per_req": 1624.353768149343,
+      "peak_rss_bytes": 235978752,
       "alloc_counting": true,
-      "allocs_per_req": 110.01171634121275,
-      "alloc_bytes_per_req": 8660318.153545735,
-      "deallocs_per_req": 110.0065775950668
+      "allocs_per_req": 110.04171468080203,
+      "alloc_bytes_per_req": 8662440.246370131,
+      "deallocs_per_req": 110.0375662595068
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:36:13Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:47:00Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -3985,52 +3985,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 41353,
+      "requests": 42347,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 10338.25,
-      "resp_bytes_per_sec": 10840440832.0,
+      "req_per_sec": 10586.75,
+      "resp_bytes_per_sec": 11101011968.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 772.095,
-      "p90_us": 982.015,
-      "p99_us": 1153.023,
-      "p99_9_us": 1252.351,
-      "p99_99_us": 1323.007,
-      "max_us": 1351.679,
-      "mean_us": 773.6429217710929
+      "p50_us": 753.663,
+      "p90_us": 957.439,
+      "p99_us": 1129.471,
+      "p99_9_us": 1285.119,
+      "p99_99_us": 3143.679,
+      "max_us": 3930.111,
+      "mean_us": 755.4113993435208
     },
     "service_time": {
-      "p50_us": 772.095,
-      "p90_us": 982.015,
-      "p99_us": 1153.023,
-      "p99_9_us": 1252.351,
-      "p99_99_us": 1323.007,
-      "max_us": 1351.679,
-      "mean_us": 773.6429217710929
+      "p50_us": 753.663,
+      "p90_us": 957.439,
+      "p99_us": 1129.471,
+      "p99_9_us": 1285.119,
+      "p99_99_us": 3143.679,
+      "max_us": 3930.111,
+      "mean_us": 755.4113993435208
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 2.041765,
-      "cpu_sys_secs": 7.969657,
-      "cpu_cores": 2.5028555,
-      "cpu_us_per_req": 242.09663144149155,
-      "peak_rss_bytes": 191594496,
+      "cpu_user_secs": 1.998267,
+      "cpu_sys_secs": 7.902089,
+      "cpu_cores": 2.475089,
+      "cpu_us_per_req": 233.79120126573312,
+      "peak_rss_bytes": 235978752,
       "alloc_counting": true,
-      "allocs_per_req": 52.23676637728823,
-      "alloc_bytes_per_req": 299402.18629845476,
-      "deallocs_per_req": 52.23942640195391
+      "allocs_per_req": 51.973764375280425,
+      "alloc_bytes_per_req": 301184.16780409473,
+      "deallocs_per_req": 51.97600774553097
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:36:19Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:47:06Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4061,52 +4061,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 4703,
+      "requests": 4808,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 1175.75,
-      "resp_bytes_per_sec": 9862905856.0,
+      "req_per_sec": 1202.0,
+      "resp_bytes_per_sec": 10083106816.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 6791.167,
-      "p90_us": 7974.911,
-      "p99_us": 9248.767,
-      "p99_9_us": 10649.599,
-      "p99_99_us": 11321.343,
-      "max_us": 11321.343,
-      "mean_us": 6806.742793961305
+      "p50_us": 6647.807,
+      "p90_us": 7663.615,
+      "p99_us": 9052.159,
+      "p99_9_us": 10223.615,
+      "p99_99_us": 11263.999,
+      "max_us": 11263.999,
+      "mean_us": 6657.671028286184
     },
     "service_time": {
-      "p50_us": 6791.167,
-      "p90_us": 7974.911,
-      "p99_us": 9248.767,
-      "p99_9_us": 10649.599,
-      "p99_99_us": 11321.343,
-      "max_us": 11321.343,
-      "mean_us": 6806.742793961305
+      "p50_us": 6647.807,
+      "p90_us": 7663.615,
+      "p99_us": 9052.159,
+      "p99_9_us": 10223.615,
+      "p99_99_us": 11263.999,
+      "max_us": 11263.999,
+      "mean_us": 6657.671028286184
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.237249,
-      "cpu_sys_secs": 7.192161,
-      "cpu_cores": 2.1073525,
-      "cpu_us_per_req": 1792.347437805656,
-      "peak_rss_bytes": 191594496,
+      "cpu_user_secs": 1.193915,
+      "cpu_sys_secs": 7.083856,
+      "cpu_cores": 2.06944275,
+      "cpu_us_per_req": 1721.6661813643927,
+      "peak_rss_bytes": 235978752,
       "alloc_counting": true,
-      "allocs_per_req": 115.8239421645758,
-      "alloc_bytes_per_req": 246331.45545396555,
-      "deallocs_per_req": 115.82139060174357
+      "allocs_per_req": 114.00374376039933,
+      "alloc_bytes_per_req": 226962.25207986688,
+      "deallocs_per_req": 114.00145590682196
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:36:24Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:47:11Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4137,52 +4137,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 10640,
+      "requests": 10745,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 2660.0,
-      "resp_bytes_per_sec": 2789212160.0,
+      "req_per_sec": 2686.25,
+      "resp_bytes_per_sec": 2816737280.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 2998.271,
-      "p90_us": 3860.479,
-      "p99_us": 4784.127,
-      "p99_9_us": 5484.543,
-      "p99_99_us": 5795.839,
-      "max_us": 5824.511,
-      "mean_us": 3007.2661654135322
+      "p50_us": 2965.503,
+      "p90_us": 3850.239,
+      "p99_us": 4698.111,
+      "p99_9_us": 5410.815,
+      "p99_99_us": 5750.783,
+      "max_us": 6524.927,
+      "mean_us": 2978.5859454630113
     },
     "service_time": {
-      "p50_us": 2998.271,
-      "p90_us": 3860.479,
-      "p99_us": 4784.127,
-      "p99_9_us": 5484.543,
-      "p99_99_us": 5795.839,
-      "max_us": 5824.511,
-      "mean_us": 3007.2661654135322
+      "p50_us": 2965.503,
+      "p90_us": 3850.239,
+      "p99_us": 4698.111,
+      "p99_9_us": 5410.815,
+      "p99_99_us": 5750.783,
+      "max_us": 6524.927,
+      "mean_us": 2978.5859454630113
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 2.122183,
-      "cpu_sys_secs": 5.475067,
-      "cpu_cores": 1.8993125,
-      "cpu_us_per_req": 714.0272556390977,
-      "peak_rss_bytes": 191594496,
+      "cpu_user_secs": 2.122549,
+      "cpu_sys_secs": 5.474239,
+      "cpu_cores": 1.899197,
+      "cpu_us_per_req": 707.0067938576082,
+      "peak_rss_bytes": 235978752,
       "alloc_counting": true,
-      "allocs_per_req": 301.18956766917296,
-      "alloc_bytes_per_req": 1590277.1101503759,
-      "deallocs_per_req": 301.1876879699248
+      "allocs_per_req": 301.1518845974872,
+      "alloc_bytes_per_req": 1589978.300325733,
+      "deallocs_per_req": 301.16463471382036
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:36:30Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:47:17Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4213,52 +4213,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 1251,
+      "requests": 1306,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 312.75,
-      "resp_bytes_per_sec": 2623537152.0,
+      "req_per_sec": 326.5,
+      "resp_bytes_per_sec": 2738880512.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 25100.287,
-      "p90_us": 28590.079,
-      "p99_us": 33685.503,
-      "p99_9_us": 35586.047,
-      "p99_99_us": 36503.551,
-      "max_us": 36503.551,
-      "mean_us": 25578.403504396476
+      "p50_us": 23953.407,
+      "p90_us": 28229.631,
+      "p99_us": 37257.215,
+      "p99_9_us": 60030.975,
+      "p99_99_us": 60456.959,
+      "max_us": 60456.959,
+      "mean_us": 24509.686199081163
     },
     "service_time": {
-      "p50_us": 25100.287,
-      "p90_us": 28590.079,
-      "p99_us": 33685.503,
-      "p99_9_us": 35586.047,
-      "p99_99_us": 36503.551,
-      "max_us": 36503.551,
-      "mean_us": 25578.403504396476
+      "p50_us": 23953.407,
+      "p90_us": 28229.631,
+      "p99_us": 37257.215,
+      "p99_9_us": 60030.975,
+      "p99_99_us": 60456.959,
+      "max_us": 60456.959,
+      "mean_us": 24509.686199081163
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 2.249725,
-      "cpu_sys_secs": 5.8851890000000004,
-      "cpu_cores": 2.0337285,
-      "cpu_us_per_req": 6502.72901678657,
-      "peak_rss_bytes": 191660032,
+      "cpu_user_secs": 1.750516,
+      "cpu_sys_secs": 5.008518,
+      "cpu_cores": 1.6897585,
+      "cpu_us_per_req": 5175.370597243492,
+      "peak_rss_bytes": 236011520,
       "alloc_counting": true,
-      "allocs_per_req": 2098.1414868105517,
-      "alloc_bytes_per_req": 12612961.318145484,
-      "deallocs_per_req": 2098.1382893685054
+      "allocs_per_req": 2095.9632465543646,
+      "alloc_bytes_per_req": 12627779.251914242,
+      "deallocs_per_req": 2095.964777947933
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:36:35Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:47:22Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4289,52 +4289,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 38769,
+      "requests": 41505,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 9692.25,
-      "resp_bytes_per_sec": 10163060736.0,
+      "req_per_sec": 10376.25,
+      "resp_bytes_per_sec": 10880286720.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 780.799,
-      "p90_us": 1073.151,
-      "p99_us": 1845.247,
-      "p99_9_us": 4558.847,
-      "p99_99_us": 10239.999,
-      "max_us": 10452.991,
-      "mean_us": 825.0939891150156
+      "p50_us": 763.391,
+      "p90_us": 985.599,
+      "p99_us": 1202.175,
+      "p99_9_us": 1413.119,
+      "p99_99_us": 1632.255,
+      "max_us": 2061.311,
+      "mean_us": 770.7458459462713
     },
     "service_time": {
-      "p50_us": 780.799,
-      "p90_us": 1073.151,
-      "p99_us": 1845.247,
-      "p99_9_us": 4558.847,
-      "p99_99_us": 10239.999,
-      "max_us": 10452.991,
-      "mean_us": 825.0939891150156
+      "p50_us": 763.391,
+      "p90_us": 985.599,
+      "p99_us": 1202.175,
+      "p99_9_us": 1413.119,
+      "p99_99_us": 1632.255,
+      "max_us": 2061.311,
+      "mean_us": 770.7458459462713
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.7645659999999999,
-      "cpu_sys_secs": 6.749932,
-      "cpu_cores": 2.1286245,
-      "cpu_us_per_req": 219.62129536485335,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 2.005259,
+      "cpu_sys_secs": 7.963832,
+      "cpu_cores": 2.49227275,
+      "cpu_us_per_req": 240.1901216720877,
+      "peak_rss_bytes": 236011520,
       "alloc_counting": true,
-      "allocs_per_req": 49.9016740179009,
-      "alloc_bytes_per_req": 345848.87353297736,
-      "deallocs_per_req": 49.90572364518043
+      "allocs_per_req": 51.500903505601734,
+      "alloc_bytes_per_req": 312288.7754246476,
+      "deallocs_per_req": 51.50292735814962
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:36:41Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:47:28Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4365,52 +4365,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 4529,
+      "requests": 4746,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 1132.25,
-      "resp_bytes_per_sec": 9498001408.0,
+      "req_per_sec": 1186.5,
+      "resp_bytes_per_sec": 9953083392.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 7024.639,
-      "p90_us": 8314.879,
+      "p50_us": 6655.999,
+      "p90_us": 7913.471,
       "p99_us": 9977.855,
-      "p99_9_us": 12075.007,
-      "p99_99_us": 15564.799,
-      "max_us": 15564.799,
-      "mean_us": 7064.2152598807625
+      "p99_9_us": 22904.831,
+      "p99_99_us": 28508.159,
+      "max_us": 28508.159,
+      "mean_us": 6746.707067846603
     },
     "service_time": {
-      "p50_us": 7024.639,
-      "p90_us": 8314.879,
+      "p50_us": 6655.999,
+      "p90_us": 7913.471,
       "p99_us": 9977.855,
-      "p99_9_us": 12075.007,
-      "p99_99_us": 15564.799,
-      "max_us": 15564.799,
-      "mean_us": 7064.2152598807625
+      "p99_9_us": 22904.831,
+      "p99_99_us": 28508.159,
+      "max_us": 28508.159,
+      "mean_us": 6746.707067846603
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.178806,
-      "cpu_sys_secs": 6.914347,
-      "cpu_cores": 2.02328825,
-      "cpu_us_per_req": 1786.9624641201146,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 1.178723,
+      "cpu_sys_secs": 7.011798,
+      "cpu_cores": 2.04763025,
+      "cpu_us_per_req": 1725.7734934681837,
+      "peak_rss_bytes": 236011520,
       "alloc_counting": true,
-      "allocs_per_req": 108.94391697946567,
-      "alloc_bytes_per_req": 237603.88518436742,
-      "deallocs_per_req": 108.94391697946567
+      "allocs_per_req": 114.19300463548251,
+      "alloc_bytes_per_req": 223672.50484618626,
+      "deallocs_per_req": 114.17994100294985
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:36:46Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:47:33Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4441,52 +4441,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 17553,
+      "requests": 19100,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 4388.25,
-      "resp_bytes_per_sec": 4601413632.0,
+      "req_per_sec": 4775.0,
+      "resp_bytes_per_sec": 5006950400.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1781.759,
-      "p90_us": 2263.039,
-      "p99_us": 3063.807,
-      "p99_9_us": 4268.031,
-      "p99_99_us": 8994.815,
-      "max_us": 10149.887,
-      "mean_us": 1822.6852964165641
+      "p50_us": 1646.591,
+      "p90_us": 2046.975,
+      "p99_us": 2678.783,
+      "p99_9_us": 3104.767,
+      "p99_99_us": 3520.511,
+      "max_us": 3612.671,
+      "mean_us": 1675.012342617802
     },
     "service_time": {
-      "p50_us": 1781.759,
-      "p90_us": 2263.039,
-      "p99_us": 3063.807,
-      "p99_9_us": 4268.031,
-      "p99_99_us": 8994.815,
-      "max_us": 10149.887,
-      "mean_us": 1822.6852964165641
+      "p50_us": 1646.591,
+      "p90_us": 2046.975,
+      "p99_us": 2678.783,
+      "p99_9_us": 3104.767,
+      "p99_99_us": 3520.511,
+      "max_us": 3612.671,
+      "mean_us": 1675.012342617802
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 2.977029,
-      "cpu_sys_secs": 6.712356,
-      "cpu_cores": 2.42234625,
-      "cpu_us_per_req": 552.0073491710818,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 3.103671,
+      "cpu_sys_secs": 6.886548,
+      "cpu_cores": 2.49755475,
+      "cpu_us_per_req": 523.0481151832461,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 301.00877342904346,
-      "alloc_bytes_per_req": 1590306.2573349285,
-      "deallocs_per_req": 301.0095140431835
+      "allocs_per_req": 301.0261780104712,
+      "alloc_bytes_per_req": 1590397.8530890052,
+      "deallocs_per_req": 301.02806282722514
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:36:52Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:47:39Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4517,52 +4517,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 2121,
+      "requests": 2025,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 530.25,
-      "resp_bytes_per_sec": 4448059392.0,
+      "req_per_sec": 506.25,
+      "resp_bytes_per_sec": 4246732800.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 14958.591,
-      "p90_us": 16547.839,
-      "p99_us": 18841.599,
-      "p99_9_us": 23511.039,
-      "p99_99_us": 26165.247,
-      "max_us": 26165.247,
-      "mean_us": 15085.844156529944
+      "p50_us": 15802.367,
+      "p90_us": 17727.487,
+      "p99_us": 19808.255,
+      "p99_9_us": 21381.119,
+      "p99_99_us": 22134.783,
+      "max_us": 22134.783,
+      "mean_us": 15769.788112592587
     },
     "service_time": {
-      "p50_us": 14958.591,
-      "p90_us": 16547.839,
-      "p99_us": 18841.599,
-      "p99_9_us": 23511.039,
-      "p99_99_us": 26165.247,
-      "max_us": 26165.247,
-      "mean_us": 15085.844156529944
+      "p50_us": 15802.367,
+      "p90_us": 17727.487,
+      "p99_us": 19808.255,
+      "p99_9_us": 21381.119,
+      "p99_99_us": 22134.783,
+      "max_us": 22134.783,
+      "mean_us": 15769.788112592587
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 2.902489,
-      "cpu_sys_secs": 6.91802,
-      "cpu_cores": 2.45512725,
-      "cpu_us_per_req": 4630.131541725601,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 2.724501,
+      "cpu_sys_secs": 6.606213,
+      "cpu_cores": 2.3326785,
+      "cpu_us_per_req": 4607.76,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 2093.109382366808,
-      "alloc_bytes_per_req": 12640653.87788779,
-      "deallocs_per_req": 2093.111268269684
+      "allocs_per_req": 2097.2069135802467,
+      "alloc_bytes_per_req": 12665505.622716049,
+      "deallocs_per_req": 2097.2582716049383
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:36:57Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:47:45Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4593,52 +4593,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 44324,
+      "requests": 44585,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 11081.0,
-      "resp_bytes_per_sec": 77567.0,
-      "req_bytes_per_sec": 11619270656.0
+      "req_per_sec": 11146.25,
+      "resp_bytes_per_sec": 78023.75,
+      "req_bytes_per_sec": 11687690240.0
     },
     "latency": {
-      "p50_us": 1442.815,
-      "p90_us": 1670.143,
-      "p99_us": 1974.271,
-      "p99_9_us": 2435.071,
-      "p99_99_us": 3227.647,
-      "max_us": 3524.607,
-      "mean_us": 1443.5793274975183
+      "p50_us": 1430.527,
+      "p90_us": 1647.615,
+      "p99_us": 1902.591,
+      "p99_9_us": 2164.735,
+      "p99_99_us": 2414.591,
+      "max_us": 2738.175,
+      "mean_us": 1435.0807204216655
     },
     "service_time": {
-      "p50_us": 1442.815,
-      "p90_us": 1670.143,
-      "p99_us": 1974.271,
-      "p99_9_us": 2435.071,
-      "p99_99_us": 3227.647,
-      "max_us": 3524.607,
-      "mean_us": 1443.5793274975183
+      "p50_us": 1430.527,
+      "p90_us": 1647.615,
+      "p99_us": 1902.591,
+      "p99_9_us": 2164.735,
+      "p99_99_us": 2414.591,
+      "max_us": 2738.175,
+      "mean_us": 1435.0807204216655
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.416741,
-      "cpu_sys_secs": 9.632731,
-      "cpu_cores": 2.512368,
-      "cpu_us_per_req": 226.7275516650122,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 0.412879,
+      "cpu_sys_secs": 9.487732,
+      "cpu_cores": 2.47515275,
+      "cpu_us_per_req": 222.06147807558597,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 3.0002256114069126,
-      "alloc_bytes_per_req": 256.02490749932315,
-      "deallocs_per_req": 3.0003609782510603
+      "allocs_per_req": 3.0005607267018055,
+      "alloc_bytes_per_req": 256.064595716048,
+      "deallocs_per_req": 3.0013008859481887
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:37:03Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:47:50Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4669,52 +4669,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 37886,
+      "requests": 37034,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 9471.5,
-      "resp_bytes_per_sec": 66300.5,
-      "req_bytes_per_sec": 9931587584.0
+      "req_per_sec": 9258.5,
+      "resp_bytes_per_sec": 64809.5,
+      "req_bytes_per_sec": 9708240896.0
     },
     "latency": {
-      "p50_us": 1658.879,
-      "p90_us": 1966.079,
-      "p99_us": 2412.543,
-      "p99_9_us": 2856.959,
-      "p99_99_us": 7389.183,
-      "max_us": 9248.767,
-      "mean_us": 1689.0670934910004
+      "p50_us": 1707.007,
+      "p90_us": 2007.039,
+      "p99_us": 2426.879,
+      "p99_9_us": 2779.135,
+      "p99_99_us": 3086.335,
+      "max_us": 3149.823,
+      "mean_us": 1728.01268456013
     },
     "service_time": {
-      "p50_us": 1658.879,
-      "p90_us": 1966.079,
-      "p99_us": 2412.543,
-      "p99_9_us": 2856.959,
-      "p99_99_us": 7389.183,
-      "max_us": 9248.767,
-      "mean_us": 1689.0670934910004
+      "p50_us": 1707.007,
+      "p90_us": 2007.039,
+      "p99_us": 2426.879,
+      "p99_9_us": 2779.135,
+      "p99_99_us": 3086.335,
+      "max_us": 3149.823,
+      "mean_us": 1728.01268456013
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.806247,
-      "cpu_sys_secs": 7.341802,
-      "cpu_cores": 2.03701225,
-      "cpu_us_per_req": 215.0675447394816,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 0.818149,
+      "cpu_sys_secs": 7.562762,
+      "cpu_cores": 2.09522775,
+      "cpu_us_per_req": 226.30315385861638,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 8.002982632106846,
-      "alloc_bytes_per_req": 2879.154093860529,
-      "deallocs_per_req": 8.003220186876419
+      "allocs_per_req": 8.001809148350164,
+      "alloc_bytes_per_req": 2878.6867203110655,
+      "deallocs_per_req": 8.000999081924718
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:37:08Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:47:56Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4745,52 +4745,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 44855,
+      "requests": 44846,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 11213.75,
-      "resp_bytes_per_sec": 78496.25,
-      "req_bytes_per_sec": 11758469120.0
+      "req_per_sec": 11211.5,
+      "resp_bytes_per_sec": 78480.5,
+      "req_bytes_per_sec": 11756109824.0
     },
     "latency": {
-      "p50_us": 1427.455,
-      "p90_us": 1629.183,
-      "p99_us": 1903.615,
-      "p99_9_us": 2662.399,
-      "p99_99_us": 4386.815,
-      "max_us": 6119.423,
-      "mean_us": 1426.6698879500573
+      "p50_us": 1424.383,
+      "p90_us": 1635.327,
+      "p99_us": 1881.087,
+      "p99_9_us": 2127.871,
+      "p99_99_us": 2390.015,
+      "max_us": 2584.575,
+      "mean_us": 1426.8746797484725
     },
     "service_time": {
-      "p50_us": 1427.455,
-      "p90_us": 1629.183,
-      "p99_us": 1903.615,
-      "p99_9_us": 2662.399,
-      "p99_99_us": 4386.815,
-      "max_us": 6119.423,
-      "mean_us": 1426.6698879500573
+      "p50_us": 1424.383,
+      "p90_us": 1635.327,
+      "p99_us": 1881.087,
+      "p99_9_us": 2127.871,
+      "p99_99_us": 2390.015,
+      "max_us": 2584.575,
+      "mean_us": 1426.8746797484725
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.5731,
-      "cpu_sys_secs": 9.520244,
-      "cpu_cores": 2.523336,
-      "cpu_us_per_req": 225.02160294281575,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 0.597059,
+      "cpu_sys_secs": 9.482904,
+      "cpu_cores": 2.51999075,
+      "cpu_us_per_req": 224.76838514025778,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 16.94740831568387,
-      "alloc_bytes_per_req": 13459.615093077695,
-      "deallocs_per_req": 16.947921079032437
+      "allocs_per_req": 15.998572893903582,
+      "alloc_bytes_per_req": 13186.432100967757,
+      "deallocs_per_req": 15.999464835213843
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:37:14Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:48:01Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4821,52 +4821,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 23988,
+      "requests": 24776,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 5997.0,
-      "resp_bytes_per_sec": 41979.0,
-      "req_bytes_per_sec": 6288310272.0
+      "req_per_sec": 6194.0,
+      "resp_bytes_per_sec": 43358.0,
+      "req_bytes_per_sec": 6494879744.0
     },
     "latency": {
-      "p50_us": 2545.663,
-      "p90_us": 3866.623,
-      "p99_us": 4726.783,
-      "p99_9_us": 5738.495,
-      "p99_99_us": 6668.287,
-      "max_us": 7024.639,
-      "mean_us": 2668.6006976821736
+      "p50_us": 2496.511,
+      "p90_us": 3766.271,
+      "p99_us": 4501.503,
+      "p99_9_us": 4993.023,
+      "p99_99_us": 5447.679,
+      "max_us": 5890.047,
+      "mean_us": 2583.2668621246416
     },
     "service_time": {
-      "p50_us": 2545.663,
-      "p90_us": 3866.623,
-      "p99_us": 4726.783,
-      "p99_9_us": 5738.495,
-      "p99_99_us": 6668.287,
-      "max_us": 7024.639,
-      "mean_us": 2668.6006976821736
+      "p50_us": 2496.511,
+      "p90_us": 3766.271,
+      "p99_us": 4501.503,
+      "p99_9_us": 4993.023,
+      "p99_99_us": 5447.679,
+      "max_us": 5890.047,
+      "mean_us": 2583.2668621246416
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.606053,
-      "cpu_sys_secs": 4.7837119999999995,
-      "cpu_cores": 1.34744125,
-      "cpu_us_per_req": 224.68588460897115,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 0.590823,
+      "cpu_sys_secs": 4.745702,
+      "cpu_cores": 1.33413125,
+      "cpu_us_per_req": 215.39090248627704,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 20.82703851925963,
-      "alloc_bytes_per_req": 10725.321827580457,
-      "deallocs_per_req": 20.8281223945306
+      "allocs_per_req": 20.855303519535035,
+      "alloc_bytes_per_req": 10751.720858895706,
+      "deallocs_per_req": 20.85494026477236
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:37:19Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:48:07Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4897,52 +4897,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 44981,
+      "requests": 44109,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 11245.25,
-      "resp_bytes_per_sec": 78716.75,
-      "req_bytes_per_sec": 11791499264.0
+      "req_per_sec": 11027.25,
+      "resp_bytes_per_sec": 77190.75,
+      "req_bytes_per_sec": 11562909696.0
     },
     "latency": {
-      "p50_us": 1424.383,
-      "p90_us": 1610.751,
-      "p99_us": 1833.983,
-      "p99_9_us": 2047.999,
-      "p99_99_us": 2312.191,
-      "max_us": 2646.015,
-      "mean_us": 1422.5874327382653
+      "p50_us": 1422.335,
+      "p90_us": 1634.303,
+      "p99_us": 2711.551,
+      "p99_9_us": 6590.463,
+      "p99_99_us": 8708.095,
+      "max_us": 11173.887,
+      "mean_us": 1450.4653718742245
     },
     "service_time": {
-      "p50_us": 1424.383,
-      "p90_us": 1610.751,
-      "p99_us": 1833.983,
-      "p99_9_us": 2047.999,
-      "p99_99_us": 2312.191,
-      "max_us": 2646.015,
-      "mean_us": 1422.5874327382653
+      "p50_us": 1422.335,
+      "p90_us": 1634.303,
+      "p99_us": 2711.551,
+      "p99_9_us": 6590.463,
+      "p99_99_us": 8708.095,
+      "max_us": 11173.887,
+      "mean_us": 1450.4653718742245
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.616891,
-      "cpu_sys_secs": 9.45105,
-      "cpu_cores": 2.51698525,
-      "cpu_us_per_req": 223.82652675574133,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 0.62095,
+      "cpu_sys_secs": 9.343961,
+      "cpu_cores": 2.49122775,
+      "cpu_us_per_req": 225.91559545670953,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 16.001978613192236,
-      "alloc_bytes_per_req": 13188.660678953336,
-      "deallocs_per_req": 16.003001267201707
+      "allocs_per_req": 16.003740733183704,
+      "alloc_bytes_per_req": 13190.881724818064,
+      "deallocs_per_req": 16.00272053322451
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:37:25Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:48:12Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -4973,52 +4973,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 35619,
+      "requests": 34956,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 8904.75,
-      "resp_bytes_per_sec": 62333.25,
-      "req_bytes_per_sec": 9337307136.0
+      "req_per_sec": 8739.0,
+      "resp_bytes_per_sec": 61173.0,
+      "req_bytes_per_sec": 9163505664.0
     },
     "latency": {
-      "p50_us": 1772.543,
-      "p90_us": 2040.831,
-      "p99_us": 2299.903,
-      "p99_9_us": 2646.015,
-      "p99_99_us": 3723.263,
-      "max_us": 4276.223,
-      "mean_us": 1796.4754900474445
+      "p50_us": 1781.759,
+      "p90_us": 2066.431,
+      "p99_us": 2469.887,
+      "p99_9_us": 9183.231,
+      "p99_99_us": 13082.623,
+      "max_us": 13697.023,
+      "mean_us": 1830.6067312049447
     },
     "service_time": {
-      "p50_us": 1772.543,
-      "p90_us": 2040.831,
-      "p99_us": 2299.903,
-      "p99_9_us": 2646.015,
-      "p99_99_us": 3723.263,
-      "max_us": 4276.223,
-      "mean_us": 1796.4754900474445
+      "p50_us": 1781.759,
+      "p90_us": 2066.431,
+      "p99_us": 2469.887,
+      "p99_9_us": 9183.231,
+      "p99_99_us": 13082.623,
+      "max_us": 13697.023,
+      "mean_us": 1830.6067312049447
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.037366,
-      "cpu_sys_secs": 7.685665,
-      "cpu_cores": 2.18075775,
-      "cpu_us_per_req": 244.89825654847132,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 1.035646,
+      "cpu_sys_secs": 7.691283,
+      "cpu_cores": 2.18173225,
+      "cpu_us_per_req": 249.65468016935577,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 20.993711221539066,
-      "alloc_bytes_per_req": 10852.758415452427,
-      "deallocs_per_req": 20.993205873269883
+      "allocs_per_req": 20.99141778235496,
+      "alloc_bytes_per_req": 10852.770912003662,
+      "deallocs_per_req": 20.99130335278636
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:37:31Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:48:18Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5049,52 +5049,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 44876,
+      "requests": 43736,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 11219.0,
-      "resp_bytes_per_sec": 78533.0,
-      "req_bytes_per_sec": 11763974144.0
+      "req_per_sec": 10934.0,
+      "resp_bytes_per_sec": 76538.0,
+      "req_bytes_per_sec": 11465129984.0
     },
     "latency": {
-      "p50_us": 1429.503,
-      "p90_us": 1627.135,
-      "p99_us": 1845.247,
-      "p99_9_us": 2028.543,
-      "p99_99_us": 2191.359,
-      "max_us": 2314.239,
-      "mean_us": 1425.9227410642666
+      "p50_us": 1438.719,
+      "p90_us": 1698.815,
+      "p99_us": 2326.527,
+      "p99_9_us": 7217.151,
+      "p99_99_us": 15671.295,
+      "max_us": 16859.135,
+      "mean_us": 1463.1753576001486
     },
     "service_time": {
-      "p50_us": 1429.503,
-      "p90_us": 1627.135,
-      "p99_us": 1845.247,
-      "p99_9_us": 2028.543,
-      "p99_99_us": 2191.359,
-      "max_us": 2314.239,
-      "mean_us": 1425.9227410642666
+      "p50_us": 1438.719,
+      "p90_us": 1698.815,
+      "p99_us": 2326.527,
+      "p99_9_us": 7217.151,
+      "p99_99_us": 15671.295,
+      "max_us": 16859.135,
+      "mean_us": 1463.1753576001486
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.920281,
-      "cpu_sys_secs": 9.460315,
-      "cpu_cores": 2.595149,
-      "cpu_us_per_req": 231.3173188341207,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 0.997244,
+      "cpu_sys_secs": 9.576412,
+      "cpu_cores": 2.643414,
+      "cpu_us_per_req": 241.76092921163342,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 46.84515108298422,
-      "alloc_bytes_per_req": 17539.612175773244,
-      "deallocs_per_req": 46.847245743827436
+      "allocs_per_req": 45.98932229742089,
+      "alloc_bytes_per_req": 17293.77794036949,
+      "deallocs_per_req": 45.996753246753244
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:37:36Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:48:23Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5125,52 +5125,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 25448,
+      "requests": 24422,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 6362.0,
-      "resp_bytes_per_sec": 44534.0,
-      "req_bytes_per_sec": 6671040512.0
+      "req_per_sec": 6105.5,
+      "resp_bytes_per_sec": 42738.5,
+      "req_bytes_per_sec": 6402080768.0
     },
     "latency": {
-      "p50_us": 2467.839,
-      "p90_us": 3651.583,
-      "p99_us": 4427.775,
-      "p99_9_us": 4993.023,
-      "p99_99_us": 5877.759,
-      "max_us": 5918.719,
-      "mean_us": 2515.514542596673
+      "p50_us": 2500.607,
+      "p90_us": 3829.759,
+      "p99_us": 4833.279,
+      "p99_9_us": 7360.511,
+      "p99_99_us": 10182.655,
+      "max_us": 10846.207,
+      "mean_us": 2620.7124880845126
     },
     "service_time": {
-      "p50_us": 2467.839,
-      "p90_us": 3651.583,
-      "p99_us": 4427.775,
-      "p99_9_us": 4993.023,
-      "p99_99_us": 5877.759,
-      "max_us": 5918.719,
-      "mean_us": 2515.514542596673
+      "p50_us": 2500.607,
+      "p90_us": 3829.759,
+      "p99_us": 4833.279,
+      "p99_9_us": 7360.511,
+      "p99_99_us": 10182.655,
+      "max_us": 10846.207,
+      "mean_us": 2620.7124880845126
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.873401,
-      "cpu_sys_secs": 4.738928,
-      "cpu_cores": 1.40308225,
-      "cpu_us_per_req": 220.54106413077648,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 0.883277,
+      "cpu_sys_secs": 4.709728,
+      "cpu_cores": 1.39825125,
+      "cpu_us_per_req": 229.01502743428057,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 51.80733259981138,
-      "alloc_bytes_per_req": 13894.357591952215,
-      "deallocs_per_req": 51.80898302420623
+      "allocs_per_req": 51.805257554663825,
+      "alloc_bytes_per_req": 13889.278642207846,
+      "deallocs_per_req": 51.80886086315617
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:37:42Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:48:29Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5201,52 +5201,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 45020,
+      "requests": 43587,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 11255.0,
-      "resp_bytes_per_sec": 78785.0,
-      "req_bytes_per_sec": 11801722880.0
+      "req_per_sec": 10896.75,
+      "resp_bytes_per_sec": 76277.25,
+      "req_bytes_per_sec": 11426070528.0
     },
     "latency": {
-      "p50_us": 1426.431,
-      "p90_us": 1606.655,
-      "p99_us": 1810.431,
-      "p99_9_us": 1981.439,
-      "p99_99_us": 2140.159,
-      "max_us": 2246.655,
-      "mean_us": 1421.3284847623288
+      "p50_us": 1434.623,
+      "p90_us": 1638.399,
+      "p99_us": 2889.727,
+      "p99_9_us": 7802.879,
+      "p99_99_us": 11567.103,
+      "max_us": 14598.143,
+      "mean_us": 1468.004435083857
     },
     "service_time": {
-      "p50_us": 1426.431,
-      "p90_us": 1606.655,
-      "p99_us": 1810.431,
-      "p99_9_us": 1981.439,
-      "p99_99_us": 2140.159,
-      "max_us": 2246.655,
-      "mean_us": 1421.3284847623288
+      "p50_us": 1434.623,
+      "p90_us": 1638.399,
+      "p99_us": 2889.727,
+      "p99_9_us": 7802.879,
+      "p99_99_us": 11567.103,
+      "max_us": 14598.143,
+      "mean_us": 1468.004435083857
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 0.966112,
-      "cpu_sys_secs": 9.502143,
-      "cpu_cores": 2.61706375,
-      "cpu_us_per_req": 232.52454464682364,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 0.979955,
+      "cpu_sys_secs": 9.224205,
+      "cpu_cores": 2.55104,
+      "cpu_us_per_req": 234.11017046367036,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 46.002865393158594,
-      "alloc_bytes_per_req": 17298.70741892492,
-      "deallocs_per_req": 46.00999555752999
+      "allocs_per_req": 45.99983940165646,
+      "alloc_bytes_per_req": 17298.51405235506,
+      "deallocs_per_req": 46.00383141762452
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:37:47Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:48:34Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5277,52 +5277,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 36486,
+      "requests": 36467,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 9121.5,
-      "resp_bytes_per_sec": 63850.5,
-      "req_bytes_per_sec": 9564585984.0
+      "req_per_sec": 9116.75,
+      "resp_bytes_per_sec": 63817.25,
+      "req_bytes_per_sec": 9559605248.0
     },
     "latency": {
       "p50_us": 1731.583,
-      "p90_us": 2008.063,
-      "p99_us": 2310.143,
-      "p99_9_us": 2557.951,
-      "p99_99_us": 2754.559,
-      "max_us": 2885.631,
-      "mean_us": 1753.9320296003937
+      "p90_us": 2014.207,
+      "p99_us": 2322.431,
+      "p99_9_us": 2572.287,
+      "p99_99_us": 2813.951,
+      "max_us": 3178.495,
+      "mean_us": 1754.6613747223535
     },
     "service_time": {
       "p50_us": 1731.583,
-      "p90_us": 2008.063,
-      "p99_us": 2310.143,
-      "p99_9_us": 2557.951,
-      "p99_99_us": 2754.559,
-      "max_us": 2885.631,
-      "mean_us": 1753.9320296003937
+      "p90_us": 2014.207,
+      "p99_us": 2322.431,
+      "p99_9_us": 2572.287,
+      "p99_99_us": 2813.951,
+      "max_us": 3178.495,
+      "mean_us": 1754.6613747223535
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 1.283067,
-      "cpu_sys_secs": 7.186032,
-      "cpu_cores": 2.11727475,
-      "cpu_us_per_req": 232.11914158855453,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 1.302579,
+      "cpu_sys_secs": 7.254479,
+      "cpu_cores": 2.1392645,
+      "cpu_us_per_req": 234.6520964159377,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 51.987502055582965,
-      "alloc_bytes_per_req": 13993.012963876556,
-      "deallocs_per_req": 51.98736501671874
+      "allocs_per_req": 51.99366550579976,
+      "alloc_bytes_per_req": 13995.372501165437,
+      "deallocs_per_req": 52.00337291249623
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:37:53Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:48:40Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5353,52 +5353,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 618353,
+      "requests": 624760,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 154588.25,
-      "resp_bytes_per_sec": 158298368.0,
+      "req_per_sec": 156190.0,
+      "resp_bytes_per_sec": 159938560.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1647.615,
-      "p90_us": 1826.815,
-      "p99_us": 2050.047,
-      "p99_9_us": 2355.199,
-      "p99_99_us": 3090.431,
-      "max_us": 11714.559,
-      "mean_us": 1655.8199441419385
+      "p50_us": 1630.207,
+      "p90_us": 1818.623,
+      "p99_us": 2068.479,
+      "p99_9_us": 2545.663,
+      "p99_99_us": 3342.335,
+      "max_us": 10739.711,
+      "mean_us": 1638.850337716883
     },
     "service_time": {
-      "p50_us": 1647.615,
-      "p90_us": 1826.815,
-      "p99_us": 2050.047,
-      "p99_9_us": 2355.199,
-      "p99_99_us": 3090.431,
-      "max_us": 11714.559,
-      "mean_us": 1655.8199441419385
+      "p50_us": 1630.207,
+      "p90_us": 1818.623,
+      "p99_us": 2068.479,
+      "p99_9_us": 2545.663,
+      "p99_99_us": 3342.335,
+      "max_us": 10739.711,
+      "mean_us": 1638.850337716883
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 3.78857,
-      "cpu_sys_secs": 10.852625,
-      "cpu_cores": 3.66029875,
-      "cpu_us_per_req": 23.677729387582822,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 3.7060750000000002,
+      "cpu_sys_secs": 10.729842,
+      "cpu_cores": 3.60897925,
+      "cpu_us_per_req": 23.106340034573275,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 4.000033961183984,
-      "alloc_bytes_per_req": 1390.0692420025455,
-      "deallocs_per_req": 4.000035578383221
+      "allocs_per_req": 3.9997326973557845,
+      "alloc_bytes_per_req": 1389.9445611114668,
+      "deallocs_per_req": 3.999735898585057
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:37:58Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:48:45Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5429,52 +5429,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 1439107,
+      "requests": 1389564,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 359776.75,
-      "resp_bytes_per_sec": 368411392.0,
+      "req_per_sec": 347391.0,
+      "resp_bytes_per_sec": 355728384.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 681.471,
-      "p90_us": 1027.583,
-      "p99_us": 1390.591,
-      "p99_9_us": 1659.903,
-      "p99_99_us": 1927.167,
-      "max_us": 2217.983,
-      "mean_us": 711.3743878446847
+      "p50_us": 690.175,
+      "p90_us": 1054.719,
+      "p99_us": 1499.135,
+      "p99_9_us": 5439.487,
+      "p99_99_us": 16506.879,
+      "max_us": 22511.615,
+      "mean_us": 736.7563478961732
     },
     "service_time": {
-      "p50_us": 681.471,
-      "p90_us": 1027.583,
-      "p99_us": 1390.591,
-      "p99_9_us": 1659.903,
-      "p99_99_us": 1927.167,
-      "max_us": 2217.983,
-      "mean_us": 711.3743878446847
+      "p50_us": 690.175,
+      "p90_us": 1054.719,
+      "p99_us": 1499.135,
+      "p99_9_us": 5439.487,
+      "p99_99_us": 16506.879,
+      "max_us": 22511.615,
+      "mean_us": 736.7563478961732
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 10.529948,
-      "cpu_sys_secs": 4.64578,
-      "cpu_cores": 3.793932,
-      "cpu_us_per_req": 10.54523951311473,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 9.74844,
+      "cpu_sys_secs": 4.343219,
+      "cpu_cores": 3.52291475,
+      "cpu_us_per_req": 10.14106511107081,
+      "peak_rss_bytes": 236027904,
       "alloc_counting": true,
-      "allocs_per_req": 5.274692569767224,
-      "alloc_bytes_per_req": 4926.715028138978,
-      "deallocs_per_req": 5.274617523227946
+      "allocs_per_req": 5.275302181115803,
+      "alloc_bytes_per_req": 4924.861018276236,
+      "deallocs_per_req": 5.275554058683155
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:38:04Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:48:51Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5505,52 +5505,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 605058,
+      "requests": 591692,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 151264.5,
-      "resp_bytes_per_sec": 154894848.0,
+      "req_per_sec": 147923.0,
+      "resp_bytes_per_sec": 151473152.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1652.735,
-      "p90_us": 2445.311,
-      "p99_us": 3366.911,
-      "p99_9_us": 4239.359,
-      "p99_99_us": 5066.751,
-      "max_us": 6258.687,
-      "mean_us": 1692.207531972141
+      "p50_us": 1672.191,
+      "p90_us": 2500.607,
+      "p99_us": 3641.343,
+      "p99_9_us": 4837.375,
+      "p99_99_us": 5779.455,
+      "max_us": 7061.503,
+      "mean_us": 1730.4916789951526
     },
     "service_time": {
-      "p50_us": 1652.735,
-      "p90_us": 2445.311,
-      "p99_us": 3366.911,
-      "p99_9_us": 4239.359,
-      "p99_99_us": 5066.751,
-      "max_us": 6258.687,
-      "mean_us": 1692.207531972141
+      "p50_us": 1672.191,
+      "p90_us": 2500.607,
+      "p99_us": 3641.343,
+      "p99_9_us": 4837.375,
+      "p99_99_us": 5779.455,
+      "max_us": 7061.503,
+      "mean_us": 1730.4916789951526
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 7.269147,
-      "cpu_sys_secs": 10.073637,
-      "cpu_cores": 4.335696,
-      "cpu_us_per_req": 28.663010818797538,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 7.018204,
+      "cpu_sys_secs": 9.899146,
+      "cpu_cores": 4.2293375,
+      "cpu_us_per_req": 28.591480026770686,
+      "peak_rss_bytes": 391053312,
       "alloc_counting": true,
-      "allocs_per_req": 15.999540539915182,
-      "alloc_bytes_per_req": 14317.32264840726,
-      "deallocs_per_req": 16.00053383312013
+      "allocs_per_req": 15.999748179796246,
+      "alloc_bytes_per_req": 14317.769385085483,
+      "deallocs_per_req": 16.00125234074485
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:38:09Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:48:56Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5581,52 +5581,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 321035,
+      "requests": 321629,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 80258.75,
-      "resp_bytes_per_sec": 82184960.0,
+      "req_per_sec": 80407.25,
+      "resp_bytes_per_sec": 82337024.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 3151.871,
-      "p90_us": 3878.911,
-      "p99_us": 4476.927,
-      "p99_9_us": 4861.951,
-      "p99_99_us": 5197.823,
-      "max_us": 5328.895,
-      "mean_us": 3190.396097821105
+      "p50_us": 3141.631,
+      "p90_us": 3899.391,
+      "p99_us": 4538.367,
+      "p99_9_us": 4988.927,
+      "p99_99_us": 5361.663,
+      "max_us": 5951.487,
+      "mean_us": 3184.2623313693757
     },
     "service_time": {
-      "p50_us": 3151.871,
-      "p90_us": 3878.911,
-      "p99_us": 4476.927,
-      "p99_9_us": 4861.951,
-      "p99_99_us": 5197.823,
-      "max_us": 5328.895,
-      "mean_us": 3190.396097821105
+      "p50_us": 3141.631,
+      "p90_us": 3899.391,
+      "p99_us": 4538.367,
+      "p99_9_us": 4988.927,
+      "p99_99_us": 5361.663,
+      "max_us": 5951.487,
+      "mean_us": 3184.2623313693757
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 4.301272,
-      "cpu_sys_secs": 8.322296,
-      "cpu_cores": 3.155892,
-      "cpu_us_per_req": 39.32146962169234,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 4.302608,
+      "cpu_sys_secs": 8.175585,
+      "cpu_cores": 3.11954825,
+      "cpu_us_per_req": 38.79685289572769,
+      "peak_rss_bytes": 394379264,
       "alloc_counting": true,
-      "allocs_per_req": 15.348566355693304,
-      "alloc_bytes_per_req": 9818.131979379195,
-      "deallocs_per_req": 15.350080209322972
+      "allocs_per_req": 15.352779133722395,
+      "alloc_bytes_per_req": 9824.654592713965,
+      "deallocs_per_req": 15.355499659545625
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:38:15Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:49:02Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5657,52 +5657,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 605476,
+      "requests": 612925,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 151369.0,
-      "resp_bytes_per_sec": 155001856.0,
+      "req_per_sec": 153231.25,
+      "resp_bytes_per_sec": 156908800.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1675.263,
-      "p90_us": 1997.823,
-      "p99_us": 2428.927,
-      "p99_9_us": 3026.943,
-      "p99_99_us": 3776.511,
-      "max_us": 4972.543,
-      "mean_us": 1691.03397208147
+      "p50_us": 1652.735,
+      "p90_us": 1975.295,
+      "p99_us": 2424.831,
+      "p99_9_us": 3115.007,
+      "p99_99_us": 5627.903,
+      "max_us": 6541.311,
+      "mean_us": 1670.5270921956192
     },
     "service_time": {
-      "p50_us": 1675.263,
-      "p90_us": 1997.823,
-      "p99_us": 2428.927,
-      "p99_9_us": 3026.943,
-      "p99_99_us": 3776.511,
-      "max_us": 4972.543,
-      "mean_us": 1691.03397208147
+      "p50_us": 1652.735,
+      "p90_us": 1975.295,
+      "p99_us": 2424.831,
+      "p99_9_us": 3115.007,
+      "p99_99_us": 5627.903,
+      "max_us": 6541.311,
+      "mean_us": 1670.5270921956192
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 7.343262,
-      "cpu_sys_secs": 9.966327,
-      "cpu_cores": 4.32739725,
-      "cpu_us_per_req": 28.588398218921974,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 7.208303,
+      "cpu_sys_secs": 9.93215,
+      "cpu_cores": 4.28511325,
+      "cpu_us_per_req": 27.965008769425296,
+      "peak_rss_bytes": 839794688,
       "alloc_counting": true,
-      "allocs_per_req": 16.000199842768335,
-      "alloc_bytes_per_req": 14317.59847624018,
-      "deallocs_per_req": 16.00072174619638
+      "allocs_per_req": 16.000181098829383,
+      "alloc_bytes_per_req": 14317.671410042012,
+      "deallocs_per_req": 16.000846759391443
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:38:20Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:49:08Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5733,52 +5733,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 733191,
+      "requests": 740073,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 183297.75,
-      "resp_bytes_per_sec": 187696896.0,
+      "req_per_sec": 185018.25,
+      "resp_bytes_per_sec": 189458688.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1360.895,
-      "p90_us": 1947.647,
-      "p99_us": 2537.471,
-      "p99_9_us": 3026.943,
-      "p99_99_us": 3454.975,
-      "max_us": 3868.671,
-      "mean_us": 1396.4694184407604
+      "p50_us": 1332.223,
+      "p90_us": 1923.071,
+      "p99_us": 2641.919,
+      "p99_9_us": 6156.287,
+      "p99_99_us": 10780.671,
+      "max_us": 12337.151,
+      "mean_us": 1383.4883013756796
     },
     "service_time": {
-      "p50_us": 1360.895,
-      "p90_us": 1947.647,
-      "p99_us": 2537.471,
-      "p99_9_us": 3026.943,
-      "p99_99_us": 3454.975,
-      "max_us": 3868.671,
-      "mean_us": 1396.4694184407604
+      "p50_us": 1332.223,
+      "p90_us": 1923.071,
+      "p99_us": 2641.919,
+      "p99_9_us": 6156.287,
+      "p99_99_us": 10780.671,
+      "max_us": 12337.151,
+      "mean_us": 1383.4883013756796
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 10.013821,
-      "cpu_sys_secs": 5.877559,
-      "cpu_cores": 3.972845,
-      "cpu_us_per_req": 21.67427041521241,
-      "peak_rss_bytes": 191692800,
+      "cpu_user_secs": 9.775355,
+      "cpu_sys_secs": 5.504717,
+      "cpu_cores": 3.820018,
+      "cpu_us_per_req": 20.646709175986693,
+      "peak_rss_bytes": 840089600,
       "alloc_counting": true,
-      "allocs_per_req": 15.407502274305058,
-      "alloc_bytes_per_req": 10023.925382335572,
-      "deallocs_per_req": 15.408607034183452
+      "allocs_per_req": 15.407761126267273,
+      "alloc_bytes_per_req": 10023.033353466482,
+      "deallocs_per_req": 15.410504098919972
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:38:26Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:49:13Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5809,52 +5809,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 465253,
+      "requests": 468918,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 116313.25,
-      "resp_bytes_per_sec": 119104768.0,
+      "req_per_sec": 117229.5,
+      "resp_bytes_per_sec": 120043008.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 2138.111,
-      "p90_us": 3543.039,
-      "p99_us": 5148.671,
-      "p99_9_us": 6377.471,
-      "p99_99_us": 7671.807,
-      "max_us": 9461.759,
-      "mean_us": 2200.7819958603154
+      "p50_us": 2101.247,
+      "p90_us": 3538.943,
+      "p99_us": 5177.343,
+      "p99_9_us": 6475.775,
+      "p99_99_us": 7458.815,
+      "max_us": 9183.231,
+      "mean_us": 2183.752396248387
     },
     "service_time": {
-      "p50_us": 2138.111,
-      "p90_us": 3543.039,
-      "p99_us": 5148.671,
-      "p99_9_us": 6377.471,
-      "p99_99_us": 7671.807,
-      "max_us": 9461.759,
-      "mean_us": 2200.7819958603154
+      "p50_us": 2101.247,
+      "p90_us": 3538.943,
+      "p99_us": 5177.343,
+      "p99_9_us": 6475.775,
+      "p99_99_us": 7458.815,
+      "max_us": 9183.231,
+      "mean_us": 2183.752396248387
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 12.351425,
-      "cpu_sys_secs": 6.014334,
-      "cpu_cores": 4.59143975,
-      "cpu_us_per_req": 39.474778238936665,
-      "peak_rss_bytes": 206962688,
+      "cpu_user_secs": 12.012724,
+      "cpu_sys_secs": 6.029117,
+      "cpu_cores": 4.51046025,
+      "cpu_us_per_req": 38.4754711911251,
+      "peak_rss_bytes": 856457216,
       "alloc_counting": true,
-      "allocs_per_req": 44.99705536557529,
-      "alloc_bytes_per_req": 18409.657414353052,
-      "deallocs_per_req": 45.007428216475766
+      "allocs_per_req": 44.99571566883762,
+      "alloc_bytes_per_req": 18406.86392930107,
+      "deallocs_per_req": 44.99785037042724
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:38:31Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:49:19Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5885,52 +5885,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 261499,
+      "requests": 251874,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 65374.75,
-      "resp_bytes_per_sec": 66943744.0,
+      "req_per_sec": 62968.5,
+      "resp_bytes_per_sec": 64479744.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 3913.727,
-      "p90_us": 4272.127,
-      "p99_us": 4612.095,
-      "p99_9_us": 4927.487,
-      "p99_99_us": 5222.399,
-      "max_us": 5541.887,
-      "mean_us": 3915.6939387148777
+      "p50_us": 4032.511,
+      "p90_us": 4485.119,
+      "p99_us": 5382.143,
+      "p99_9_us": 6705.151,
+      "p99_99_us": 8724.479,
+      "max_us": 9879.551,
+      "mean_us": 4066.1377342639576
     },
     "service_time": {
-      "p50_us": 3913.727,
-      "p90_us": 4272.127,
-      "p99_us": 4612.095,
-      "p99_9_us": 4927.487,
-      "p99_99_us": 5222.399,
-      "max_us": 5541.887,
-      "mean_us": 3915.6939387148777
+      "p50_us": 4032.511,
+      "p90_us": 4485.119,
+      "p99_us": 5382.143,
+      "p99_9_us": 6705.151,
+      "p99_99_us": 8724.479,
+      "max_us": 9879.551,
+      "mean_us": 4066.1377342639576
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 6.830512,
-      "cpu_sys_secs": 6.937947,
-      "cpu_cores": 3.44211475,
-      "cpu_us_per_req": 52.6520522067006,
-      "peak_rss_bytes": 207044608,
+      "cpu_user_secs": 6.714116,
+      "cpu_sys_secs": 6.738115,
+      "cpu_cores": 3.36305775,
+      "cpu_us_per_req": 53.40857333428619,
+      "peak_rss_bytes": 856506368,
       "alloc_counting": true,
-      "allocs_per_req": 47.45270153996765,
-      "alloc_bytes_per_req": 14391.46190233997,
-      "deallocs_per_req": 47.459424319022254
+      "allocs_per_req": 47.455481709108525,
+      "alloc_bytes_per_req": 14399.386995084844,
+      "deallocs_per_req": 47.459864853061454
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:38:37Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:49:24Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -5961,52 +5961,52 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 519300,
+      "requests": 505190,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 129825.0,
-      "resp_bytes_per_sec": 132940800.0,
+      "req_per_sec": 126297.5,
+      "resp_bytes_per_sec": 129328640.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 1889.279,
-      "p90_us": 3166.207,
-      "p99_us": 4554.751,
-      "p99_9_us": 5697.535,
-      "p99_99_us": 6680.575,
-      "max_us": 7483.391,
-      "mean_us": 1971.7590115309067
+      "p50_us": 1912.831,
+      "p90_us": 3284.991,
+      "p99_us": 4947.967,
+      "p99_9_us": 7909.375,
+      "p99_99_us": 12615.679,
+      "max_us": 18071.551,
+      "mean_us": 2026.8347202122054
     },
     "service_time": {
-      "p50_us": 1889.279,
-      "p90_us": 3166.207,
-      "p99_us": 4554.751,
-      "p99_9_us": 5697.535,
-      "p99_99_us": 6680.575,
-      "max_us": 7483.391,
-      "mean_us": 1971.7590115309067
+      "p50_us": 1912.831,
+      "p90_us": 3284.991,
+      "p99_us": 4947.967,
+      "p99_9_us": 7909.375,
+      "p99_99_us": 12615.679,
+      "max_us": 18071.551,
+      "mean_us": 2026.8347202122054
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 12.852435,
-      "cpu_sys_secs": 6.471591,
-      "cpu_cores": 4.8310065,
-      "cpu_us_per_req": 37.21168110918544,
-      "peak_rss_bytes": 207519744,
+      "cpu_user_secs": 12.086901,
+      "cpu_sys_secs": 6.368148,
+      "cpu_cores": 4.61376225,
+      "cpu_us_per_req": 36.530907183435936,
+      "peak_rss_bytes": 1070710784,
       "alloc_counting": true,
-      "allocs_per_req": 44.997685345657615,
-      "alloc_bytes_per_req": 18408.23480647025,
-      "deallocs_per_req": 45.00181783169651
+      "allocs_per_req": 44.995617490449135,
+      "alloc_bytes_per_req": 18406.692935331263,
+      "deallocs_per_req": 44.99688829945169
     }
   },
   {
     "schema_version": 1,
-    "timestamp": "2026-11-15T15:38:42Z",
-    "git_commit": "83a6c357bdd5c142a126eae11fee8357c051f56d",
+    "timestamp": "2026-11-15T20:49:30Z",
+    "git_commit": "ebba431e38c5e485f79904b941761e1bb0b69c48",
     "host": {
       "os": "macos",
       "arch": "aarch64",
@@ -6037,46 +6037,46 @@
       "worker_threads": 5
     },
     "totals": {
-      "requests": 490886,
+      "requests": 491938,
       "errors": 0,
       "errors_by_kind": {},
       "drops": 0,
       "duration_secs": 4.0
     },
     "throughput": {
-      "req_per_sec": 122721.5,
-      "resp_bytes_per_sec": 125666816.0,
+      "req_per_sec": 122984.5,
+      "resp_bytes_per_sec": 125936128.0,
       "req_bytes_per_sec": 0.0
     },
     "latency": {
-      "p50_us": 2049.023,
-      "p90_us": 2906.111,
-      "p99_us": 3762.175,
-      "p99_9_us": 4440.063,
-      "p99_99_us": 5115.903,
-      "max_us": 5480.447,
-      "mean_us": 2085.979849855159
+      "p50_us": 2042.879,
+      "p90_us": 2908.159,
+      "p99_us": 3758.079,
+      "p99_9_us": 4415.487,
+      "p99_99_us": 4947.967,
+      "max_us": 5697.535,
+      "mean_us": 2081.2747741056783
     },
     "service_time": {
-      "p50_us": 2049.023,
-      "p90_us": 2906.111,
-      "p99_us": 3762.175,
-      "p99_9_us": 4440.063,
-      "p99_99_us": 5115.903,
-      "max_us": 5480.447,
-      "mean_us": 2085.979849855159
+      "p50_us": 2042.879,
+      "p90_us": 2908.159,
+      "p99_us": 3758.079,
+      "p99_9_us": 4415.487,
+      "p99_99_us": 4947.967,
+      "max_us": 5697.535,
+      "mean_us": 2081.2747741056783
     },
     "schedule_lag": null,
     "resources": {
-      "cpu_user_secs": 14.128977,
-      "cpu_sys_secs": 3.120334,
-      "cpu_cores": 4.31232775,
-      "cpu_us_per_req": 35.13913821131587,
-      "peak_rss_bytes": 207699968,
+      "cpu_user_secs": 13.924598,
+      "cpu_sys_secs": 3.043425,
+      "cpu_cores": 4.24200575,
+      "cpu_us_per_req": 34.4921982038387,
+      "peak_rss_bytes": 1072381952,
       "alloc_counting": true,
-      "allocs_per_req": 47.39478208789821,
-      "alloc_bytes_per_req": 14281.148392905889,
-      "deallocs_per_req": 47.40506960882975
+      "allocs_per_req": 47.39288894128935,
+      "alloc_bytes_per_req": 14280.221572637201,
+      "deallocs_per_req": 47.40441681675333
     }
   }
 ]
