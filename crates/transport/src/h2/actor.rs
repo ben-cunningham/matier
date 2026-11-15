@@ -53,8 +53,8 @@ const COALESCE_MAX_PENDING: usize = 1024;
 /// ... and more than this many streams are in flight ...
 const COALESCE_MIN_IN_FLIGHT: usize = 8;
 /// ... until the batch reaches `clamp(in_flight / COALESCE_BATCH_DIV, 2, COALESCE_MAX_BATCH)` requests ...
-const COALESCE_MAX_BATCH: u32 = 16;
-const COALESCE_BATCH_DIV: usize = 4;
+const COALESCE_MAX_BATCH: u32 = 32;
+const COALESCE_BATCH_DIV: usize = 2;
 /// ... or the oldest held request is `clamp(rtt / COALESCE_RTT_DIV, COALESCE_MIN_HOLD, cfg.coalesce_max_hold)`
 /// old (rtt = smoothed open -> response-head time). Checked on every tick (socket readiness and further
 /// requests keep ticks coming); `hold_timer` is the fallback when nothing else polls the actor (tokio
