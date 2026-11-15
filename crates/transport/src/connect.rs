@@ -24,6 +24,9 @@ pub struct ConnectConfig {
     pub send_buffer_size: Option<u32>,
     /// `SO_RCVBUF`; `None` leaves the OS default. Set before connecting, so it takes part in TCP window scaling.
     pub recv_buffer_size: Option<u32>,
+    /// Local address to bind before connecting (`None`: the OS picks). Addresses of the other family are
+    /// skipped.
+    pub local_address: Option<IpAddr>,
     /// Required for `https` origins.
     pub tls: Option<TlsConfig>,
     /// Speak HTTP/2 over plaintext (h2c) without upgrade.
@@ -40,6 +43,7 @@ impl Default for ConnectConfig {
             keepalive: Some(Duration::from_secs(60)),
             send_buffer_size: None,
             recv_buffer_size: None,
+            local_address: None,
             tls: None,
             http2_prior_knowledge: false,
             alpn_h2: true,
@@ -169,6 +173,15 @@ async fn connect_addr(addr: SocketAddr, cfg: &ConnectConfig) -> io::Result<TcpSt
     }
     if let Some(n) = cfg.recv_buffer_size {
         sock.set_recv_buffer_size(n)?;
+    }
+    if let Some(ip) = cfg.local_address {
+        if ip.is_ipv4() != addr.is_ipv4() {
+            return Err(io::Error::new(
+                io::ErrorKind::AddrNotAvailable,
+                "local_address is of the other address family",
+            ));
+        }
+        sock.bind(SocketAddr::new(ip, 0))?;
     }
     sock.connect(addr).await
 }

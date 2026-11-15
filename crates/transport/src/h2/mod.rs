@@ -44,7 +44,8 @@ pub struct H2Config {
     pub initial_conn_window: u32,
     /// SETTINGS_MAX_FRAME_SIZE we advertise (16 KiB ..= 16 MiB - 1; default 256 KiB). Per-frame cost dominates
     /// large bodies: against 16 KiB frames, 256 KiB doubles 1 MiB download throughput and halves CPU per
-    /// request; 64 KiB and 1 MiB were both slower than 256 KiB.
+    /// request; 64 KiB and 1 MiB were both slower than 256 KiB. Some servers (nginx, Envoy) send small frames
+    /// regardless of this setting.
     pub max_frame_size: u32,
     /// SETTINGS_MAX_HEADER_LIST_SIZE we advertise; also the HPACK decoder cap.
     pub max_header_list_size: u32,

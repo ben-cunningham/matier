@@ -66,7 +66,13 @@ struct Reap {
     idle: HashMap<u64, (u32, Option<Instant>)>,
     /// Since when every selectable connection has been under-used.
     low_since: Option<Instant>,
+    /// Last lifetime-replacement dial. After a failed one the next waits [`REPLACE_DIAL_INTERVAL`], so an
+    /// unreachable origin is not redialed every tick.
+    last_replace: Option<Instant>,
 }
+
+/// Spacing of replacement dials for connections past `max_connection_lifetime` after a failed one.
+const REPLACE_DIAL_INTERVAL: Duration = Duration::from_secs(5);
 
 struct H2Pool {
     handles: ArcSwap<Vec<Arc<H2Entry>>>,
@@ -247,7 +253,7 @@ impl OriginPool {
         self.shared
             .cfg
             .max_connection_lifetime
-            .is_some_and(|max| c.created_at().elapsed() >= max)
+            .is_some_and(|max| c.created_at().elapsed() > max)
     }
 
     /// Pops the freshest usable idle connection (probing liveness), discarding dead ones.
@@ -700,7 +706,10 @@ impl OriginPool {
         let me = Arc::clone(self);
         tokio::spawn(async move {
             let r = me.h2_dial(reason).await;
-            if let Err(e) = r {
+            // A lifetime replacement is not on behalf of any waiter: the old connection still serves them.
+            if let Err(e) = r
+                && reason != ScaleReason::Replace
+            {
                 *me.h2.fail.lock() = Some((e.kind(), e.to_string()));
                 me.h2.fail_gen.fetch_add(1, Ordering::AcqRel);
             }
@@ -791,6 +800,7 @@ impl OriginPool {
                 zero: HashMap::new(),
                 idle: HashMap::new(),
                 low_since: None,
+                last_replace: None,
             };
             loop {
                 tokio::time::sleep(tick).await;
@@ -852,7 +862,7 @@ impl OriginPool {
                 st.zero.remove(&e.id);
             }
         }
-        if zero_retired || self.h2_retire_expired(&snap, now, min) {
+        if zero_retired || self.h2_retire_expired(&snap, now, min, &mut st.last_replace) {
             return true;
         }
         let mut n = snap.len();
@@ -919,29 +929,38 @@ impl OriginPool {
         true
     }
 
-    /// Retires the oldest connection past `max_connection_lifetime` when at least `min` younger selectable
-    /// connections remain; otherwise dials a replacement (retired on a later tick). True if one was retired.
+    /// Retires the oldest connection past `max_connection_lifetime` when at least `min` other selectable
+    /// connections remain; otherwise restores capacity first (un-drains one, or dials a replacement that is
+    /// retired against on a later tick, so the count exceeds the ceiling by at most one). True if one was
+    /// retired.
     fn h2_retire_expired(
         self: &Arc<Self>,
         snap: &[Arc<H2Entry>],
         now: Instant,
         min: usize,
+        last_replace: &mut Option<Instant>,
     ) -> bool {
         let Some(max) = self.shared.cfg.max_connection_lifetime else {
             return false;
         };
-        let young = |e: &&Arc<H2Entry>| now.duration_since(e.opened) < max;
-        let Some(old) = snap.iter().find(|e| !young(e)) else {
+        let Some(old) = snap.iter().find(|e| now.duration_since(e.opened) >= max) else {
             return false;
         };
-        let fresh = snap
+        let others = snap
             .iter()
-            .filter(young)
-            .filter(|e| !e.is_draining() && e.handle.is_accepting())
+            .filter(|e| e.id != old.id && !e.is_draining() && e.handle.is_accepting())
             .count();
-        if fresh < min {
-            if self.h2.dialing.load(Ordering::Acquire) == 0 {
-                self.h2_spawn_dial(ScaleReason::Expired);
+        if others < min {
+            if self.h2_undrain_one() {
+                return false;
+            }
+            // Back off only when the previous replacement dial failed (no connection opened since).
+            let due = last_replace.is_none_or(|t| {
+                now.duration_since(t) >= REPLACE_DIAL_INTERVAL || snap.iter().any(|e| e.opened > t)
+            });
+            if due && self.h2.dialing.load(Ordering::Acquire) == 0 {
+                *last_replace = Some(now);
+                self.h2_spawn_dial(ScaleReason::Replace);
             }
             return false;
         }

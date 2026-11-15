@@ -149,9 +149,9 @@ impl Subject for AnySubject {
     }
 }
 
-/// HTTP/2 tuning for the hyper, reqwest and fetch subjects (fetch accepts only the stream window). Their own
-/// defaults are 16 KiB frames, which halve large-body throughput; Matier's defaults match these values.
-pub const H2_STREAM_WINDOW: u32 = 1 << 20;
+/// HTTP/2 tuning for the hyper, reqwest and fetch subjects, equal to Matier's defaults (fetch accepts only the
+/// stream window). Their own defaults use 16 KiB frames, which halve large-body throughput.
+pub const H2_STREAM_WINDOW: u32 = 4 << 20;
 pub const H2_CONN_WINDOW: u32 = 16 << 20;
 pub const H2_MAX_FRAME: u32 = 256 * 1024;
 

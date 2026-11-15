@@ -36,7 +36,8 @@ use origin::{Lease, OriginPool};
 #[derive(Clone, Debug)]
 pub struct PoolConfig {
     /// Idle HTTP/1 connections kept per origin (default 256, the same as `max_conns_per_origin`, so a burst
-    /// does not close connections it will want again; `idle_timeout` closes the unused ones).
+    /// does not close connections it will want again; `idle_timeout` closes the unused ones). Each idle
+    /// connection holds a file descriptor: lower this for clients that talk to many origins.
     pub max_idle_per_origin: usize,
     /// Idle HTTP/1 connections older than this are discarded at checkout, and HTTP/2 connections without
     /// streams for this long are closed (default 90 s).
@@ -57,7 +58,8 @@ pub struct PoolConfig {
     /// HTTP/2 autoscaling ceiling per origin (default: `std::thread::available_parallelism()`; one
     /// connection is one actor task, so more connections than cores cannot add parallelism). Autoscaling
     /// also stays within the tokio runtime's worker count (unless `h2_min_conns_per_origin` is higher). Set equal to
-    /// `h2_min_conns_per_origin` to pin the connection count. See [`scale`] for the policy.
+    /// `h2_min_conns_per_origin` to pin the connection count. Replacing a connection past
+    /// `max_connection_lifetime` may exceed it by one for a moment. See [`scale`] for the policy.
     pub h2_max_conns_per_origin: usize,
     /// HTTP/2 scale-up thresholds (defaults: the constants in [`scale`]).
     pub h2_scale: scale::ScaleThresholds,

@@ -410,3 +410,39 @@ async fn connections_past_their_lifetime_are_replaced_without_failing_requests()
     );
     assert!(conns(&p, &u) <= 2, "old connections were retired");
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn lifetime_replacement_of_a_pinned_pool_overshoots_by_at_most_one() {
+    let _serial = SERIAL.lock().await;
+    let (port, srv) = server(Duration::ZERO).await;
+    let u = uri(port);
+    let p = Pool::new(
+        PoolConfig {
+            idle_timeout: Duration::from_millis(40),
+            max_connection_lifetime: Some(Duration::from_millis(150)),
+            h2_min_conns_per_origin: 2,
+            h2_max_conns_per_origin: 2,
+            ..PoolConfig::default()
+        },
+        ConnectConfig {
+            http2_prior_knowledge: true,
+            ..ConnectConfig::default()
+        },
+        H1Config::default(),
+        H2Config::default(),
+        Arc::new(Events::default()) as Arc<dyn Observer>,
+    );
+    let load = start_load(&p, &u, 8);
+    let mut peak = 0;
+    let t = Instant::now();
+    while t.elapsed() < Duration::from_millis(800) {
+        peak = peak.max(conns(&p, &u));
+        tokio::time::sleep(Duration::from_millis(2)).await;
+    }
+    load.finish().await;
+    assert!(peak <= 3, "pinned at 2 but reached {peak} connections");
+    assert!(
+        srv.accepted.load(Ordering::SeqCst) >= 4,
+        "connections were not replaced"
+    );
+}

@@ -57,8 +57,15 @@ fn builder_rejects_out_of_range_settings() {
         .http2_initial_connection_window_size(u32::MAX)
         .build();
     assert_eq!(window.unwrap_err().kind(), ErrorKind::InvalidRequest);
-    let conns = Client::builder().http2_connections_per_origin(4, 2).build();
-    assert_eq!(conns.unwrap_err().kind(), ErrorKind::InvalidRequest);
+    for ok in [16_384, 16_777_215] {
+        assert!(Client::builder().http2_max_frame_size(ok).build().is_ok());
+    }
+    assert!(
+        Client::builder()
+            .http2_initial_stream_window_size(0x7fff_ffff)
+            .build()
+            .is_ok()
+    );
 }
 
 #[tokio::test]
@@ -71,6 +78,7 @@ async fn builder_settings_reach_the_connection() {
         .tcp_recv_buffer_size(Some(64 * 1024))
         .http1_only()
         .http1_title_case_headers(true)
+        .local_address(Some("127.0.0.1".parse().unwrap()))
         .response_head_timeout(Some(std::time::Duration::from_secs(5)))
         .build()
         .unwrap();

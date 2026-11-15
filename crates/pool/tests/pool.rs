@@ -321,6 +321,28 @@ async fn max_connection_lifetime_retires_http1_connections() {
 }
 
 #[tokio::test]
+async fn connection_that_ages_out_mid_request_is_closed_on_return() {
+    let (port, stats) = server(Behavior {
+        delay: Duration::from_millis(150),
+        drop_after: None,
+    })
+    .await;
+    let p = pool(PoolConfig {
+        max_connection_lifetime: Some(Duration::from_millis(80)),
+        ..PoolConfig::default()
+    });
+    let (_, _, a) = fetch(&p, get(port, "GET")).await.unwrap();
+    assert_eq!(
+        p.stats(&uri(port)).unwrap().h1_idle,
+        0,
+        "not returned to the idle stack"
+    );
+    let (_, _, b) = fetch(&p, get(port, "GET")).await.unwrap();
+    assert_ne!(a, b);
+    assert_eq!(stats.accepted.load(Ordering::SeqCst), 2);
+}
+
+#[tokio::test]
 async fn connect_failure_is_unprocessed_and_frees_slot() {
     let l = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = l.local_addr().unwrap().port();

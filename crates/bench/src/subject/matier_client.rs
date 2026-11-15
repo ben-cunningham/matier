@@ -41,8 +41,9 @@ pub struct MatierSubject {
 
 impl MatierSubject {
     pub fn new(cfg: &SubjectConfig) -> Result<Self> {
-        // Matier runs with its defaults; only the protocol choice and the optional connection pin are set.
-        let mut builder = Client::builder();
+        // Matier runs with its defaults; only the protocol, the HTTP/1 connection cap and the optional connection
+        // pin are set. The cap is lifted because hyper and reqwest have none (c=512 runs exceed the default 256).
+        let mut builder = Client::builder().http1_max_connections_per_origin(4096);
         if cfg.protocol == Protocol::H1 {
             builder = builder.http1_only(); // h1 benchmarks must not negotiate h2
         } else if !cfg.tls {

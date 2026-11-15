@@ -228,7 +228,16 @@ impl ClientBuilder {
         self
     }
 
-    /// Only offer HTTP/1.1 in TLS ALPN, and use HTTP/1.1 for plaintext origins.
+    /// Local IP address to connect from (default: chosen by the OS). Origins that resolve only to the other
+    /// address family fail to connect.
+    #[must_use]
+    pub fn local_address(mut self, addr: Option<std::net::IpAddr>) -> Self {
+        self.connect.local_address = addr;
+        self
+    }
+
+    /// Only offer HTTP/1.1 in TLS ALPN, and use HTTP/1.1 for plaintext origins. A later
+    /// [`http2_prior_knowledge`](Self::http2_prior_knowledge) turns h2c back on for plaintext origins.
     #[must_use]
     pub fn http1_only(mut self) -> Self {
         self.connect.alpn_h2 = false;
@@ -303,6 +312,20 @@ impl ClientBuilder {
         self
     }
 
+    /// Largest single socket read for HTTP/1.1 (default 64 KiB; the read size adapts up to it).
+    #[must_use]
+    pub fn http1_max_buf_size(mut self, bytes: usize) -> Self {
+        self.h1.max_buffer = bytes;
+        self
+    }
+
+    /// Accept obsolete folded (multi-line) response headers by unfolding them (default `false`: rejected).
+    #[must_use]
+    pub fn http1_allow_obsolete_multiline_headers_in_responses(mut self, on: bool) -> Self {
+        self.h1.limits.allow_obs_fold = on;
+        self
+    }
+
     /// Write header names in title case, e.g. `Content-Type` (default `false`).
     #[must_use]
     pub fn http1_title_case_headers(mut self, on: bool) -> Self {
@@ -319,8 +342,8 @@ impl ClientBuilder {
         self
     }
 
-    /// Connection receive window, shared by all streams; also the most response data one connection
-    /// buffers for slow readers (default 16 MiB).
+    /// Connection receive window, shared by all streams (default 16 MiB). It is a budget, not an allocation:
+    /// a connection only holds this much when its consumers read slower than the server sends.
     #[must_use]
     pub fn http2_initial_connection_window_size(mut self, bytes: u32) -> Self {
         self.h2.initial_conn_window = bytes;
@@ -328,7 +351,8 @@ impl ClientBuilder {
     }
 
     /// Largest frame the server may send (default 256 KiB; the protocol allows 16 KiB to 16 MiB - 1).
-    /// Larger frames mean fewer frames per response body and less CPU per byte.
+    /// Larger frames mean fewer frames per response body and less CPU per byte. Some servers (nginx, Envoy)
+    /// send small frames regardless.
     #[must_use]
     pub fn http2_max_frame_size(mut self, bytes: u32) -> Self {
         self.h2.max_frame_size = bytes;
@@ -342,7 +366,8 @@ impl ClientBuilder {
         self
     }
 
-    /// Send a PING after this much read inactivity (default 30 s; `None` disables).
+    /// Send a PING after this much read inactivity, whether or not requests are open (default 30 s; `None`
+    /// disables).
     #[must_use]
     pub fn http2_keep_alive_interval(mut self, interval: Option<Duration>) -> Self {
         self.h2.keepalive_interval = interval;
@@ -356,8 +381,8 @@ impl ClientBuilder {
         self
     }
 
-    /// Streams per connection before the pool uses or opens another connection (default 128, lower when the
-    /// server allows fewer).
+    /// Client-side cap on streams per connection; requests beyond it use or open another connection (default
+    /// 128, or the server's `MAX_CONCURRENT_STREAMS` when lower). Not sent to the server.
     #[must_use]
     pub fn http2_max_streams_per_connection(mut self, n: usize) -> Self {
         self.pool.h2_target_streams_per_conn = n;
@@ -365,7 +390,8 @@ impl ClientBuilder {
     }
 
     /// Bounds for HTTP/2 connections per origin. The pool scales between them by load (defaults: 1, and the
-    /// lower of the CPU count and the tokio runtime's worker count). Equal values pin the count.
+    /// lower of the CPU count and the tokio runtime's worker count). Equal values pin the count; a `min` above
+    /// `max` wins.
     #[must_use]
     pub fn http2_connections_per_origin(mut self, min: usize, max: usize) -> Self {
         self.pool.h2_min_conns_per_origin = min;
@@ -393,15 +419,10 @@ impl ClientBuilder {
     /// Builds the client.
     ///
     /// # Errors
-    /// `InvalidRequest` for inconsistent limits (zero `max_conns_per_origin` / `h2_max_conns_per_origin`,
-    /// `h2_min_conns_per_origin` above `h2_max_conns_per_origin`) or HTTP/2 settings out of protocol range.
+    /// `InvalidRequest` for zero `max_conns_per_origin` / `h2_max_conns_per_origin`, or HTTP/2 settings out of
+    /// protocol range.
     pub fn build(self) -> Result<Client> {
         self.h2.validate()?;
-        if self.pool.h2_min_conns_per_origin > self.pool.h2_max_conns_per_origin {
-            return Err(Error::invalid_request(
-                "h2_min_conns_per_origin must not exceed h2_max_conns_per_origin",
-            ));
-        }
         if self.pool.max_conns_per_origin == 0 {
             return Err(Error::invalid_request("max_conns_per_origin must be > 0"));
         }

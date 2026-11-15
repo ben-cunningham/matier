@@ -39,6 +39,8 @@ pub enum ScaleReason {
     Underused,
     /// A connection reached `max_connection_lifetime` and was retired.
     Expired,
+    /// A connection was dialed to replace one past `max_connection_lifetime`.
+    Replace,
 }
 
 impl ScaleReason {
@@ -52,6 +54,7 @@ impl ScaleReason {
             Self::Idle => "idle",
             Self::Underused => "underused",
             Self::Expired => "expired",
+            Self::Replace => "replace",
         }
     }
 }

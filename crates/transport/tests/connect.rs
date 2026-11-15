@@ -313,3 +313,44 @@ async fn observer_sees_phases() {
 fn platform_verifier_builds() {
     TlsConfig::with_platform_verifier().unwrap();
 }
+
+#[tokio::test]
+async fn socket_options_are_applied_before_connect() {
+    let l = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = l.local_addr().unwrap().port();
+    let accept = tokio::spawn(async move { l.accept().await.unwrap() });
+    let cfg = ConnectConfig {
+        nodelay: false,
+        recv_buffer_size: Some(256 * 1024),
+        send_buffer_size: Some(128 * 1024),
+        local_address: Some("127.0.0.1".parse().unwrap()),
+        ..ConnectConfig::default()
+    };
+    let c = connect(
+        &origin(Scheme::Http, "127.0.0.1", port),
+        &cfg,
+        &NoopObserver,
+    )
+    .await
+    .unwrap();
+    let (_, peer) = accept.await.unwrap();
+    let tcp = c.io.tcp();
+    assert!(!tcp.nodelay().unwrap());
+    assert_eq!(peer, tcp.local_addr().unwrap());
+    let sock = socket2::SockRef::from(tcp);
+    // Linux reports double the requested size; macOS and Windows report it as set.
+    assert!(sock.recv_buffer_size().unwrap() >= 256 * 1024);
+    assert!(sock.send_buffer_size().unwrap() >= 128 * 1024);
+}
+
+#[tokio::test]
+async fn local_address_of_the_other_family_fails() {
+    let cfg = ConnectConfig {
+        local_address: Some("::1".parse().unwrap()),
+        ..ConnectConfig::default()
+    };
+    let e = connect(&origin(Scheme::Http, "127.0.0.1", 9), &cfg, &NoopObserver)
+        .await
+        .unwrap_err();
+    assert_eq!(e.kind(), ErrorKind::Connect);
+}
