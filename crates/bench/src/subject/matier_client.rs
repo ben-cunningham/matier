@@ -6,16 +6,14 @@
 //! `h2_min_conns_per_origin`. For h1 the pool grows to the concurrency of the run.
 //!
 //! `MATIER_BENCH_NO_COALESCE=1` turns request coalescing off (`H2Config::coalesce_requests`) for A/B runs.
-//! `MATIER_BENCH_TRACE_POOL=1` prints every pool scaling decision (time, connection count, reason) and, every
-//! 50k actor ticks, socket read/write counts and sizes (`[io]`) to stderr.
+//! `MATIER_BENCH_TRACE_POOL=1` prints every pool scaling decision (time, connection count, reason) to stderr.
 
 use std::sync::Arc;
 use std::time::Instant;
 
 use anyhow::{Result, anyhow};
 use matier::{
-    Body, Client, ConnectConfig, H1Config, H2Config, Observer, OriginKey, PoolConfig, ScaleReason,
-    TlsConfig,
+    Body, Client, ConnectConfig, H2Config, Observer, OriginKey, PoolConfig, ScaleReason, TlsConfig,
 };
 
 use super::{
@@ -27,56 +25,9 @@ use crate::scenario::Protocol;
 /// Prints pool scaling events (`MATIER_BENCH_TRACE_POOL=1`).
 struct PoolTrace(Instant);
 
-static RD_N: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-static RD_B: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-static WR_N: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-static WR_B: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-static RST_N: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-static DS_N: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-static DS_NS: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
 impl Observer for PoolTrace {
     fn enabled(&self) -> bool {
         true
-    }
-    fn bytes_read(&self, _o: &OriginKey, n: usize) {
-        RD_N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        RD_B.fetch_add(n as u64, std::sync::atomic::Ordering::Relaxed);
-    }
-    fn h2_rst_stream(&self, _o: &OriginKey, _code: u32, sent: bool) {
-        if sent {
-            RST_N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        }
-    }
-    fn request_dispatched(&self, _o: &OriginKey, d: std::time::Duration) {
-        DS_N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        DS_NS.fetch_add(d.as_nanos() as u64, std::sync::atomic::Ordering::Relaxed);
-    }
-    fn write_batch(&self, _o: &OriginKey, bytes: usize, _i: usize) {
-        WR_N.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        WR_B.fetch_add(bytes as u64, std::sync::atomic::Ordering::Relaxed);
-    }
-    fn actor_tick(&self, _o: &OriginKey, _b: std::time::Duration, _q: usize) {
-        static T: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
-        let t = T.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
-        if t.is_multiple_of(50_000) {
-            let (rn, rb, wn, wb) = (
-                RD_N.load(std::sync::atomic::Ordering::Relaxed),
-                RD_B.load(std::sync::atomic::Ordering::Relaxed),
-                WR_N.load(std::sync::atomic::Ordering::Relaxed),
-                WR_B.load(std::sync::atomic::Ordering::Relaxed),
-            );
-            let (dn, dns) = (
-                DS_N.swap(0, std::sync::atomic::Ordering::Relaxed),
-                DS_NS.swap(0, std::sync::atomic::Ordering::Relaxed),
-            );
-            eprintln!(
-                "[io] ticks={t} reads={rn} avg_read={} writes={wn} avg_write={} dispatch_avg={}us rst_sent={} disp={dn}",
-                rb / rn.max(1),
-                wb / wn.max(1),
-                dns / dn.max(1) / 1000,
-                RST_N.load(std::sync::atomic::Ordering::Relaxed)
-            );
-        }
     }
     fn pool_scaled(&self, _o: &OriginKey, conns: usize, reason: ScaleReason) {
         eprintln!(
@@ -113,7 +64,6 @@ impl MatierSubject {
                 http2_prior_knowledge: cfg.protocol == Protocol::H2 && !cfg.tls,
                 ..ConnectConfig::default()
             })
-            .h1(H1Config::default())
             .h2(H2Config {
                 initial_stream_window: H2_STREAM_WINDOW,
                 initial_conn_window: H2_CONN_WINDOW,

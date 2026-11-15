@@ -68,11 +68,6 @@ impl WriteQueue {
         self.written_total
     }
 
-    #[allow(dead_code)]
-    pub(crate) fn queue_len(&self) -> usize {
-        self.segs.len()
-    }
-
     /// Start encoding into the arena. Pair with [`Self::commit`].
     pub(crate) fn begin(&mut self) -> (&mut Vec<u8>, usize) {
         if self.segs.is_empty() {

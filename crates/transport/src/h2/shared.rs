@@ -78,10 +78,6 @@ pub(crate) enum Command {
 
 pub(crate) type CmdTx = tokio::sync::mpsc::UnboundedSender<Command>;
 
-pub(crate) fn send_cmd(tx: &CmdTx, c: Command) -> bool {
-    tx.send(c).is_ok()
-}
-
 #[allow(
     clippy::large_enum_variant,
     reason = "lives inline in the stream's ring; boxing would cost an allocation per DATA chunk"
@@ -164,10 +160,9 @@ impl StreamShared {
     /// State must already be published. Sends one `Ready` unless one is already queued: the actor clears
     /// `QUEUED` *before* reading state, so a producer that observes `QUEUED` set is guaranteed to be seen.
     pub(crate) fn mark_ready(this: &Arc<Self>) {
-        if this.flags.fetch_or(QUEUED, Ordering::AcqRel) & QUEUED == 0
-            && !send_cmd(&this.tx, Command::Ready(Arc::clone(this)))
-        {
-            // Actor gone: nothing to tell. (Leave QUEUED set; nobody will read it.)
+        if this.flags.fetch_or(QUEUED, Ordering::AcqRel) & QUEUED == 0 {
+            // An error means the actor is gone: nothing to tell. (QUEUED stays set; nobody will read it.)
+            let _ = this.tx.send(Command::Ready(Arc::clone(this)));
         }
     }
 
@@ -276,8 +271,14 @@ impl StreamShared {
         }
     }
 
-    pub(crate) fn pop_recv(&self) -> Option<RecvEvent> {
-        self.pop()
+    /// Drops every queued event, accounting DATA as consumed (it still counts against the connection's
+    /// buffered-bytes budget). Caller must be the sole consumer.
+    pub(crate) fn drain_recv(&self) {
+        while let Some(ev) = self.pop() {
+            if let RecvEvent::Data { flow, .. } = ev {
+                self.account_consumed(flow);
+            }
+        }
     }
 
     /// Accounts a drained/consumed DATA event to the connection's buffered-bytes counter (no command).
@@ -316,11 +317,7 @@ impl StreamShared {
 
     /// Consumer dropped before completion: report everything still queued as consumed and tell the actor.
     pub(crate) fn cancel(this: &Arc<Self>) {
-        while let Some(ev) = this.pop() {
-            if let RecvEvent::Data { flow, .. } = ev {
-                this.account_consumed(flow);
-            }
-        }
+        this.drain_recv();
         this.flags.fetch_or(CANCELED, Ordering::AcqRel);
         Self::mark_ready(this);
     }
@@ -394,12 +391,7 @@ impl StreamShared {
 
 impl Drop for StreamShared {
     fn drop(&mut self) {
-        // Events nobody consumed still count against the connection's buffered-bytes budget.
-        while let Some(ev) = self.pop() {
-            if let RecvEvent::Data { flow, .. } = ev {
-                self.account_consumed(flow);
-            }
-        }
+        self.drain_recv();
     }
 }
 

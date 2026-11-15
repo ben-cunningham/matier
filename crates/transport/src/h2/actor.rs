@@ -219,15 +219,14 @@ impl Reader {
 
     /// Reads more bytes into the first unfilled block.
     ///
-    /// `want` (bytes still missing from the current frame) does not need to be contiguous, so it never
-    /// justifies reserving more than one block: extra capacity reserved here was dropped unused by the re-wrap
-    /// below once the first block filled (pool churn for every frame larger than a block). A vectored `readv`
+    /// Never reserves more than one block, even when the current frame needs more: extra capacity reserved
+    /// here was dropped unused by the re-wrap below once the first block filled (pool churn for every frame
+    /// larger than a block). A vectored `readv`
     /// over several blocks was measured and rejected (1 MiB bodies: -20% req/s, +25% CPU/req).
     pub(crate) fn poll_fill<T: AsyncRead + Unpin>(
         &mut self,
         io: &mut T,
         cx: &mut Context<'_>,
-        _want: usize,
     ) -> Poll<io::Result<usize>> {
         self.flush_skip();
         if self.rbuf.first_unfilled_slice().len() < MIN_READ_TAIL {
@@ -451,7 +450,6 @@ pub(crate) struct Core {
     ping_out: Option<[u8; 8]>,
     conn_stall: Option<Instant>,
     goaway_queued: bool,
-    opened_any: bool,
     floods: Floods,
     /// Tick time (one clock read per actor poll).
     now: TInstant,
@@ -512,7 +510,6 @@ impl Core {
             ping_out: None,
             conn_stall: None,
             goaway_queued: false,
-            opened_any: false,
             floods: Floods::new(),
             now: TInstant::now(),
             timer_at: None,
@@ -828,7 +825,6 @@ impl Core {
             recv_len: 0,
             info_count: 0,
         };
-        self.opened_any = true;
         let has_full = matches!(entry.send, SendState::Full(_));
         let k = self.streams.insert(entry);
         self.by_id.insert(id, k);
@@ -900,11 +896,7 @@ impl Core {
         if !(st.local_closed && st.remote_closed) {
             self.ctrl_rst(st.id, Reason::CANCEL, true);
         }
-        while let Some(ev) = st.shared.pop_recv() {
-            if let RecvEvent::Data { flow, .. } = ev {
-                st.shared.account_consumed(flow);
-            }
-        }
+        st.shared.drain_recv();
         st.shared.close_send();
         // The queue may have held the bytes that kept connection-window credit parked.
         self.release_conn();
@@ -1024,9 +1016,7 @@ impl Core {
             let n = self.emit_data(k, budget);
             budget = budget.saturating_sub(n.max(1));
         }
-        !self.send_ready.is_empty()
-            && self.conn_send.available() > 0
-            && self.wq.pending() < WRITE_HIGH_WATER
+        self.can_schedule()
     }
 
     /// One DATA frame for stream `k`; returns payload bytes emitted.
@@ -1473,7 +1463,7 @@ impl Core {
         // Tiny or padded payloads are copied out of the read block so a flood of them cannot pin 64 KiB
         // blocks one byte at a time. Everything else stays a zero-copy slice.
         let data = if n < 16 || (pad > 0 && n < 256) {
-            matier_core::buf::from_bytes(Bytes::copy_from_slice(&data.to_vec()))
+            matier_core::buf::from_bytes(Bytes::from(data.to_vec()))
         } else {
             data
         };
@@ -1504,13 +1494,11 @@ impl Core {
             self.obs.h2_rst_stream(&self.origin, code.0, false);
         }
         if let Some(&k) = self.by_id.get(&id) {
-            let hdr_end = self.streams[k].hdr_end;
             let err = Error::with_source(
                 ErrorKind::Protocol,
                 Self::reset_recovery(code),
                 H2Error::Stream { id, reason: code },
             );
-            let _ = hdr_end;
             self.remove_with_error(k, err);
         }
         Ok(())
@@ -1616,11 +1604,6 @@ impl Core {
             );
             self.remove_with_error(k, e);
         }
-    }
-
-    /// After a read burst: credit the connection window (gated by the buffered-bytes budget).
-    pub(crate) fn after_read(&mut self) {
-        self.release_conn();
     }
 
     fn buffered_given(&self, consumed_word: u64) -> u64 {
@@ -1740,28 +1723,23 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
             if self.core.wq.pending() > READ_PAUSE_PENDING {
                 break; // backpressure: the peer is not reading; resume when a write completes
             }
-            let need = match self.rd.header() {
-                None => 9,
-                Some(h) => {
-                    if h.len > max {
-                        return Err(conn_err(
-                            Reason::FRAME_SIZE_ERROR,
-                            "frame exceeds SETTINGS_MAX_FRAME_SIZE",
-                        )
-                        .into());
-                    }
-                    let total = 9 + h.len as usize;
-                    if self.rd.cur.len() >= total {
-                        frames += 1;
-                        bytes += total;
-                        self.process_frame(h, total)?;
-                        continue;
-                    }
-                    total
+            if let Some(h) = self.rd.header() {
+                if h.len > max {
+                    return Err(conn_err(
+                        Reason::FRAME_SIZE_ERROR,
+                        "frame exceeds SETTINGS_MAX_FRAME_SIZE",
+                    )
+                    .into());
                 }
-            };
-            let want = need.saturating_sub(self.rd.cur.len());
-            match self.rd.poll_fill(&mut self.io, cx, want) {
+                let total = 9 + h.len as usize;
+                if self.rd.cur.len() >= total {
+                    frames += 1;
+                    bytes += total;
+                    self.process_frame(h, total)?;
+                    continue;
+                }
+            }
+            match self.rd.poll_fill(&mut self.io, cx) {
                 Poll::Pending => break,
                 Poll::Ready(Err(e)) => return Err(Fail::Io(e)),
                 Poll::Ready(Ok(0)) => {
@@ -1779,7 +1757,7 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
             }
         }
         self.rd.flush_skip();
-        self.core.after_read();
+        self.core.release_conn(); // credit the connection window (gated by the buffered-bytes budget)
         self.core.drain_dirty();
         Ok(yielded)
     }
@@ -1988,7 +1966,9 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
             }
         }
     }
+}
 
+impl<T> Actor<T> {
     /// Fail everything, stop accepting and wake waiters. Idempotent.
     fn teardown(&mut self, kind: ErrorKind, msg: &str) {
         self.core.fail_all(kind, msg);
@@ -2015,23 +1995,8 @@ impl<T> Drop for Actor<T> {
     fn drop(&mut self) {
         // Task dropped (runtime shutdown): unblock every waiter.
         if !self.torn_down {
-            self.torn_down = true;
-            self.core.stop_accepting();
-            self.core
-                .fail_all(ErrorKind::Closed, "HTTP/2 connection task dropped");
+            self.teardown(ErrorKind::Closed, "HTTP/2 connection task dropped");
             self.core.drain_dirty();
-            self.rx.close();
-            while let Ok(c) = self.rx.try_recv() {
-                if let Command::Open(o) = c {
-                    o.shared.publish_head(Err(Error::unprocessed(
-                        ErrorKind::Closed,
-                        "HTTP/2 connection task dropped",
-                    )));
-                }
-            }
-            self.core.shared.closed.store(true, Ordering::Release);
-            self.core.shared.close_notify.notify_waiters();
-            self.core.shared.slot_released.notify_waiters();
         }
     }
 }
@@ -2246,11 +2211,7 @@ where
                     };
                 }
             }
-            let want = rd
-                .header()
-                .map_or(9, |h| 9 + h.len as usize)
-                .saturating_sub(rd.cur.len());
-            let n = std::future::poll_fn(|cx| rd.poll_fill(&mut io, cx, want))
+            let n = std::future::poll_fn(|cx| rd.poll_fill(&mut io, cx))
                 .await
                 .map_err(hs_err)?;
             if n == 0 {

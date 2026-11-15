@@ -1,7 +1,7 @@
 //! `hyper_util::client::legacy::Client` subject (HTTP/1.1, h2c prior knowledge, or TLS+ALPN).
 //!
 //! `BENCH_TRACE_IO=1` counts socket reads/writes per connection and prints the totals when the connection
-//! closes (read/write batching comparison with matier's `[io]` trace).
+//! closes (read/write batching comparison; matier exposes the same counters through its `Observer`).
 
 use anyhow::Result;
 use http_body_util::{BodyExt, Full};

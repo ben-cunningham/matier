@@ -184,23 +184,8 @@ impl PoolInner {
     fn origin_pool(&self, uri: &http::Uri) -> Result<Arc<OriginPool>> {
         let map = self.map.pin();
         // Fast path: no allocation. Falls back to the full (allocating) parse for anything unusual.
-        if let (Some(scheme), Some(host)) = (uri.scheme_str(), uri.host()) {
-            let sch = if scheme.eq_ignore_ascii_case("http") {
-                Some(Scheme::Http)
-            } else if scheme.eq_ignore_ascii_case("https") {
-                Some(Scheme::Https)
-            } else {
-                None
-            };
-            if let Some(sch) = sch
-                && !host.bytes().any(|b| b.is_ascii_uppercase())
-            {
-                let port = uri.port_u16().unwrap_or_else(|| sch.default_port());
-                let probe = Probe(sch, host, port);
-                if let Some(p) = map.get(&probe as &dyn KeyParts) {
-                    return Ok(Arc::clone(p));
-                }
-            }
+        if let Some(p) = self.lookup(&map, uri) {
+            return Ok(Arc::clone(p));
         }
         let key = Key(OriginKey::from_uri(uri)?);
         if let Some(p) = map.get(&key as &dyn KeyParts) {

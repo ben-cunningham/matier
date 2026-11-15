@@ -174,11 +174,7 @@ fn loom_cancel_vs_push() {
         while let Ok(Command::Ready(sh)) = rx.try_recv() {
             let f = sh.begin_ready();
             assert!(f & super::shared::CANCELED != 0);
-            while let Some(ev) = sh.pop_recv() {
-                if let RecvEvent::Data { flow, .. } = ev {
-                    sh.account_consumed(flow);
-                }
-            }
+            sh.drain_recv();
         }
         assert_eq!(
             conn.consumed.load(Ordering::SeqCst),

@@ -329,7 +329,6 @@ impl OriginPool {
 
     async fn dial_reserved(self: &Arc<Self>) -> Result<Dialed> {
         let sh = &self.shared;
-        let t0 = sh.obs.enabled().then(Instant::now);
         let connected = match connect(&self.key, &sh.connect, &*sh.obs).await {
             Ok(c) => c,
             Err(e) => {
@@ -337,7 +336,6 @@ impl OriginPool {
                 return Err(e);
             }
         };
-        let _ = t0;
         let Connected { io, protocol } = connected;
         match protocol {
             Protocol::Http1 => {
