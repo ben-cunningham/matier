@@ -370,7 +370,7 @@ async fn handshake_exchanges_settings_and_acks() {
         match peer.frame().await {
             F::Settings { ack: true, .. } => saw_ack = true,
             F::WindowUpdate { id: 0, inc } => {
-                assert_eq!(inc, (4 << 20) - 65_535);
+                assert_eq!(inc, H2Config::default().initial_conn_window - 65_535);
                 saw_wu = true;
             }
             f => panic!("unexpected {f:?}"),

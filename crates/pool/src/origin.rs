@@ -46,6 +46,7 @@ pub(crate) struct H2Entry {
     pub(crate) handle: H2Handle,
     /// Not selectable for new streams (scale-down in progress); retired once it has no streams.
     draining: AtomicBool,
+    opened: Instant,
 }
 
 impl H2Entry {
@@ -239,7 +240,14 @@ impl OriginPool {
     // ---- HTTP/1 --------------------------------------------------------------------------
 
     fn expired(&self, c: &H1Conn) -> bool {
-        c.last_used().elapsed() > self.shared.cfg.idle_timeout
+        c.last_used().elapsed() > self.shared.cfg.idle_timeout || self.too_old(c)
+    }
+
+    fn too_old(&self, c: &H1Conn) -> bool {
+        self.shared
+            .cfg
+            .max_connection_lifetime
+            .is_some_and(|max| c.created_at().elapsed() >= max)
     }
 
     /// Pops the freshest usable idle connection (probing liveness), discarding dead ones.
@@ -296,6 +304,10 @@ impl OriginPool {
 
     /// Returns a connection to the pool: oldest waiter first, else the idle stack.
     fn release_conn(&self, mut conn: H1Conn) {
+        if self.too_old(&conn) {
+            drop(conn); // `closed()` frees the slot, or hands it to a waiter to dial
+            return;
+        }
         let mut stale: Vec<H1Conn> = Vec::new();
         {
             let mut st = self.h1.lock();
@@ -722,6 +734,7 @@ impl OriginPool {
             id,
             handle,
             draining: AtomicBool::new(false),
+            opened: Instant::now(),
         });
         self.h2.handles.rcu(|cur| {
             let mut v = Vec::clone(cur);
@@ -737,7 +750,7 @@ impl OriginPool {
             .pool_scaled(&self.key, self.h2.live.load(Ordering::Acquire), reason);
         self.h2.notify.notify_waiters();
         let me = Arc::downgrade(self);
-        let opened = Instant::now();
+        let opened = entry.opened;
         // Only the close notification is captured: holding an `H2Handle` here would keep the actor's inbox
         // open and defeat the graceful close of retired connections.
         let closed = entry.handle.closed();
@@ -804,7 +817,9 @@ impl OriginPool {
     /// * A draining connection is retired as soon as it has no streams.
     /// * When every selectable connection has been under-used for [`scale::DRAIN_AFTER_LOW`] (and nothing was
     ///   scaled up recently) the newest one is marked draining.
-    fn h2_reap(&self, st: &mut Reap) -> bool {
+    /// * One connection older than `max_connection_lifetime` is retired per tick, once enough younger ones
+    ///   remain; otherwise its replacement is dialed first.
+    fn h2_reap(self: &Arc<Self>, st: &mut Reap) -> bool {
         let snap = self.h2.handles.load_full();
         if snap.is_empty() {
             return false;
@@ -837,7 +852,7 @@ impl OriginPool {
                 st.zero.remove(&e.id);
             }
         }
-        if zero_retired {
+        if zero_retired || self.h2_retire_expired(&snap, now, min) {
             return true;
         }
         let mut n = snap.len();
@@ -901,6 +916,41 @@ impl OriginPool {
                 .obs
                 .pool_scaled(&self.key, sel.len() - 1, ScaleReason::Underused);
         }
+        true
+    }
+
+    /// Retires the oldest connection past `max_connection_lifetime` when at least `min` younger selectable
+    /// connections remain; otherwise dials a replacement (retired on a later tick). True if one was retired.
+    fn h2_retire_expired(
+        self: &Arc<Self>,
+        snap: &[Arc<H2Entry>],
+        now: Instant,
+        min: usize,
+    ) -> bool {
+        let Some(max) = self.shared.cfg.max_connection_lifetime else {
+            return false;
+        };
+        let young = |e: &&Arc<H2Entry>| now.duration_since(e.opened) < max;
+        let Some(old) = snap.iter().find(|e| !young(e)) else {
+            return false;
+        };
+        let fresh = snap
+            .iter()
+            .filter(young)
+            .filter(|e| !e.is_draining() && e.handle.is_accepting())
+            .count();
+        if fresh < min {
+            if self.h2.dialing.load(Ordering::Acquire) == 0 {
+                self.h2_spawn_dial(ScaleReason::Expired);
+            }
+            return false;
+        }
+        self.h2_remove(old.id);
+        self.shared.obs.pool_scaled(
+            &self.key,
+            self.h2.live.load(Ordering::Acquire),
+            ScaleReason::Expired,
+        );
         true
     }
 }

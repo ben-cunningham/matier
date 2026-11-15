@@ -35,13 +35,21 @@ use origin::{Lease, OriginPool};
 /// Pool limits and timeouts.
 #[derive(Clone, Debug)]
 pub struct PoolConfig {
-    /// Idle HTTP/1 connections kept per origin (default 32).
+    /// Idle HTTP/1 connections kept per origin (default 256, the same as `max_conns_per_origin`, so a burst
+    /// does not close connections it will want again; `idle_timeout` closes the unused ones).
     pub max_idle_per_origin: usize,
-    /// Idle HTTP/1 connections older than this are discarded at checkout (default 90 s).
+    /// Idle HTTP/1 connections older than this are discarded at checkout, and HTTP/2 connections without
+    /// streams for this long are closed (default 90 s).
     pub idle_timeout: Duration,
+    /// Connections are retired once they are this old, so traffic follows DNS and load-balancer changes
+    /// (default `None`: no limit). HTTP/1 connections are closed when they are next returned or checked out;
+    /// an HTTP/2 connection stops taking new streams after its replacement is up and closes once its
+    /// in-flight requests finish.
+    pub max_connection_lifetime: Option<Duration>,
     /// HTTP/1: maximum connections (in use + idle + dialing) per origin (default 256).
     pub max_conns_per_origin: usize,
-    /// Streams per HTTP/2 connection before preferring another/new connection (default 128).
+    /// Streams per HTTP/2 connection (default 128, or less when the server's `MAX_CONCURRENT_STREAMS` is lower).
+    /// Requests beyond it go to another connection, which the pool dials if needed.
     pub h2_target_streams_per_conn: usize,
     /// HTTP/2 connections kept per origin: dialed eagerly once the origin is known to speak h2 and never
     /// scaled below (default 1). Leave it alone: the pool adds connections under load by itself.
@@ -64,8 +72,9 @@ pub struct PoolConfig {
 impl Default for PoolConfig {
     fn default() -> Self {
         Self {
-            max_idle_per_origin: 32,
+            max_idle_per_origin: 256,
             idle_timeout: Duration::from_secs(90),
+            max_connection_lifetime: None,
             max_conns_per_origin: 256,
             h2_target_streams_per_conn: 128,
             h2_min_conns_per_origin: 1,

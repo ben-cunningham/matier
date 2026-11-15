@@ -2154,12 +2154,7 @@ pub(crate) async fn handshake_io<T>(
 where
     T: AsyncRead + AsyncWrite + Unpin + Send + 'static,
 {
-    if !(settings::MIN_MAX_FRAME_SIZE..=settings::MAX_MAX_FRAME_SIZE).contains(&cfg.max_frame_size)
-        || cfg.initial_stream_window > settings::MAX_WINDOW
-        || cfg.initial_conn_window > settings::MAX_WINDOW
-    {
-        return Err(Error::invalid_request("invalid H2Config"));
-    }
+    cfg.validate()?;
     let mut local = Settings::client_default();
     local.initial_window_size = cfg.initial_stream_window;
     local.max_frame_size = cfg.max_frame_size;

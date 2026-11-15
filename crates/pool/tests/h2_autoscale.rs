@@ -370,3 +370,43 @@ async fn zero_max_concurrent_streams_does_not_wedge_or_overdial() {
         accepted.load(Ordering::SeqCst)
     );
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn connections_past_their_lifetime_are_replaced_without_failing_requests() {
+    let _serial = SERIAL.lock().await;
+    let (port, srv) = server(Duration::ZERO).await;
+    let u = uri(port);
+    let ev = Arc::new(Events::default());
+    let p = Pool::new(
+        PoolConfig {
+            idle_timeout: Duration::from_millis(40), // 10 ms maintenance tick
+            max_connection_lifetime: Some(Duration::from_millis(150)),
+            ..PoolConfig::default()
+        },
+        ConnectConfig {
+            http2_prior_knowledge: true,
+            ..ConnectConfig::default()
+        },
+        H1Config::default(),
+        H2Config::default(),
+        Arc::clone(&ev) as Arc<dyn Observer>,
+    );
+    let load = start_load(&p, &u, 2); // `one` asserts that every request succeeds
+    tokio::time::sleep(Duration::from_millis(700)).await;
+    let (done, _) = load.finish().await;
+    assert!(done > 0);
+    assert!(
+        srv.accepted.load(Ordering::SeqCst) >= 3,
+        "connections were not replaced: {} accepted",
+        srv.accepted.load(Ordering::SeqCst)
+    );
+    assert!(
+        ev.log
+            .0
+            .lock()
+            .unwrap()
+            .iter()
+            .any(|(_, r)| *r == ScaleReason::Expired)
+    );
+    assert!(conns(&p, &u) <= 2, "old connections were retired");
+}

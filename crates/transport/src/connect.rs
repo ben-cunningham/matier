@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 
 use matier_core::{ConnectPhase, Error, ErrorKind, Observer, OriginKey, Protocol, Result};
 use rustls::pki_types::ServerName;
-use tokio::net::{TcpStream, lookup_host};
+use tokio::net::{TcpSocket, TcpStream, lookup_host};
 use tokio::time::timeout;
 use tokio_rustls::TlsConnector;
 
@@ -20,6 +20,10 @@ pub struct ConnectConfig {
     pub nodelay: bool,
     /// TCP keepalive idle time; `None` leaves the OS default (off).
     pub keepalive: Option<Duration>,
+    /// `SO_SNDBUF`; `None` leaves the OS default (auto-tuned on Linux and macOS).
+    pub send_buffer_size: Option<u32>,
+    /// `SO_RCVBUF`; `None` leaves the OS default. Set before connecting, so it takes part in TCP window scaling.
+    pub recv_buffer_size: Option<u32>,
     /// Required for `https` origins.
     pub tls: Option<TlsConfig>,
     /// Speak HTTP/2 over plaintext (h2c) without upgrade.
@@ -34,6 +38,8 @@ impl Default for ConnectConfig {
             connect_timeout: Duration::from_secs(10),
             nodelay: true,
             keepalive: Some(Duration::from_secs(60)),
+            send_buffer_size: None,
+            recv_buffer_size: None,
             tls: None,
             http2_prior_knowledge: false,
             alpn_h2: true,
@@ -132,7 +138,7 @@ pub async fn connect(
 async fn connect_tcp(addrs: &[SocketAddr], cfg: &ConnectConfig) -> Result<TcpStream> {
     let mut last = None;
     for &addr in addrs {
-        match timeout(cfg.connect_timeout, TcpStream::connect(addr)).await {
+        match timeout(cfg.connect_timeout, connect_addr(addr, cfg)).await {
             Ok(Ok(s)) => {
                 configure_socket(&s, cfg).map_err(Error::connect)?;
                 return Ok(s);
@@ -150,6 +156,21 @@ async fn connect_tcp(addrs: &[SocketAddr], cfg: &ConnectConfig) -> Result<TcpStr
         }
     }
     Err(last.unwrap_or_else(|| Error::connect("no addresses to connect to")))
+}
+
+async fn connect_addr(addr: SocketAddr, cfg: &ConnectConfig) -> io::Result<TcpStream> {
+    let sock = if addr.is_ipv4() {
+        TcpSocket::new_v4()?
+    } else {
+        TcpSocket::new_v6()?
+    };
+    if let Some(n) = cfg.send_buffer_size {
+        sock.set_send_buffer_size(n)?;
+    }
+    if let Some(n) = cfg.recv_buffer_size {
+        sock.set_recv_buffer_size(n)?;
+    }
+    sock.connect(addr).await
 }
 
 fn configure_socket(s: &TcpStream, cfg: &ConnectConfig) -> io::Result<()> {

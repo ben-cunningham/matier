@@ -48,3 +48,36 @@ async fn rejects_relative_and_unsupported_uris() {
         assert_eq!(e.kind(), ErrorKind::InvalidRequest, "{uri}");
     }
 }
+
+#[test]
+fn builder_rejects_out_of_range_settings() {
+    let frame = Client::builder().http2_max_frame_size(1024).build();
+    assert_eq!(frame.unwrap_err().kind(), ErrorKind::InvalidRequest);
+    let window = Client::builder()
+        .http2_initial_connection_window_size(u32::MAX)
+        .build();
+    assert_eq!(window.unwrap_err().kind(), ErrorKind::InvalidRequest);
+    let conns = Client::builder().http2_connections_per_origin(4, 2).build();
+    assert_eq!(conns.unwrap_err().kind(), ErrorKind::InvalidRequest);
+}
+
+#[tokio::test]
+async fn builder_settings_reach_the_connection() {
+    let port = echo_server().await;
+    let client = Client::builder()
+        .tcp_nodelay(false)
+        .tcp_keepalive(None)
+        .tcp_send_buffer_size(Some(64 * 1024))
+        .tcp_recv_buffer_size(Some(64 * 1024))
+        .http1_only()
+        .http1_title_case_headers(true)
+        .response_head_timeout(Some(std::time::Duration::from_secs(5)))
+        .build()
+        .unwrap();
+    let req = http::Request::post(format!("http://127.0.0.1:{port}/echo"))
+        .body(Body::from("tuned"))
+        .unwrap();
+    let resp = client.send(req).await.unwrap();
+    let body = resp.into_body().collect().await.unwrap().to_bytes();
+    assert_eq!(&body[..], b"tuned");
+}

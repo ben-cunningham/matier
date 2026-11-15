@@ -1,5 +1,6 @@
 //! `matier` subject: the Matier client (HTTP/1.1, h2c prior knowledge, or TLS + ALPN).
 //!
+//! Matier runs with its library defaults (the other subjects get the tuned HTTP/2 settings in `mod.rs`).
 //! The default is the zero-config pool: one h2 connection to start, load-based autoscaling up to
 //! `available_parallelism()` and back down when idle. `--pool-size` is ignored here (it configures the
 //! hyper/fetch "pooled" workarounds); only an explicit `--matier-min-conns N` pins
@@ -12,14 +13,9 @@ use std::sync::Arc;
 use std::time::Instant;
 
 use anyhow::{Result, anyhow};
-use matier::{
-    Body, Client, ConnectConfig, H2Config, Observer, OriginKey, PoolConfig, ScaleReason, TlsConfig,
-};
+use matier::{Body, Client, Observer, OriginKey, PoolConfig, ScaleReason, TlsConfig};
 
-use super::{
-    BenchRequest, BenchResponse, H2_CONN_WINDOW, H2_MAX_FRAME, H2_STREAM_WINDOW, Subject,
-    SubjectConfig, read_ca,
-};
+use super::{BenchRequest, BenchResponse, Subject, SubjectConfig, read_ca};
 use crate::scenario::Protocol;
 
 /// Prints pool scaling events (`MATIER_BENCH_TRACE_POOL=1`).
@@ -45,32 +41,24 @@ pub struct MatierSubject {
 
 impl MatierSubject {
     pub fn new(cfg: &SubjectConfig) -> Result<Self> {
-        let mut builder = Client::builder()
-            .pool(PoolConfig {
-                h2_min_conns_per_origin: cfg.matier_min_conns.unwrap_or(1).max(1),
-                // h2_max_conns_per_origin stays at its default (available_parallelism); a pinned minimum
-                // above it raises it so the pin is honoured.
-                h2_max_conns_per_origin: cfg
-                    .matier_max_conns
-                    .unwrap_or(PoolConfig::default().h2_max_conns_per_origin)
-                    .max(cfg.matier_min_conns.unwrap_or(1)),
-                max_conns_per_origin: 4096,
-                max_idle_per_origin: 4096,
-                ..PoolConfig::default()
-            })
-            .connect(ConnectConfig {
-                // h2 over TLS is negotiated through ALPN; h1 benchmarks must not offer h2.
-                alpn_h2: cfg.protocol == Protocol::H2,
-                http2_prior_knowledge: cfg.protocol == Protocol::H2 && !cfg.tls,
-                ..ConnectConfig::default()
-            })
-            .h2(H2Config {
-                initial_stream_window: H2_STREAM_WINDOW,
-                initial_conn_window: H2_CONN_WINDOW,
-                max_frame_size: H2_MAX_FRAME,
-                coalesce_requests: std::env::var_os("MATIER_BENCH_NO_COALESCE").is_none(),
-                ..H2Config::default()
-            });
+        // Matier runs with its defaults; only the protocol choice and the optional connection pin are set.
+        let mut builder = Client::builder();
+        if cfg.protocol == Protocol::H1 {
+            builder = builder.http1_only(); // h1 benchmarks must not negotiate h2
+        } else if !cfg.tls {
+            builder = builder.http2_prior_knowledge();
+        }
+        if cfg.matier_min_conns.is_some() || cfg.matier_max_conns.is_some() {
+            let min = cfg.matier_min_conns.unwrap_or(1).max(1);
+            let max = cfg
+                .matier_max_conns
+                .unwrap_or(PoolConfig::default().h2_max_conns_per_origin)
+                .max(min);
+            builder = builder.http2_connections_per_origin(min, max);
+        }
+        if std::env::var_os("MATIER_BENCH_NO_COALESCE").is_some() {
+            builder = builder.http2_request_coalescing(false);
+        }
         if std::env::var_os("MATIER_BENCH_TRACE_POOL").is_some() {
             builder = builder.observer(Arc::new(PoolTrace(Instant::now())));
         }

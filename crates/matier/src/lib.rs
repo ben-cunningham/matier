@@ -27,6 +27,7 @@ mod dispatch;
 
 use std::future::Future;
 use std::sync::Arc;
+use std::time::Duration;
 
 use futures_util::future::Either;
 pub use matier_core::{
@@ -100,6 +101,21 @@ impl Service<http::Request<Body>> for Client {
 }
 
 /// Builder for [`Client`].
+///
+/// Every setting has a method below. [`pool`](Self::pool), [`connect`](Self::connect), [`h1`](Self::h1) and
+/// [`h2`](Self::h2) replace a whole section at once (including values set by earlier methods), so call them
+/// first.
+///
+/// ```
+/// use std::time::Duration;
+///
+/// let client = matier::Client::builder()
+///     .connect_timeout(Duration::from_secs(5))
+///     .max_connection_lifetime(Some(Duration::from_secs(300)))
+///     .http2_keep_alive_interval(None)
+///     .build()?;
+/// # Ok::<(), matier::Error>(())
+/// ```
 pub struct ClientBuilder {
     pool: PoolConfig,
     connect: ConnectConfig,
@@ -121,7 +137,7 @@ impl Default for ClientBuilder {
 }
 
 impl ClientBuilder {
-    /// Pool limits and timeouts.
+    /// Pool limits and timeouts (replaces the whole section).
     #[must_use]
     pub fn pool(mut self, cfg: PoolConfig) -> Self {
         self.pool = cfg;
@@ -135,14 +151,14 @@ impl ClientBuilder {
         self
     }
 
-    /// HTTP/1 codec settings.
+    /// HTTP/1 settings (replaces the whole section).
     #[must_use]
     pub fn h1(mut self, cfg: H1Config) -> Self {
         self.h1 = cfg;
         self
     }
 
-    /// HTTP/2 settings.
+    /// HTTP/2 settings (replaces the whole section).
     #[must_use]
     pub fn h2(mut self, cfg: H2Config) -> Self {
         self.h2 = cfg;
@@ -173,6 +189,200 @@ impl ClientBuilder {
         self
     }
 
+    // ---- connections ----------------------------------------------------------------------------------------
+
+    /// Timeout for DNS, for each TCP connect attempt and for the TLS handshake (default 10 s).
+    #[must_use]
+    pub fn connect_timeout(mut self, timeout: Duration) -> Self {
+        self.connect.connect_timeout = timeout;
+        self
+    }
+
+    /// `TCP_NODELAY`, i.e. Nagle's algorithm off (default `true`). Matier writes each request in one call, so
+    /// this rarely matters, but leaving Nagle on can delay small writes by an ACK round trip.
+    #[must_use]
+    pub fn tcp_nodelay(mut self, on: bool) -> Self {
+        self.connect.nodelay = on;
+        self
+    }
+
+    /// TCP keepalive idle time before the OS probes a silent connection (default 60 s; `None`: OS default,
+    /// usually off).
+    #[must_use]
+    pub fn tcp_keepalive(mut self, idle: Option<Duration>) -> Self {
+        self.connect.keepalive = idle;
+        self
+    }
+
+    /// Socket send buffer size, `SO_SNDBUF` (default: the OS default, which auto-tunes).
+    #[must_use]
+    pub fn tcp_send_buffer_size(mut self, bytes: Option<u32>) -> Self {
+        self.connect.send_buffer_size = bytes;
+        self
+    }
+
+    /// Socket receive buffer size, `SO_RCVBUF` (default: the OS default, which auto-tunes).
+    #[must_use]
+    pub fn tcp_recv_buffer_size(mut self, bytes: Option<u32>) -> Self {
+        self.connect.recv_buffer_size = bytes;
+        self
+    }
+
+    /// Only offer HTTP/1.1 in TLS ALPN, and use HTTP/1.1 for plaintext origins.
+    #[must_use]
+    pub fn http1_only(mut self) -> Self {
+        self.connect.alpn_h2 = false;
+        self.connect.http2_prior_knowledge = false;
+        self
+    }
+
+    // ---- pool ------------------------------------------------------------------------------------------------
+
+    /// How long an unused connection is kept (default 90 s).
+    #[must_use]
+    pub fn pool_idle_timeout(mut self, timeout: Duration) -> Self {
+        self.pool.idle_timeout = timeout;
+        self
+    }
+
+    /// Idle HTTP/1.1 connections kept per origin (default 256).
+    #[must_use]
+    pub fn pool_max_idle_per_origin(mut self, n: usize) -> Self {
+        self.pool.max_idle_per_origin = n;
+        self
+    }
+
+    /// HTTP/1.1 connections per origin, in use and idle (default 256). Requests beyond it wait for a connection.
+    #[must_use]
+    pub fn http1_max_connections_per_origin(mut self, n: usize) -> Self {
+        self.pool.max_conns_per_origin = n;
+        self
+    }
+
+    /// Retire connections once they are this old (default `None`: no limit). Use it to follow DNS and
+    /// load-balancer changes. See [`PoolConfig::max_connection_lifetime`].
+    #[must_use]
+    pub fn max_connection_lifetime(mut self, lifetime: Option<Duration>) -> Self {
+        self.pool.max_connection_lifetime = lifetime;
+        self
+    }
+
+    /// How long a request may wait for a connection or stream (default 30 s; `None` waits forever).
+    #[must_use]
+    pub fn pool_checkout_timeout(mut self, timeout: Option<Duration>) -> Self {
+        self.pool.checkout_timeout = timeout;
+        self
+    }
+
+    // ---- timeouts ----------------------------------------------------------------------------------------------
+
+    /// Time allowed for the response head, HTTP/1.1 and HTTP/2 (default 30 s; `None` disables). A
+    /// [`ResponseTimeout`] request extension overrides it per request.
+    #[must_use]
+    pub fn response_head_timeout(mut self, timeout: Option<Duration>) -> Self {
+        self.h1.response_head_timeout = timeout;
+        self.h2.response_head_timeout = timeout;
+        self
+    }
+
+    /// Longest pause allowed between response body chunks (default 60 s; `None` disables). A [`BodyTimeout`]
+    /// request extension overrides it per request.
+    #[must_use]
+    pub fn body_idle_timeout(mut self, timeout: Option<Duration>) -> Self {
+        self.h1.body_idle_timeout = timeout;
+        self.h2.body_idle_timeout = timeout;
+        self
+    }
+
+    // ---- HTTP/1.1 ----------------------------------------------------------------------------------------------
+
+    /// Largest response head (status line and headers) accepted (default 64 KiB).
+    #[must_use]
+    pub fn http1_max_response_head_size(mut self, bytes: usize) -> Self {
+        self.h1.limits.max_head_bytes = bytes;
+        self
+    }
+
+    /// Write header names in title case, e.g. `Content-Type` (default `false`).
+    #[must_use]
+    pub fn http1_title_case_headers(mut self, on: bool) -> Self {
+        self.h1.title_case_headers = on;
+        self
+    }
+
+    // ---- HTTP/2 ------------------------------------------------------------------------------------------------
+
+    /// Per-stream receive window (default 4 MiB). Caps one response's throughput at about window / RTT.
+    #[must_use]
+    pub fn http2_initial_stream_window_size(mut self, bytes: u32) -> Self {
+        self.h2.initial_stream_window = bytes;
+        self
+    }
+
+    /// Connection receive window, shared by all streams; also the most response data one connection
+    /// buffers for slow readers (default 16 MiB).
+    #[must_use]
+    pub fn http2_initial_connection_window_size(mut self, bytes: u32) -> Self {
+        self.h2.initial_conn_window = bytes;
+        self
+    }
+
+    /// Largest frame the server may send (default 256 KiB; the protocol allows 16 KiB to 16 MiB - 1).
+    /// Larger frames mean fewer frames per response body and less CPU per byte.
+    #[must_use]
+    pub fn http2_max_frame_size(mut self, bytes: u32) -> Self {
+        self.h2.max_frame_size = bytes;
+        self
+    }
+
+    /// Largest response header list accepted (default 64 KiB).
+    #[must_use]
+    pub fn http2_max_header_list_size(mut self, bytes: u32) -> Self {
+        self.h2.max_header_list_size = bytes;
+        self
+    }
+
+    /// Send a PING after this much read inactivity (default 30 s; `None` disables).
+    #[must_use]
+    pub fn http2_keep_alive_interval(mut self, interval: Option<Duration>) -> Self {
+        self.h2.keepalive_interval = interval;
+        self
+    }
+
+    /// Close the connection when a keepalive PING is not answered within this long (default 20 s).
+    #[must_use]
+    pub fn http2_keep_alive_timeout(mut self, timeout: Duration) -> Self {
+        self.h2.keepalive_timeout = timeout;
+        self
+    }
+
+    /// Streams per connection before the pool uses or opens another connection (default 128, lower when the
+    /// server allows fewer).
+    #[must_use]
+    pub fn http2_max_streams_per_connection(mut self, n: usize) -> Self {
+        self.pool.h2_target_streams_per_conn = n;
+        self
+    }
+
+    /// Bounds for HTTP/2 connections per origin. The pool scales between them by load (defaults: 1, and the
+    /// lower of the CPU count and the tokio runtime's worker count). Equal values pin the count.
+    #[must_use]
+    pub fn http2_connections_per_origin(mut self, min: usize, max: usize) -> Self {
+        self.pool.h2_min_conns_per_origin = min;
+        self.pool.h2_max_conns_per_origin = max;
+        self
+    }
+
+    /// Batch requests submitted together into one write when many are in flight (default `true`). See
+    /// [`H2Config::coalesce_requests`].
+    #[must_use]
+    pub fn http2_request_coalescing(mut self, on: bool) -> Self {
+        self.h2.coalesce_requests = on;
+        self
+    }
+
+    // ---- telemetry ---------------------------------------------------------------------------------------------
+
     /// Instrumentation hooks.
     #[must_use]
     pub fn observer(mut self, obs: Arc<dyn Observer>) -> Self {
@@ -183,8 +393,15 @@ impl ClientBuilder {
     /// Builds the client.
     ///
     /// # Errors
-    /// `InvalidRequest` for inconsistent limits (zero `max_conns_per_origin` / `h2_max_conns_per_origin`).
+    /// `InvalidRequest` for inconsistent limits (zero `max_conns_per_origin` / `h2_max_conns_per_origin`,
+    /// `h2_min_conns_per_origin` above `h2_max_conns_per_origin`) or HTTP/2 settings out of protocol range.
     pub fn build(self) -> Result<Client> {
+        self.h2.validate()?;
+        if self.pool.h2_min_conns_per_origin > self.pool.h2_max_conns_per_origin {
+            return Err(Error::invalid_request(
+                "h2_min_conns_per_origin must not exceed h2_max_conns_per_origin",
+            ));
+        }
         if self.pool.max_conns_per_origin == 0 {
             return Err(Error::invalid_request("max_conns_per_origin must be > 0"));
         }
