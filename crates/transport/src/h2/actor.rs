@@ -66,8 +66,9 @@ const HOLD_TIMER_FALLBACK: Duration = Duration::from_millis(1);
 const READ_BLOCK: usize = 64 * 1024;
 const MIN_READ_TAIL: usize = 4096;
 const MAX_CONTINUATION_FRAMES: u32 = 32;
-/// Consumers report consumption to the actor at least this often (bytes), bounding unreported buffered bytes.
-const CONSUMED_REPORT_MAX: u32 = 32 * 1024;
+/// Fraction of a receive window consumed before a WINDOW_UPDATE is sent (h2/hyper use one half). Consumers
+/// report stream consumption at the same point, so every report can produce an update.
+const WINDOW_UPDATE_RATIO: f32 = 0.5;
 /// Interim (1xx) responses tolerated per request.
 const MAX_INFORMATIONAL: u8 = 16;
 const MAX_STREAM_ID: u32 = 0x7fff_ffff;
@@ -500,7 +501,7 @@ impl Core {
             goaway: None,
             state: ConnState::Open,
             policy: WindowUpdatePolicy {
-                threshold_ratio: 0.25,
+                threshold_ratio: WINDOW_UPDATE_RATIO,
             },
             marks: VecDeque::new(),
             meter: LoadMeter::new(Instant::now()),
@@ -2235,7 +2236,7 @@ where
         origin.clone(),
         conn_id,
         max_streams,
-        (cfg.initial_stream_window / 4).clamp(1, CONSUMED_REPORT_MAX),
+        ((cfg.initial_stream_window as f32 * WINDOW_UPDATE_RATIO) as u32).max(1),
         obs.enabled(),
     ));
     let (tx, rx) = mpsc::unbounded_channel();
