@@ -36,3 +36,24 @@ against splitting and smuggling, 3 `unsafe` blocks sound, no double-send path in
 | H2-03 | Med-Low | No SETTINGS/PING/RST/empty-DATA flood limits; O(streams) work per SETTINGS. | Leaky buckets → GOAWAY(ENHANCE_YOUR_CALM). |
 | OTEL-01 | Low-Med | `url.full` keeps sensitive query values; traceparent goes to every host. | Redaction policy; propagation allowlist. |
 | Low/Info | | RST for never-opened streams; unbounded 1xx; chunk-size leniency (`0x10`); h2 content-length not checked; request trailers unfiltered; `Client::new()` has no TLS; leftover `MATIER_DBG` print; latent over-length streaming body. | See the implementation commit. |
+
+## Second round (simplification + performance), 2026-11-14
+
+**Simplification**: applied as one commit:
+- Dead fields, wrappers and leftover bindings removed from the h2 actor and the pool.
+- A single `drain_recv()` shared by cancel, Drop and `cancel_stream`.
+- `Actor::drop` delegates to `teardown`.
+- The pool's `origin_pool` reuses the allocation-free `lookup`.
+- Bench diagnostics trimmed.
+
+Not applied: helper extractions that would add as many lines as they remove, and public API that merely has no in-repo caller.
+
+**Performance**: measured A/B on `bench/gaps.toml`; see `bench-results/ledger.jsonl`.
+
+| Item | Result |
+|---|---|
+| WINDOW_UPDATE at 1/2 window, consumer reports at the same threshold (was 1/4, capped at 32 KiB) | Kept. 1 MiB c=32: +9% req/s, −9.5% CPU. 8 MiB c=8: +4%, now level with hyper-pooled. |
+| Skip coalescing hold when the last read moved ≥ 256 KiB | Rejected. 64 KiB c=256 got worse; 1 MiB did not improve. |
+| Re-arm hold fallback timer only when expired | Rejected. Neutral. (`TInstant::from_std` also breaks paused-clock tests.) |
+| Autoscaler deep-rule constants for c=64 bimodality | Not changed. Pinned sweep: 4 connections is optimal (247k vs 193k at 2). 16/16 auto runs settled at 4–6 connections after the WU change. |
+| Ring head/tail padding, 256 KiB read blocks, Notify waiter count, Arc free list | Deferred. Gains are below the noise floor here, or need a new loom-checked protocol. |

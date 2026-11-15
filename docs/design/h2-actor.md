@@ -240,7 +240,7 @@ Follows the blueprint; deviations and additions:
   The only `unsafe` is `BytesBuf::advance` after `ReadBuf::filled()` (commented).
 - **Header blocks** are copied once into a shared `BytesMut` (split + freeze, so HPACK values are slices of it). CONTINUATION reassembly is bounded: 32 frames and 2x MAX_HEADER_LIST_SIZE, else ENHANCE_YOUR_CALM.
 - **Flow control.** Connection recv window is credited on receipt after each read burst, gated by `buffered <= buffered_budget` (= `initial_conn_window`).
-  `buffered` is decremented from consumer reports. Connection-level consumption is reported through the atomic `consumed` counter (see "Receive accounting"); stream-level credit goes through `Ready` once consumed >= `min(window/4, 32 KiB)` and on cancel
+  `buffered` is decremented from consumer reports. Connection-level consumption is reported through the atomic `consumed` counter (see "Receive accounting"); stream-level credit goes through `Ready` once consumed >= half the stream window (`WINDOW_UPDATE_RATIO`, the same point the actor sends WINDOW_UPDATE) and on cancel
   (regression tests `many_small_responses_never_stall_the_connection_window`, `consumption_without_ready_still_credits_the_connection_window`).
   Stream windows use `RecvWindow`'s 25% policy on the actor side. INITIAL_WINDOW_SIZE increases check overflow by iterating live streams (rare) rather than tracking a max offset.
 - **Write path.** As blueprint. Control frames are encoded straight into the arena in arrival order (ahead of any not-yet-scheduled DATA, behind already-queued bytes; DATA scheduling stops at 256 KiB queued).
