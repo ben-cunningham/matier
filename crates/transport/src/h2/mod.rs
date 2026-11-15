@@ -2,7 +2,7 @@
 //!
 //! One task per connection owns the socket, HPACK state, stream table, flow-control windows and the write
 //! queue. Callers talk to it through an unbounded inbox and per-stream atomics; there is no connection-wide
-//! lock (hyperium/h2#531 is fixed by construction). See `docs/design/h2-actor.md`.
+//! lock (hyperium/h2#531 is fixed by construction).
 
 mod actor;
 mod load;

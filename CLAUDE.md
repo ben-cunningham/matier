@@ -1,7 +1,7 @@
 # Matier — agent guide
 
 Matier is a from-scratch HTTP/1.1 + HTTP/2 client stack for tokio. The goal is to beat hyper/h2/hyper-util on
-multi-core throughput, tail latency and allocations. Start with `docs/PLAN.md`; the contracts are in `docs/design/`.
+multi-core throughput, tail latency and allocations.
 
 ## Layout
 - `crates/h1`, `crates/h2`: sans-IO codecs (no tokio, no I/O, deterministic). `matier-h1`, `matier-h2`.
@@ -12,7 +12,7 @@ multi-core throughput, tail latency and allocations. Start with `docs/PLAN.md`; 
 
 ## Invariants (do not break; review every change against these)
 1. HTTP/2 connection state has exactly one owner: the actor task. No connection-wide `Mutex`/`RwLock`, ever.
-2. Never hold any lock across `.await`. No `std::sync::Mutex` on the actor's hot path. The only exception is the per-stream one-shot slots (see `docs/design/h2-actor.md`); the per-stream receive ring is lock-free SPSC `unsafe` code covered by loom models.
+2. Never hold any lock across `.await`. No `std::sync::Mutex` on the actor's hot path. The only exception is the per-stream one-shot slot for the response head (`StreamShared::head`); the per-stream receive ring is lock-free SPSC `unsafe` code covered by loom models.
 3. Cross-task signalling: register the waker, then check state; set state, then wake. Every such protocol has a `loom` test.
 4. Reading never waits on writing. Per-tick work is bounded (frames, commands, bytes).
 5. No copies of body bytes on the send path (iovecs over caller `BytesView`s). Receive-path bodies are slices of read buffers (the one exception: tiny or padded DATA payloads are copied out so a flood cannot pin read blocks). Header heads are copied once.

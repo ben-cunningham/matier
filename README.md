@@ -151,18 +151,6 @@ Not done yet:
 - kTLS.
 - HTTP/3.
 
-The roadmap is in [docs/PLAN.md](docs/PLAN.md#14-roadmap).
-
-## Design documents
-
-- [docs/PLAN.md](docs/PLAN.md): goals, architecture and roadmap.
-- [docs/design/h2-actor.md](docs/design/h2-actor.md): the HTTP/2 connection task, its concurrency protocol and
-  request coalescing.
-- [docs/design/interfaces.md](docs/design/interfaces.md): contracts between the crates.
-- [docs/research/](docs/research/): notes on Go's `net/http`, hyper's open issues, TLS library choice and
-  fetch.
-- [docs/reviews/](docs/reviews/): performance and security review findings, and what was done about each.
-
 ## Development
 
 ```sh

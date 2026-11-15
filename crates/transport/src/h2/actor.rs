@@ -1,5 +1,5 @@
 //! The connection actor: one `Future` per connection, owning the transport, HPACK, stream table, windows and
-//! write queue. Structure follows `docs/design/h2-actor.md` ("The tick"): READ -> INBOX -> SCHEDULE -> WRITE.
+//! write queue. Each tick runs READ -> INBOX -> SCHEDULE -> WRITE.
 
 use std::collections::{HashMap, VecDeque};
 use std::future::Future;
