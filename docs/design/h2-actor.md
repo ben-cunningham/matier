@@ -219,7 +219,7 @@ Follows the blueprint; deviations and additions:
   as a batch, which keeps every later read and wake batched too: a self-reinforcing equilibrium. A dedicated single actor thread reached the
   same equilibrium (31 requests per write, 128k req/s, 16 µs CPU/request) only because the cross-runtime handoff delayed the actor.
   The fix holds the HEADERS of newly opened requests in the write queue while more than `COALESCE_MIN_IN_FLIGHT` (8) streams are in flight,
-  until the batch reaches `clamp(in_flight / 4, 2, 16)`, more than 1 KiB is queued (a body, control frames), or the oldest held request is
+  until the batch reaches `clamp(in_flight / 2, 2, 32)`, more than 1 KiB is queued (a body, control frames), or the oldest held request is
   `clamp(rtt / 8, 10 µs, coalesce_max_hold = 200 µs)` old, where `rtt` is the connection's EWMA of open -> response-head time
   (`Core::rtt_ewma_ns`), so the hold is never more than ~12% of the current round trip. The bound is checked on every tick (socket readiness
   and further requests keep ticks coming); a per-connection `hold_timer` (`Sleep`, ~1 ms granularity) is the fallback when nothing else polls

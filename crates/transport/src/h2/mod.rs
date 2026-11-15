@@ -61,7 +61,7 @@ pub struct H2Config {
     /// Deadline for a header block (HEADERS + CONTINUATIONs) to complete; exceeding it closes the connection.
     pub header_block_timeout: Duration,
     /// Request coalescing. While more than 8 streams are in flight, the HEADERS of newly submitted requests
-    /// are held back (not yet written) until the batch reaches `clamp(in_flight / 4, 2, 16)` requests, more
+    /// are held back (not yet written) until the batch reaches `clamp(in_flight / 2, 2, 32)` requests, more
     /// than 1 KiB is queued, or the oldest held request is `clamp(rtt / 8, 10 µs, coalesce_max_hold)` old
     /// (rtt = smoothed request -> response-head time of this connection). The batch then leaves in one
     /// `writev`, and the server receives and answers it as a batch, which keeps the response reads and
