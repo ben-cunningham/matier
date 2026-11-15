@@ -47,7 +47,8 @@ pub struct PoolConfig {
     /// scaled below (default 1). Leave it alone: the pool adds connections under load by itself.
     pub h2_min_conns_per_origin: usize,
     /// HTTP/2 autoscaling ceiling per origin (default: `std::thread::available_parallelism()`; one
-    /// connection is one actor task, so more connections than cores cannot add parallelism). Set equal to
+    /// connection is one actor task, so more connections than cores cannot add parallelism). Autoscaling
+    /// also stays within the tokio runtime's worker count (unless `h2_min_conns_per_origin` is higher). Set equal to
     /// `h2_min_conns_per_origin` to pin the connection count. See [`scale`] for the policy.
     pub h2_max_conns_per_origin: usize,
     /// HTTP/2 scale-up thresholds (defaults: the constants in [`scale`]).

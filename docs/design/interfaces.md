@@ -247,7 +247,7 @@ v0 stack: `Dispatch` (validation, scheme policy) → `Pool`. Timeout, retry, met
 
 
 ### matier-pool autoscaling (as built)
-- `PoolConfig { h2_min_conns_per_origin: 1, h2_max_conns_per_origin: available_parallelism(), h2_target_streams_per_conn: 128 (hard cap), .. }`.
+- `PoolConfig { h2_min_conns_per_origin: 1, h2_max_conns_per_origin: available_parallelism(), h2_target_streams_per_conn: 128 (hard cap), .. }`. The effective autoscaling ceiling is also capped at the tokio runtime's worker count (`scale::h2_ceiling`; an explicit `h2_min` above it wins): extra actors cannot run in parallel and only shrink each connection's write batches (1 KiB c=256 on 5 workers: 10 conns 350k req/s vs 5 conns 375k).
 - `H2Handle::load() -> LoadSnapshot { busy_permille, dispatch_delay, inbox }`. Values older than 8 windows read as zero.
 - `H2Handle::streams_opened()`.
 - Thresholds and the pure decision functions are in `matier_pool::scale` (`ScaleThresholds`, `is_saturated`, `can_drain`).

@@ -5,7 +5,7 @@
 //! (`matier_transport::h2::LoadSnapshot`) and
 //!
 //! * **scales up** by one background dial when the connection a request just picked is saturated, at most
-//!   once per [`SCALE_UP_COOLDOWN`], never above `h2_max_conns_per_origin` (default: the number of CPUs);
+//!   once per [`SCALE_UP_COOLDOWN`], never above `h2_max_conns_per_origin` (default: the number of CPUs) or the runtime's worker count;
 //!   the triggering request is not delayed;
 //! * **scales down** by closing connections that carried no stream for `idle_timeout`, and by draining
 //!   the newest connection when the whole origin has been under-used for [`DRAIN_AFTER_LOW`]
@@ -64,6 +64,16 @@ pub const REAP_TICK_MAX: Duration = Duration::from_millis(250);
 #[must_use]
 pub fn default_h2_max_conns() -> usize {
     std::thread::available_parallelism().map_or(4, std::num::NonZero::get)
+}
+
+/// The ceiling autoscaling actually uses: `max_conns`, further capped at the current tokio runtime's worker
+/// count (more actors than workers cannot run in parallel; they only split each connection's write batches,
+/// which costs syscalls on both ends), but never below `min_conns`, so an explicit pin is honoured.
+#[must_use]
+pub fn h2_ceiling(min_conns: usize, max_conns: usize) -> usize {
+    let workers =
+        tokio::runtime::Handle::try_current().map_or(usize::MAX, |h| h.metrics().num_workers());
+    max_conns.min(workers).max(min_conns).max(1)
 }
 
 /// Scale-up thresholds. The defaults are the named constants above; override them only for tests or for
@@ -193,6 +203,20 @@ mod tests {
                 assert!(projected < BUSY_SATURATED_PERMILLE);
             }
         }
+    }
+
+    #[test]
+    fn ceiling_follows_runtime_workers_but_honours_a_pin() {
+        assert_eq!(h2_ceiling(1, 8), 8); // no runtime: config only
+        let rt = tokio::runtime::Builder::new_multi_thread()
+            .worker_threads(3)
+            .build()
+            .unwrap();
+        rt.block_on(async {
+            assert_eq!(h2_ceiling(1, 8), 3);
+            assert_eq!(h2_ceiling(1, 2), 2);
+            assert_eq!(h2_ceiling(6, 6), 6);
+        });
     }
 
     #[test]

@@ -91,6 +91,8 @@ pub(crate) struct OriginPool {
     proto: AtomicU8,
     me: Weak<OriginPool>,
     epoch: Instant,
+    /// Effective HTTP/2 connection ceiling (see [`crate::scale::h2_ceiling`]).
+    h2_max: usize,
     h1: Mutex<H1State>,
     discover: tokio::sync::Mutex<()>,
     h2: H2Pool,
@@ -184,12 +186,17 @@ fn rand() -> u64 {
 
 impl OriginPool {
     pub(crate) fn new(key: OriginKey, shared: Arc<Shared>) -> Arc<Self> {
+        let h2_max = crate::scale::h2_ceiling(
+            shared.cfg.h2_min_conns_per_origin,
+            shared.cfg.h2_max_conns_per_origin,
+        );
         Arc::new_cyclic(|me| Self {
             key,
             shared,
             proto: AtomicU8::new(P_UNKNOWN),
             me: me.clone(),
             epoch: Instant::now(),
+            h2_max,
             h1: Mutex::new(H1State {
                 idle: Vec::new(),
                 waiters: Waiters::new(),
@@ -591,7 +598,7 @@ impl OriginPool {
     }
 
     fn h2_max(&self) -> usize {
-        self.shared.cfg.h2_max_conns_per_origin.max(1)
+        self.h2_max
     }
 
     fn h2_min(&self) -> usize {
