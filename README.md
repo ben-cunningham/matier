@@ -40,6 +40,8 @@ It also includes:
 
 ## Performance
 
+### macOS
+
 Requests per second with a fixed number of requests in flight (c). Higher is better. Matier runs with its
 default settings. "hyper" is `hyper-util`'s client, alone and as 4 clients side by side; "fetch" is Microsoft's
 fetch in its standard and pooled modes. Both are given the same HTTP/2 frame size and flow-control windows as
@@ -89,6 +91,15 @@ How to read these numbers:
 - The full matrix covers 16 scenarios across all five clients. It is in
   [`bench-results/report.md`](bench-results/report.md), and [`bench/report.toml`](bench/report.toml)
   reproduces it.
+
+### Windows
+
+The same 80-run matrix has a separate native Windows baseline in
+[`bench-results/report-windows.md`](bench-results/report-windows.md), with raw measurements in
+`bench-results/baseline/report-windows-2026-11-16.json`. It covers all five clients over HTTP/1.1,
+HTTP/2 and TLS, including large downloads and uploads. The report records the Windows host, toolchain
+and worker configuration; these results are not directly comparable to the Apple Silicon numbers above.
+This is a Windows platform baseline, not a WinHTTP comparison.
 
 ## Usage
 
@@ -195,6 +206,17 @@ scripts/bench.sh bench/quick.toml my-change       # about 1 minute
 cargo run --release -p matier-bench -- compare \
     bench-results/baseline/<baseline>.json bench-results/my-change.json --threshold 5
 ```
+
+On Windows, use PowerShell and keep a separate baseline:
+
+```powershell
+.\scripts\bench.ps1 bench\quick.toml quick-windows
+.\scripts\bench.ps1 bench\report.toml report-windows
+.\target\release\matier-bench.exe compare `
+    bench-results\baseline\report-windows-2026-11-16.json bench-results\report-windows.json --threshold 5
+```
+
+Compare runs on the same host, with the same matrix and worker count, not Windows results against macOS.
 
 Fuzz targets for the HTTP/1.1 and HTTP/2 codecs are in `crates/h1/fuzz` and `crates/h2/fuzz` (cargo-fuzz).
 

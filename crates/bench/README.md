@@ -12,6 +12,20 @@ scripts/bench.sh bench/matrix.toml mybranch  # ~7 min, full matrix
 # -> bench-results/<name>.json (JSON array) + markdown table on stdout
 ```
 
+Windows (PowerShell):
+
+```powershell
+.\scripts\bench.ps1 bench\quick.toml quick-windows
+.\scripts\bench.ps1 bench\report.toml report-windows
+.\target\release\matier-bench.exe compare `
+    bench-results\baseline\report-windows-2026-11-16.json bench-results\report-windows.json --threshold 5
+```
+
+`bench/report.toml` is shared by the macOS and Windows reports: 16 workloads across five
+clients (80 runs), including HTTP/1.1, HTTP/2, TLS, downloads and uploads. Keep separate
+baselines per OS and host; `compare` matches scenario IDs, not hardware or OS, so only
+compare measurements from the same host and worker configuration.
+
 `scripts/bench.sh` (Unix) and `scripts/bench.ps1` (Windows) are thin wrappers: they build
 release binaries and run `matier-bench matrix --spawn-server`, which starts
 `matier-bench-server` as a child (found next to the `matier-bench` executable, or
@@ -65,8 +79,9 @@ is matched), and uses `insecure_allow_http` for plaintext runs.
   *intended* send time to completion.
 - **service_time**: actual send -> body fully read. **schedule_lag** (open loop only):
   intended -> actual send.
-- **cpu us/req**: user+sys CPU of the client process (all threads, `getrusage`) during the
-  window per request. `cpu_cores` is the average number of busy cores.
+- **cpu us/req**: user+sys CPU of the client process (all threads, `getrusage` on Unix,
+  `GetProcessTimes` on Windows) during the window per request. `cpu_cores` is the average
+  number of busy cores.
 - **allocs/req, alloc bytes/req**: from the counting global allocator (feature
   `count-allocs`, on by default). It adds relaxed-atomic overhead on every allocation
   (a few ns, more under cross-core contention); build with `--no-default-features
@@ -74,6 +89,7 @@ is matched), and uses `insecure_allow_http` for plaintext runs.
   the driver itself (open loop spawns a task per request and sends one channel sample).
 - **peak RSS**: `ru_maxrss` (bytes on macOS, KiB on Linux, normalised to bytes). It is a
   process-lifetime high-water mark, so it includes warmup and earlier matrix runs.
+  Windows reports peak working set via `GetProcessMemoryInfo`.
 - Errors are counted by kind (`timeout`, `connect`, `connection_closed`, `status_4xx`,
   `status_5xx`, `other`); open-loop arrivals rejected at `--max-inflight` are `drops`.
 
