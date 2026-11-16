@@ -82,5 +82,7 @@ impl http_body::Body for Incoming {
     }
 }
 
-#[cfg(not(any(feature = "aws-lc-rs", feature = "ring")))]
-compile_error!("matier-transport needs one of the features `aws-lc-rs` (default) or `ring`");
+#[cfg(not(any(feature = "aws-lc-rs", feature = "ring", feature = "symcrypt")))]
+compile_error!(
+    "matier-transport needs one of the features `aws-lc-rs` (default), `ring` or `symcrypt`"
+);

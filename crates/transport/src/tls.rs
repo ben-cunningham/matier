@@ -11,13 +11,21 @@ use rustls::pki_types::pem::PemObject;
 pub(crate) const ALPN_H2: &[u8] = b"h2";
 pub(crate) const ALPN_H1: &[u8] = b"http/1.1";
 
-/// The crypto provider selected by cargo features (`aws-lc-rs` wins if both are enabled).
-/// aws-lc-rs keeps rustls' default post-quantum hybrid key exchange (X25519MLKEM768); `ring` has none.
+/// The crypto provider selected by cargo features: `symcrypt` (if enabled) replaces rustls' own
+/// backends entirely, otherwise `aws-lc-rs` wins over `ring` if both of those are enabled.
+/// aws-lc-rs keeps rustls' default post-quantum hybrid key exchange (X25519MLKEM768); `ring` and
+/// `symcrypt` have none. `symcrypt` is FIPS 140-3 validated but needs the native SymCrypt library
+/// present at build and run time, and does not support macOS; see `rustls_symcrypt`'s crate docs.
 #[must_use]
 pub fn default_provider() -> Arc<CryptoProvider> {
-    #[cfg(feature = "aws-lc-rs")]
+    #[cfg(feature = "symcrypt")]
+    let p = rustls_symcrypt::default_symcrypt_provider();
+    #[cfg(all(feature = "aws-lc-rs", not(feature = "symcrypt")))]
     let p = rustls::crypto::aws_lc_rs::default_provider();
-    #[cfg(all(feature = "ring", not(feature = "aws-lc-rs")))]
+    #[cfg(all(
+        feature = "ring",
+        not(any(feature = "aws-lc-rs", feature = "symcrypt"))
+    ))]
     let p = rustls::crypto::ring::default_provider();
     Arc::new(p)
 }

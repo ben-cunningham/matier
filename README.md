@@ -162,6 +162,11 @@ HTTPS uses the operating system's trust store by default. Per-request options go
 extensions: `ResponseTimeout`, `BodyTimeout`, `Priority` (RFC 9218) and `UriTemplate` (a low-cardinality route
 name for telemetry).
 
+`matier-transport`'s rustls crypto backend is a cargo feature: `aws-lc-rs` (default) or `ring`, or
+`symcrypt` (Microsoft's FIPS 140-3 validated [SymCrypt](https://github.com/microsoft/SymCrypt), Windows and
+Linux only, needs the native library present at build and run time) as `default-features = false, features =
+["symcrypt"]`.
+
 ## Crates
 
 | Crate | Purpose |
