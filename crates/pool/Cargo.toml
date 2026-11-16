@@ -1,15 +1,18 @@
 [package]
 name = "matier-pool"
-version = "0.0.0"
+version.workspace = true
 edition.workspace = true
 license.workspace = true
+license-file.workspace = true
 rust-version.workspace = true
 publish.workspace = true
+repository.workspace = true
+readme.workspace = true
 description = "Connection pool for Matier: h1 idle stack + waiter queue, h2 snapshot with power-of-two-choices"
 
 [dependencies]
-matier-core = { path = "../core" }
-matier-transport = { path = "../transport" }
+matier-core = { version = "0.1.0", path = "../core" }
+matier-transport = { version = "0.1.0", path = "../transport" }
 http = { workspace = true }
 http-body = { workspace = true }
 tokio = { workspace = true, features = ["rt", "sync", "time", "macros"] }

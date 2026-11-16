@@ -1,10 +1,14 @@
 [package]
 name = "matier-transport"
-version = "0.0.0"
+version.workspace = true
 edition.workspace = true
 license.workspace = true
+license-file.workspace = true
 rust-version.workspace = true
 publish.workspace = true
+repository.workspace = true
+readme.workspace = true
+description = "TCP, TLS and HTTP/1.1 and HTTP/2 connections for the Matier HTTP client"
 
 [features]
 default = ["aws-lc-rs"]
@@ -13,8 +17,8 @@ ring = ["rustls/ring", "tokio-rustls/ring"]
 webpki-roots = ["dep:webpki-roots"]
 
 [dependencies]
-matier-core = { path = "../core" }
-matier-h1 = { path = "../h1" }
+matier-core = { version = "0.1.0", path = "../core" }
+matier-h1 = { version = "0.1.0", path = "../h1" }
 http = { workspace = true }
 http-body = { workspace = true }
 futures-util = { version = "0.3", default-features = false }
@@ -24,7 +28,7 @@ tokio-rustls = { version = "0.26", default-features = false, features = ["tls12"
 rustls-platform-verifier = { workspace = true }
 webpki-roots = { workspace = true, optional = true }
 socket2 = { workspace = true }
-matier-h2 = { path = "../h2" }
+matier-h2 = { version = "0.1.0", path = "../h2" }
 bytes = { workspace = true }
 atomic-waker = "1.1"
 crossbeam-queue = "0.3"

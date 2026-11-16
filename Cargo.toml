@@ -4,10 +4,14 @@ members = ["crates/*"]
 exclude = ["crates/h1/fuzz", "crates/h2/fuzz"]
 
 [workspace.package]
+version = "0.1.0"
 edition = "2024"
 license = "MIT"
+license-file = "LICENSE"
 rust-version = "1.95"
-publish = false
+repository = "https://github.com/ben-cunningham/matier"
+readme = "README.md"
+publish = ["crates-io"]
 
 [workspace.dependencies]
 tokio = { version = "1.54", features = ["rt-multi-thread", "net", "io-util", "time", "macros", "sync"] }

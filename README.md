@@ -3,8 +3,8 @@
 Matier is an HTTP/1.1 and HTTP/2 client for Rust and tokio, written from scratch to scale across cores without
 configuration. It is named after Mount Matier, near Pemberton, British Columbia.
 
-> **Status: pre-release.** The client works end to end and is tested on Linux, macOS and Windows, but the API is
-> not stable and nothing is published to crates.io yet. See [Status](#status) for what is missing.
+> **Status: early release.** The client works end to end and is tested on Linux, macOS and Windows, but the API is
+> not stable. See [Status](#status) for what is missing.
 
 ## Why another HTTP client
 
@@ -103,15 +103,18 @@ This is a Windows platform baseline, not a WinHTTP comparison.
 
 ## Usage
 
-Matier is not on crates.io yet. Use it from git:
+Add the client to your dependencies:
 
 ```toml
 [dependencies]
-matier = { git = "https://github.com/ben-cunningham/matier" }
+matier = "0.1"
 http = "1"
 http-body-util = "0.1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
+
+The client pulls in its internal Matier crates automatically. For OpenTelemetry instrumentation, also add
+`matier-otel = "0.1"`; otherwise it is not included.
 
 ```rust
 use http_body_util::BodyExt;
