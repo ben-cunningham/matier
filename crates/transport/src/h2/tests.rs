@@ -618,6 +618,111 @@ async fn flow_control_stall_and_resume() {
     resp.unwrap();
 }
 
+fn full_body(len: usize) -> Body {
+    Body::full(matier_core::buf::copy_from_slice(&vec![5u8; len]))
+}
+
+/// The next `n` DATA frames as (stream id, length, END_STREAM).
+async fn data_frames(peer: &mut Peer, n: usize) -> Vec<(u32, usize, bool)> {
+    let mut seen = Vec::new();
+    while seen.len() < n {
+        if let F::Data { id, len, end } = peer.frame_skip_noise().await {
+            seen.push((id, len, end));
+        }
+    }
+    seen
+}
+
+/// Responds to `ids`, then checks every response future completes.
+async fn respond_all(peer: &mut Peer, ids: &[u32], futs: Vec<super::ResponseFuture>) {
+    let server = async {
+        for &id in ids {
+            peer.respond(id, b"").await;
+        }
+    };
+    let clients = async {
+        for f in futs {
+            f.await.unwrap();
+        }
+    };
+    tokio::join!(server, clients);
+}
+
+#[tokio::test]
+async fn fifo_send_finishes_each_body_before_the_next() {
+    // Three 20,000-byte bodies at the peer's default 16 KiB frames: 16,384 bytes, then 3,616 with END_STREAM.
+    for (cfg, order) in [
+        (H2Config::default(), [1, 3, 5, 1, 3, 5]),
+        (
+            H2Config {
+                fifo_send: true,
+                ..H2Config::default()
+            },
+            [1, 1, 3, 3, 5, 5],
+        ),
+    ] {
+        let fifo = cfg.fifo_send;
+        let (h, mut peer) = connect(cfg, &[]).await;
+        // Queued before the actor runs, so its first tick schedules all three bodies together.
+        let futs: Vec<_> = (0..3)
+            .map(|_| h.send(h.try_reserve().unwrap(), post("/up", full_body(20_000))))
+            .collect();
+        let mut sent = [0usize; 6];
+        let expected: Vec<_> = order
+            .iter()
+            .map(|&id| {
+                let first = sent[id as usize] == 0;
+                sent[id as usize] += 1;
+                if first {
+                    (id, 16_384, false)
+                } else {
+                    (id, 3_616, true)
+                }
+            })
+            .collect();
+        assert_eq!(
+            data_frames(&mut peer, 6).await,
+            expected,
+            "fifo_send={fifo}"
+        );
+        respond_all(&mut peer, &[1, 3, 5], futs).await;
+    }
+}
+
+#[tokio::test]
+async fn fifo_send_order_survives_a_cancelled_stream_slot_reuse() {
+    // X uses up the peer's 65,535-byte connection window, so A and B wait queued behind it. A is cancelled and
+    // C takes over its stream slot; when credit returns, B (queued earlier) must still go before C.
+    let cfg = H2Config {
+        fifo_send: true,
+        ..H2Config::default()
+    };
+    let (h, mut peer) = connect(cfg, &[]).await;
+    let x = h.send(h.try_reserve().unwrap(), post("/x", full_body(65_535)));
+    let a = h.send(h.try_reserve().unwrap(), post("/a", full_body(20_000)));
+    let b = h.send(h.try_reserve().unwrap(), post("/b", full_body(20_000)));
+    drain_data(&mut peer, 65_535).await;
+    drop(a);
+    let c = h.send(h.try_reserve().unwrap(), post("/c", full_body(20_000)));
+    let (mut reset, mut opened) = (false, false);
+    while !(reset && opened) {
+        match peer.frame_skip_noise().await {
+            F::Rst { id: 3, .. } => reset = true,
+            F::Headers { id: 7, .. } => opened = true,
+            F::Data { id, .. } => panic!("DATA on stream {id} without connection credit"),
+            _ => {}
+        }
+    }
+    peer.send_window_update(0, 1 << 20).await;
+    let ids: Vec<_> = data_frames(&mut peer, 4)
+        .await
+        .into_iter()
+        .map(|f| f.0)
+        .collect();
+    assert_eq!(ids, [5, 5, 7, 7]);
+    respond_all(&mut peer, &[1, 5, 7], vec![x, b, c]).await;
+}
+
 async fn drain_data(peer: &mut Peer, want: usize) {
     let mut got = 0usize;
     while got < want {

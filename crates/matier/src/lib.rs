@@ -407,6 +407,14 @@ impl ClientBuilder {
         self
     }
 
+    /// Prefer finishing the request body being sent over interleaving DATA frames across streams
+    /// (default `false`). See [`H2Config::fifo_send`].
+    #[must_use]
+    pub fn http2_fifo_send(mut self, on: bool) -> Self {
+        self.h2.fifo_send = on;
+        self
+    }
+
     // ---- telemetry ---------------------------------------------------------------------------------------------
 
     /// Instrumentation hooks.

@@ -427,7 +427,9 @@ pub(crate) struct Core {
     got_settings: bool,
     first_no_prio: bool,
     wq: WriteQueue,
-    send_ready: VecDeque<usize>,
+    /// Streams with DATA to send, as (slab key, stream id). An entry can outlive its stream, whose key a
+    /// newer stream may reuse, so the id is checked before the entry is used.
+    send_ready: VecDeque<(usize, u32)>,
     asm: Option<HeaderAsm>,
     asm_buf: Vec<u8>,
     hdr_scratch: BytesMut,
@@ -939,6 +941,11 @@ impl Core {
 
     /// Put stream `k` on the send list if it has data and window.
     fn rearm(&mut self, k: usize) {
+        self.rearm_at(k, false);
+    }
+
+    /// [`Self::rearm`], at the head of the send list when `front` is set (`H2Config::fifo_send`).
+    fn rearm_at(&mut self, k: usize, front: bool) {
         let initial = self.initial_send_window;
         let st = &mut self.streams[k];
         if st.in_ready || !st.has_data() {
@@ -954,7 +961,12 @@ impl Core {
             self.obs.flow_control_stall(&self.origin, t.elapsed());
         }
         st.in_ready = true;
-        self.send_ready.push_back(k);
+        let entry = (k, st.id);
+        if front {
+            self.send_ready.push_front(entry);
+        } else {
+            self.send_ready.push_back(entry);
+        }
     }
 
     /// Nothing more than END (and trailers) remains to be sent on stream `k`.
@@ -1007,10 +1019,12 @@ impl Core {
                 }
                 return false;
             }
-            let Some(k) = self.send_ready.pop_front() else {
+            let Some((k, id)) = self.send_ready.pop_front() else {
                 return false;
             };
-            if !self.streams.contains(k) {
+            if !matches!(self.streams.get(k), Some(st) if st.id == id) {
+                // Charged like an empty emit so a backlog of stale entries is spread across ticks.
+                budget -= 1;
                 continue;
             }
             self.streams[k].in_ready = false;
@@ -1090,7 +1104,9 @@ impl Core {
                 self.finish_send(k);
             }
         } else {
-            self.rearm(k);
+            // More of this body is ready: round-robin moves to the next stream, FIFO stays on this one.
+            let front = self.cfg.fifo_send;
+            self.rearm_at(k, front);
         }
         n
     }

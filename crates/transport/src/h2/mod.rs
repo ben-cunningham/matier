@@ -79,6 +79,16 @@ pub struct H2Config {
     /// Also attach `ConnectionInfo` to the response's `http::Extensions` (three allocations per response). Off by
     /// default: use `Incoming::connection_info()`. Layers that only see `http::Response<B>` need this on.
     pub connection_info: bool,
+    /// Prefer finishing the request body already being sent. By default the connection sends one DATA frame
+    /// per stream in turn, so concurrent bodies all finish together near the end of the upload. With this on,
+    /// a stream that has just sent DATA stays at the head of the send queue while it has buffered body data
+    /// and stream credit (a stall on the connection window keeps its place); a stream that runs out of
+    /// either rejoins at the back. Bodies then tend to finish one after another in queue order, so the first
+    /// ones arrive much earlier. Use it when the server acts on a request only once its whole body has
+    /// arrived (proxies that buffer request bodies) and many large bodies share a connection. Other uploads
+    /// wait for as long as the head body keeps getting credit, so leave it off for mixed upload sizes or
+    /// long streaming bodies. Default `false`.
+    pub fifo_send: bool,
 }
 
 impl Default for H2Config {
@@ -98,6 +108,7 @@ impl Default for H2Config {
             coalesce_requests: true,
             coalesce_max_hold: Duration::from_micros(200),
             connection_info: false,
+            fifo_send: false,
         }
     }
 }

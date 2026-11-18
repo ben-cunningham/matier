@@ -155,7 +155,7 @@ let client = matier::Client::builder()
 | Pool | `pool_idle_timeout` (90 s), `pool_max_idle_per_origin` (256), `http1_max_connections_per_origin` (256), `max_connection_lifetime` (none), `pool_checkout_timeout` (30 s), `http2_connections_per_origin` (1 to the worker count, scaled by load) |
 | Timeouts | `response_head_timeout` (30 s), `body_idle_timeout` (60 s) |
 | HTTP/1.1 | `http1_max_response_head_size` (64 KiB), `http1_max_buf_size` (64 KiB), `http1_title_case_headers`, `http1_allow_obsolete_multiline_headers_in_responses` |
-| HTTP/2 | `http2_max_frame_size` (256 KiB), `http2_initial_stream_window_size` (4 MiB), `http2_initial_connection_window_size` (16 MiB), `http2_max_header_list_size` (64 KiB), `http2_keep_alive_interval` (30 s) / `_timeout` (20 s), `http2_max_streams_per_connection` (128), `http2_request_coalescing` (on) |
+| HTTP/2 | `http2_max_frame_size` (256 KiB), `http2_initial_stream_window_size` (4 MiB), `http2_initial_connection_window_size` (16 MiB), `http2_max_header_list_size` (64 KiB), `http2_keep_alive_interval` (30 s) / `_timeout` (20 s), `http2_max_streams_per_connection` (128), `http2_request_coalescing` (on), `http2_fifo_send` (off) |
 | Other | `tls`, `observer`, `connection_info` |
 
 HTTPS uses the operating system's trust store by default. Per-request options go in the request's
