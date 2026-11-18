@@ -11,8 +11,8 @@ readme.workspace = true
 description = "Connection pool for Matier: h1 idle stack + waiter queue, h2 snapshot with power-of-two-choices"
 
 [dependencies]
-matier-core = { version = "0.1.0", path = "../core" }
-matier-transport = { version = "0.1.0", path = "../transport" }
+matier-core = { version = "0.2.0", path = "../core" }
+matier-transport = { version = "0.2.0", path = "../transport" }
 http = { workspace = true }
 http-body = { workspace = true }
 tokio = { workspace = true, features = ["rt", "sync", "time", "macros"] }
