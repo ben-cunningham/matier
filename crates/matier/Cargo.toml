@@ -11,9 +11,9 @@ readme.workspace = true
 description = "Matier: a high-performance HTTP/1.1 + HTTP/2 client for tokio"
 
 [dependencies]
-matier-core = { version = "0.2.0", path = "../core" }
-matier-transport = { version = "0.2.0", path = "../transport" }
-matier-pool = { version = "0.2.0", path = "../pool" }
+matier-core = { version = "0.2.1", path = "../core" }
+matier-transport = { version = "0.2.1", path = "../transport" }
+matier-pool = { version = "0.2.1", path = "../pool" }
 http = { workspace = true }
 futures-util = { version = "0.3", default-features = false }
 
