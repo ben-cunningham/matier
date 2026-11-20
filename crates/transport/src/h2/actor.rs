@@ -346,8 +346,8 @@ enum SendState {
 struct StreamEntry {
     id: u32,
     shared: Arc<StreamShared>,
-    /// Released when the entry is dropped.
-    _slot: StreamSlot,
+    /// Released when the entry is dropped; `None` once a local RST_STREAM moved it to `Core::reset_slots`.
+    slot: Option<StreamSlot>,
     send_win: StreamSendWindow,
     recv_win: RecvWindow,
     send: SendState,
@@ -445,6 +445,8 @@ pub(crate) struct Core {
     state: ConnState,
     policy: WindowUpdatePolicy,
     marks: VecDeque<(u64, Instant)>,
+    /// Slots of locally reset streams, by the write offset just past their RST_STREAM (see `rst_stream`).
+    reset_slots: VecDeque<(u64, StreamSlot)>,
     meter: LoadMeter,
     /// Smoothed request-open -> response-head time (ns); bounds the request-coalescing hold.
     rtt_ewma_ns: u64,
@@ -506,6 +508,7 @@ impl Core {
                 threshold_ratio: WINDOW_UPDATE_RATIO,
             },
             marks: VecDeque::new(),
+            reset_slots: VecDeque::new(),
             meter: LoadMeter::new(Instant::now()),
             rtt_ewma_ns: 0,
             ping_acked: false,
@@ -533,6 +536,38 @@ impl Core {
         self.ctrl(|a| frame::encode_rst_stream(a, id, code));
         if self.obs_on {
             self.obs.h2_rst_stream(&self.origin, code.0, sent);
+        }
+    }
+
+    /// Queue RST_STREAM(`code`) for stream `k` (which the caller then removes), keeping its slot until the frame
+    /// has been written and flushed. A server may count a reset stream against SETTINGS_MAX_CONCURRENT_STREAMS
+    /// until it has processed the RST: HTTP.sys defers that cleanup and aborts the connection, without GOAWAY,
+    /// when a read carries RST_STREAMs together with HEADERS that already reuse their slots. Holding the slot
+    /// sends any replacement request in a later write than the RST.
+    fn rst_stream(&mut self, k: usize, code: Reason) {
+        let id = self.streams[k].id;
+        self.ctrl_rst(id, code, true);
+        let slot = self.streams[k].slot.take();
+        self.hold_slot(slot);
+    }
+
+    fn hold_slot(&mut self, slot: Option<StreamSlot>) {
+        if let Some(s) = slot {
+            self.reset_slots.push_back((self.wq.enqueued_total(), s));
+        }
+    }
+
+    /// A held slot's RST_STREAM has been written; a flush releases the slot.
+    fn reset_written(&self) -> bool {
+        let w = self.wq.written_total();
+        self.reset_slots.front().is_some_and(|&(off, _)| off <= w)
+    }
+
+    /// The transport was flushed: release the slots whose RST_STREAM has been written.
+    fn release_reset_slots(&mut self) {
+        let w = self.wq.written_total();
+        while self.reset_slots.front().is_some_and(|&(off, _)| off <= w) {
+            self.reset_slots.pop_front();
         }
     }
 
@@ -647,11 +682,8 @@ impl Core {
     }
 
     fn stream_timeout(&mut self, k: usize, head: bool) {
-        let (id, hdr_end) = {
-            let st = &self.streams[k];
-            (st.id, st.hdr_end)
-        };
-        self.ctrl_rst(id, Reason::CANCEL, true);
+        let hdr_end = self.streams[k].hdr_end;
+        self.rst_stream(k, Reason::CANCEL);
         let err = if head {
             Self::err_for(
                 self.wq.written_total(),
@@ -692,7 +724,7 @@ impl Core {
     /// Stream-level error: RST_STREAM(reason) and fail the consumer.
     fn stream_error(&mut self, k: usize, reason: Reason, why: &'static str) {
         let id = self.streams[k].id;
-        self.ctrl_rst(id, reason, true);
+        self.rst_stream(k, reason);
         let err = Error::with_source(
             ErrorKind::Protocol,
             Recovery::Never,
@@ -714,6 +746,7 @@ impl Core {
 
     fn fail_all(&mut self, kind: ErrorKind, msg: &str) {
         self.stop_accepting();
+        self.reset_slots.clear();
         let written = self.wq.written_total();
         self.send_ready.clear();
         self.by_id.clear();
@@ -808,7 +841,7 @@ impl Core {
         let entry = StreamEntry {
             id,
             shared,
-            _slot: slot,
+            slot: Some(slot),
             send_win: StreamSendWindow::new(),
             recv_win: RecvWindow::new(self.cfg.initial_stream_window),
             send,
@@ -894,10 +927,11 @@ impl Core {
     }
 
     fn cancel_stream(&mut self, k: usize) {
-        let st = self.streams.remove(k);
+        let mut st = self.streams.remove(k);
         self.by_id.remove(&st.id);
         if !(st.local_closed && st.remote_closed) {
             self.ctrl_rst(st.id, Reason::CANCEL, true);
+            self.hold_slot(st.slot.take());
         }
         st.shared.drain_recv();
         st.shared.close_send();
@@ -923,8 +957,7 @@ impl Core {
             }
         }
         if let Some(e) = abort {
-            let id = st.id;
-            self.ctrl_rst(id, Reason::CANCEL, true);
+            self.rst_stream(k, Reason::CANCEL);
             let e = Error::with_source(ErrorKind::BodyRead, Recovery::Never, e);
             self.remove_with_error(k, e);
             return;
@@ -1390,8 +1423,7 @@ impl Core {
             self.remove_ok(k);
         } else {
             // Response complete before the request body was: tell the server to stop (RFC 9113 8.1).
-            let id = st.id;
-            self.ctrl_rst(id, Reason::NO_ERROR, true);
+            self.rst_stream(k, Reason::NO_ERROR);
             self.remove_ok(k);
         }
     }
@@ -1914,10 +1946,12 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
                 }
             }
         }
-        if self.core.wq.is_empty()
-            && let Poll::Ready(Err(e)) = self.core.wq.poll_flush(&mut self.io, cx)
-        {
-            return Err(e);
+        if self.core.wq.is_empty() || self.core.reset_written() {
+            match self.core.wq.poll_flush(&mut self.io, cx) {
+                Poll::Ready(Ok(())) => self.core.release_reset_slots(),
+                Poll::Ready(Err(e)) => return Err(e),
+                Poll::Pending => {}
+            }
         }
         self.core.marks_flushed();
         Ok(more)

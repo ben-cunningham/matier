@@ -188,6 +188,8 @@ Done:
 - Flow control, request and response streaming, trailers.
 - Response-head, body-idle, keepalive and header-block timeouts; connection lifetime limits.
 - Flood limits for SETTINGS, PING, RST_STREAM and empty DATA frames.
+- A reset stream keeps its concurrency slot until its RST_STREAM is flushed, so a new request never reuses
+  it in the same write (HTTP.sys drops connections that do).
 - OpenTelemetry metrics and tracing.
 
 Not done yet:
