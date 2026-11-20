@@ -304,7 +304,12 @@ pub(crate) fn post(path: &str, body: Body) -> http::Request<Body> {
 
 /// Perform the handshake against a scripted peer sending `peer_settings`.
 pub(crate) async fn connect(cfg: H2Config, peer_settings: &[(u16, u32)]) -> (H2Handle, Peer) {
-    let (a, b) = tokio::io::duplex(8 << 20);
+    connect_buf(8 << 20, cfg, peer_settings).await
+}
+
+/// [`connect`] over a duplex with `cap` bytes of buffer: our writes block once the peer stops reading.
+async fn connect_buf(cap: usize, cfg: H2Config, peer_settings: &[(u16, u32)]) -> (H2Handle, Peer) {
+    let (a, b) = tokio::io::duplex(cap);
     let log: WriteLog = Arc::new(Mutex::new(Vec::new()));
     let io = TestIo {
         inner: a,
@@ -907,6 +912,46 @@ async fn dropping_body_mid_stream_sends_rst_cancel_and_releases_window() {
     };
     let (r, ()) = tokio::join!(f, server);
     assert_eq!(collect_body(r.unwrap()).await.unwrap(), b"fine");
+}
+
+/// HTTP.sys counts a reset stream against MAX_CONCURRENT_STREAMS until it has processed the RST_STREAM, and
+/// aborts the connection when HEADERS reusing those slots arrive in the same read. A reset stream's slot is
+/// released only once its RST_STREAM has been written and flushed.
+#[tokio::test]
+async fn reset_stream_keeps_its_slot_until_the_rst_is_flushed() {
+    let (h, mut peer) = connect_buf(
+        4096,
+        H2Config::default(),
+        &[(settings::MAX_CONCURRENT_STREAMS, 2)],
+    )
+    .await;
+    let cancelled = h.send(h.try_reserve().unwrap(), get("/cancel"));
+    let (id, _, _) = peer.request().await;
+    // The peer stops reading: this body fills the duplex buffer and blocks our writes.
+    let upload = h.send(h.try_reserve().unwrap(), post("/up", full_body(60_000)));
+    tokio::time::sleep(Duration::from_millis(50)).await;
+    drop(cancelled);
+    tokio::time::sleep(Duration::from_millis(50)).await;
+    assert_eq!(
+        h.in_flight(),
+        2,
+        "slot released before its RST_STREAM was written"
+    );
+    assert!(h.try_reserve().is_none());
+    loop {
+        if let F::Rst { id: i, code } = peer.frame_skip_noise().await {
+            assert_eq!((i, code), (id, Reason::CANCEL));
+            break;
+        }
+    }
+    for _ in 0..100 {
+        if h.in_flight() == 1 {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(10)).await;
+    }
+    assert_eq!(h.in_flight(), 1);
+    drop(upload);
 }
 
 async fn expect_goaway(peer: &mut Peer, code: Reason) {
