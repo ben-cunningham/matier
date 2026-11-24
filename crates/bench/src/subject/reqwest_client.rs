@@ -14,6 +14,9 @@ pub struct ReqwestSubject {
 
 impl ReqwestSubject {
     pub fn new(cfg: &SubjectConfig) -> Result<Self> {
+        // reqwest's rustls-no-provider mode requires an installed provider, even when only
+        // Ring is compiled in. A different subject may already have initialized it.
+        let _ = rustls::crypto::ring::default_provider().install_default();
         let mut b = reqwest::Client::builder().pool_max_idle_per_host(usize::MAX);
         match cfg.protocol {
             Protocol::H1 => b = b.http1_only(),

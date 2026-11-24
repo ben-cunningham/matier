@@ -33,7 +33,8 @@ Matier removes the lock and the guesswork:
   per-connection task and no channel hop.
 
 It also includes:
-- rustls TLS with aws-lc-rs and the operating system's certificate store;
+- native TLS (SChannel on Windows, Secure Transport on macOS, OpenSSL elsewhere) with the
+  operating system's certificate store;
 - composable middleware via [`layered`](https://crates.io/crates/layered) (the same model fetch uses);
 - optional OpenTelemetry metrics and tracing that cover queueing time, connection load and flow-control
   stalls.
@@ -162,10 +163,29 @@ HTTPS uses the operating system's trust store by default. Per-request options go
 extensions: `ResponseTimeout`, `BodyTimeout`, `Priority` (RFC 9218) and `UriTemplate` (a low-cardinality route
 name for telemetry).
 
-`matier-transport`'s rustls crypto backend is a cargo feature: `aws-lc-rs` (default) or `ring`, or
-`symcrypt` (Microsoft's FIPS 140-3 validated [SymCrypt](https://github.com/microsoft/SymCrypt), Windows and
-Linux only, needs the native library present at build and run time) as `default-features = false, features =
-["symcrypt"]`.
+TLS uses `native-tls` and `tokio-native-tls`, without rustls or AWS-LC in the client's dependency
+graph. Linux builds require the OpenSSL development libraries and `pkg-config`. Windows uses
+SChannel; macOS uses Secure Transport. ALPN still negotiates `h2` / `http/1.1`, or only `http/1.1`
+for `http1_only`. Certificate and hostname validation remain enabled by default.
+
+`TlsConfig::with_platform_verifier()` keeps the platform trust store.
+`TlsConfig::with_root_pem()` trusts only the supplied PEM certificates.
+For client certificates or other custom settings, pass a `native_tls::TlsConnectorBuilder` to
+`TlsConfig::from_native_tls()`. Native TLS manages session resumption; unlike the previous rustls
+connectors, the two ALPN configurations do not explicitly share a session cache.
+
+This is a breaking TLS API change: `from_rustls`, the public rustls configuration fields,
+`tls::default_provider`, `with_webpki_roots`, and the `aws-lc-rs`, `ring`, `symcrypt` and
+`webpki-roots` transport features are removed. `Io::Tls` now holds a native TLS stream and cached
+ALPN as named fields rather than a rustls stream tuple. Opaque native handshake errors are non-retryable
+(`Tls` / `Never`), because native TLS cannot portably distinguish certificate errors from socket
+failures; DNS/TCP failures and handshake timeouts retain their existing retry classification.
+Native TLS uses scalar writes (including the standard vectored-write fallback); TCP keeps its
+real vectored writes. Independent test servers and the hyper/reqwest benchmark subjects still
+use rustls with Ring, and the fetch benchmark subject uses native TLS, so workspace builds do
+not require AWS-LC either.
+Cargo can still retain AWS-LC entries in the workspace lockfile through fetch's weak optional
+rustls feature; these are not in the active client or workspace build trees (`cargo tree`).
 
 ## Crates
 

@@ -6,13 +6,17 @@ use std::task::{Context, Poll};
 
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 use tokio::net::TcpStream;
-use tokio_rustls::client::TlsStream;
+use tokio_native_tls::TlsStream;
 
-/// TCP or TLS stream. Real `poll_write_vectored` on both (`WSASend` with several `WSABUF`s on Windows).
+/// TCP or TLS stream. TCP supports vectored writes; native TLS uses the scalar fallback.
 #[derive(Debug)]
 pub enum Io {
     Tcp(TcpStream),
-    Tls(Box<TlsStream<TcpStream>>),
+    Tls {
+        stream: Box<TlsStream<TcpStream>>,
+        /// Cached once after the handshake so callers can borrow the negotiated protocol.
+        alpn: Option<Vec<u8>>,
+    },
 }
 
 impl Io {
@@ -21,7 +25,7 @@ impl Io {
     pub fn tcp(&self) -> &TcpStream {
         match self {
             Self::Tcp(s) => s,
-            Self::Tls(s) => s.get_ref().0,
+            Self::Tls { stream, .. } => stream.get_ref().get_ref().get_ref(),
         }
     }
 
@@ -30,7 +34,7 @@ impl Io {
     pub fn alpn_protocol(&self) -> Option<&[u8]> {
         match self {
             Self::Tcp(_) => None,
-            Self::Tls(s) => s.get_ref().1.alpn_protocol(),
+            Self::Tls { alpn, .. } => alpn.as_deref(),
         }
     }
 }
@@ -39,7 +43,7 @@ macro_rules! delegate {
     ($self:ident, $s:ident => $e:expr) => {
         match $self.get_mut() {
             Io::Tcp($s) => $e(Pin::new($s)),
-            Io::Tls($s) => $e(Pin::new(&mut **$s)),
+            Io::Tls { stream: $s, .. } => $e(Pin::new(&mut **$s)),
         }
     };
 }
@@ -72,7 +76,10 @@ impl AsyncWrite for Io {
     }
 
     fn is_write_vectored(&self) -> bool {
-        true
+        match self {
+            Self::Tcp(s) => s.is_write_vectored(),
+            Self::Tls { stream, .. } => stream.is_write_vectored(),
+        }
     }
 
     fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
