@@ -51,18 +51,18 @@ fast on large bodies.
 
 | Protocol | Workload | c | Matier | hyper | hyper ×4 | fetch | fetch ×4 |
 |---|---|--:|--:|--:|--:|--:|--:|
-| HTTP/2 | 1 KiB responses | 1 | **32,848** | 25,432 | 24,154 | 21,862 | 22,268 |
-| HTTP/2 | 1 KiB responses | 64 | **260,141** | 78,003 | 164,964 | 64,294 | 115,896 |
-| HTTP/2 | 1 KiB responses | 256 | **380,085** | 82,271 | 188,776 | 62,506 | 125,132 |
-| HTTP/2 + TLS | 1 KiB responses | 256 | **347,391** | 80,407 | 185,018 | 62,968 | 122,984 |
-| HTTP/2 | 64 KiB responses | 64 | **120,032** | 56,379 | 99,158 | 28,336 | 67,560 |
-| HTTP/2 | 1 MiB responses | 8 | 10,035 | 6,303 | 9,992 | 2,686 | 4,775 |
-| HTTP/2 | 8 MiB responses | 8 | 1,118 | 822 | 1,085 | 326 | 506 |
-| HTTP/2 | 1 MiB uploads | 16 | 9,258 | 6,194 | 8,739 | 6,106 | 9,117 |
-| HTTP/1.1 | 1 KiB responses | 1 | **36,469** | 31,362 | 28,924 | 28,103 | 26,558 |
-| HTTP/1.1 | 1 KiB responses | 256 | 161,645 | 160,669 | 145,087 | 121,975 | 137,578 |
-| HTTP/1.1 + TLS | 1 KiB responses | 256 | 156,190 | 147,923 | 153,231 | 117,230 | 126,298 |
-| HTTP/1.1 | 8 MiB responses | 8 | 1,177 | 1,196 | 1,188 | 1,202 | 1,186 |
+| HTTP/2 | 1 KiB responses | 1 | **32,772** | 25,129 | 24,747 | 22,781 | 22,334 |
+| HTTP/2 | 1 KiB responses | 64 | **260,416** | 79,867 | 167,287 | 65,533 | 114,718 |
+| HTTP/2 | 1 KiB responses | 256 | **378,834** | 82,933 | 192,795 | 65,230 | 122,645 |
+| HTTP/2 + TLS | 1 KiB responses | 256 | **335,631** | 80,322 | 189,634 | 67,802 | 111,514 |
+| HTTP/2 | 64 KiB responses | 64 | **121,060** | 54,265 | 105,926 | 28,206 | 63,782 |
+| HTTP/2 | 1 MiB responses | 8 | **10,426** | 6,513 | 9,694 | 2,530 | 4,774 |
+| HTTP/2 | 8 MiB responses | 8 | **1,141** | 774 | 1,040 | 328 | 527 |
+| HTTP/2 | 1 MiB uploads | 16 | 9,479 | 6,428 | 8,931 | 6,369 | 9,141 |
+| HTTP/1.1 | 1 KiB responses | 1 | **37,830** | 34,452 | 29,617 | 30,904 | 26,198 |
+| HTTP/1.1 | 1 KiB responses | 256 | 156,355 | 151,529 | 151,686 | 117,885 | 130,216 |
+| HTTP/1.1 + TLS | 1 KiB responses | 256 | 151,776 | 151,310 | 151,732 | 106,229 | 118,154 |
+| HTTP/1.1 | 8 MiB responses | 8 | 1,216 | 1,149 | 1,186 | 1,154 | 1,198 |
 
 Bold marks a lead of more than 5%, which is the run-to-run noise. The other rows are ties with the best
 alternative.
@@ -71,11 +71,11 @@ Latency and efficiency against hyper ×4, the strongest alternative:
 
 | Protocol | Workload | c | p99 latency | CPU per request | Allocations per request |
 |---|---|--:|--:|--:|--:|
-| HTTP/2 | 1 KiB responses | 256 | 1.29 ms vs 2.49 ms | 9.3 µs vs 20.8 µs | 4 vs 14 |
-| HTTP/2 | 64 KiB responses | 64 | 0.94 ms vs 1.08 ms | 23.4 µs vs 37.2 µs | 4 vs 17 |
-| HTTP/2 | 8 MiB responses | 8 | 10.4 ms vs 9.5 ms | 1,725 µs vs 1,624 µs | 4 vs 110 |
-| HTTP/1.1 | 1 KiB responses | 256 | 2.01 ms vs 3.82 ms | 19.9 µs vs 26.0 µs | 2 vs 14 |
-| HTTP/1.1 | 8 MiB responses | 8 | 9.4 ms vs 9.0 ms | 1,543 µs vs 1,687 µs | 2 vs 15 |
+| HTTP/2 | 1 KiB responses | 256 | 1.29 ms vs 2.42 ms | 9.9 µs vs 20.3 µs | 4 vs 14 |
+| HTTP/2 | 64 KiB responses | 64 | 0.82 ms vs 1.01 ms | 25.0 µs vs 38.2 µs | 4 vs 17 |
+| HTTP/2 | 8 MiB responses | 8 | 10.3 ms vs 10.0 ms | 1,699 µs vs 1,772 µs | 4 vs 110 |
+| HTTP/1.1 | 1 KiB responses | 256 | 1.96 ms vs 2.17 ms | 21.8 µs vs 27.5 µs | 2 vs 14 |
+| HTTP/1.1 | 8 MiB responses | 8 | 9.35 ms vs 8.95 ms | 1,477 µs vs 1,691 µs | 2 vs 15 |
 
 How to read these numbers:
 
@@ -83,9 +83,13 @@ How to read these numbers:
   compare clients against each other; they are not production capacity figures.
 - The test server is built on hyper. On HTTP/1.1 it saturates near 160k requests/s, so every client hits the
   same ceiling and the differences show up in CPU and allocations instead.
-- Matier is not ahead everywhere. Large HTTP/2 downloads are a tie on throughput, and Matier uses about 6%
-  more CPU per request than hyper ×4 there (a single hyper client uses less still, 1,132 µs, at a quarter less
-  throughput).
+- Matier is not ahead everywhere. On large HTTP/2 downloads it leads hyper ×4 by 7–10% at about the same
+  CPU per request, but a single hyper client uses about 30% less CPU (1,194 µs at 8 MiB) at a third less
+  throughput.
+- The TLS rows compare TLS stacks as well as clients. Matier and fetch use the operating system's TLS
+  (Secure Transport on macOS); hyper uses rustls. Secure Transport adds about 5 µs of CPU per request
+  over HTTP/1.1, rustls about 1 µs, so HTTP/1.1 + TLS is a tie with hyper ×4 on CPU as well as throughput
+  (27.4 µs vs 28.6 µs).
 - The frame size matters more than any other setting for large bodies: at 16 KiB frames every client spends
   about twice the CPU per byte, mostly in extra socket reads. Some servers (nginx, Envoy) send small frames
   whatever the client asks for.
