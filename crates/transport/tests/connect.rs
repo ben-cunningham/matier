@@ -22,21 +22,28 @@ fn origin(scheme: Scheme, host: &str, port: u16) -> OriginKey {
 async fn tls_server(
     alpn: &[&[u8]],
 ) -> (u16, String, tokio::sync::mpsc::UnboundedReceiver<Vec<u8>>) {
-    let ck = rcgen::generate_simple_self_signed(vec!["localhost".to_string()]).unwrap();
-    let pem = ck.cert.pem();
-    let key = PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(ck.signing_key.serialize_der()));
+    let l = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = l.local_addr().unwrap().port();
+    let signing_key = rcgen::KeyPair::generate().unwrap();
+    let mut params = rcgen::CertificateParams::new(vec!["localhost".to_string()]).unwrap();
+    // Distinct issuers let OpenSSL select the right self-signed root in a PEM bundle,
+    // rather than choosing between rcgen's identical default subject names.
+    params
+        .distinguished_name
+        .push(rcgen::DnType::CommonName, format!("matier-test-{port}"));
+    let cert = params.self_signed(&signing_key).unwrap();
+    let pem = cert.pem();
+    let key = PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(signing_key.serialize_der()));
     let mut cfg = rustls::ServerConfig::builder_with_provider(
         rustls::crypto::ring::default_provider().into(),
     )
     .with_safe_default_protocol_versions()
     .unwrap()
     .with_no_client_auth()
-    .with_single_cert(vec![ck.cert.der().clone()], key)
+    .with_single_cert(vec![cert.der().clone()], key)
     .unwrap();
     cfg.alpn_protocols = alpn.iter().map(|p| p.to_vec()).collect();
     let acceptor = TlsAcceptor::from(std::sync::Arc::new(cfg));
-    let l = TcpListener::bind("127.0.0.1:0").await.unwrap();
-    let port = l.local_addr().unwrap().port();
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
     tokio::spawn(async move {
         loop {
