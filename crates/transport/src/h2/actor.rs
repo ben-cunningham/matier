@@ -2008,6 +2008,11 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
                 return;
             }
             self.core.timer_at = None;
+            // Scan with the current time, not the tick's: a deadline that passed during this tick
+            // (a long read or inbox phase, preemption) is otherwise still "ahead" of the stale tick
+            // time, so the scan re-arms the timer at that already elapsed instant, the timer fires
+            // at once and this loop never returns: the worker spins and the connection is stuck.
+            self.core.now = TInstant::now();
             if let Err(e) = self.core.scan_timeouts() {
                 self.core.ctrl_goaway(Reason::ENHANCE_YOUR_CALM, "timeout");
                 self.core.state = ConnState::Closing;
