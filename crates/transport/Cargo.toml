@@ -21,8 +21,8 @@ symcrypt = ["dep:rustls-symcrypt", "rustls/custom-provider"]
 webpki-roots = ["dep:webpki-roots"]
 
 [dependencies]
-matier-core = { version = "0.2.1", path = "../core" }
-matier-h1 = { version = "0.2.1", path = "../h1" }
+matier-core = { version = "0.2.2", path = "../core" }
+matier-h1 = { version = "0.2.2", path = "../h1" }
 http = { workspace = true }
 http-body = { workspace = true }
 futures-util = { version = "0.3", default-features = false }
@@ -33,7 +33,7 @@ rustls-platform-verifier = { workspace = true }
 webpki-roots = { workspace = true, optional = true }
 rustls-symcrypt = { version = "0.2", optional = true }
 socket2 = { workspace = true }
-matier-h2 = { version = "0.2.1", path = "../h2" }
+matier-h2 = { version = "0.2.2", path = "../h2" }
 bytes = { workspace = true }
 atomic-waker = "1.1"
 crossbeam-queue = "0.3"
