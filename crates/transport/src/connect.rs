@@ -5,10 +5,9 @@ use std::net::{IpAddr, SocketAddr};
 use std::time::{Duration, Instant};
 
 use matier_core::{ConnectPhase, Error, ErrorKind, Observer, OriginKey, Protocol, Result};
-use rustls::pki_types::ServerName;
 use tokio::net::{TcpSocket, TcpStream, lookup_host};
 use tokio::time::timeout;
-use tokio_rustls::TlsConnector;
+use tokio_native_tls::TlsConnector;
 
 use crate::io::Io;
 use crate::tls::{ALPN_H2, TlsConfig};
@@ -59,7 +58,7 @@ pub struct Connected {
 }
 
 /// Resolves, connects and (for https) handshakes. Failures before any request byte is sent are
-/// `Recovery::Unprocessed`, except certificate/config errors which are `Never`.
+/// `Recovery::Unprocessed`, except native TLS handshake/config errors which are `Never`.
 ///
 /// # Errors
 /// `Dns`, `Connect`, `Tls`, `Timeout` or `InvalidRequest` kinds.
@@ -129,12 +128,16 @@ pub async fn connect(
         obs.connect_phase(origin, ConnectPhase::Tls, t.elapsed(), r.is_ok());
     }
     let stream = r?;
-    let protocol = match stream.get_ref().1.alpn_protocol() {
-        Some(p) if p == ALPN_H2 => Protocol::Http2,
+    let alpn = stream.get_ref().negotiated_alpn().map_err(Error::tls)?;
+    let protocol = match alpn.as_deref() {
+        Some(ALPN_H2) => Protocol::Http2,
         _ => Protocol::Http1,
     };
     Ok(Connected {
-        io: Io::Tls(Box::new(stream)),
+        io: Io::Tls {
+            stream: Box::new(stream),
+            alpn,
+        },
         protocol,
     })
 }
@@ -200,26 +203,23 @@ async fn handshake(
     origin: &OriginKey,
     tls: &TlsConfig,
     cfg: &ConnectConfig,
-) -> Result<tokio_rustls::client::TlsStream<TcpStream>> {
-    let name =
-        ServerName::try_from(origin.connect_host().to_owned()).map_err(Error::invalid_request)?;
-    let rustls = if cfg.alpn_h2 {
-        &tls.rustls
+) -> Result<tokio_native_tls::TlsStream<TcpStream>> {
+    let native = if cfg.alpn_h2 {
+        &tls.connector
     } else {
-        &tls.rustls_h1_only
+        &tls.connector_h1_only
     };
-    let connector = TlsConnector::from(std::sync::Arc::clone(rustls));
-    match timeout(cfg.connect_timeout, connector.connect(name, tcp)).await {
+    let connector = TlsConnector::from(native.clone());
+    match timeout(
+        cfg.connect_timeout,
+        connector.connect(origin.connect_host(), tcp),
+    )
+    .await
+    {
         Ok(Ok(s)) => Ok(s),
-        Ok(Err(e)) => {
-            // rustls-level failures (bad cert, no common version) will not fix themselves; I/O ones may.
-            let rustls_err = e.get_ref().is_some_and(|i| i.is::<rustls::Error>());
-            Err(if rustls_err {
-                Error::tls(e)
-            } else {
-                Error::unprocessed(ErrorKind::Tls, e)
-            })
-        }
+        // Native TLS does not expose a portable distinction between certificate/protocol and
+        // underlying I/O errors. Do not retry an opaque failure that could be a bad certificate.
+        Ok(Err(e)) => Err(Error::tls(e)),
         Err(_) => Err(Error::unprocessed(
             ErrorKind::Timeout,
             "TLS handshake timed out",

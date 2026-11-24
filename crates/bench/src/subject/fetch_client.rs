@@ -7,8 +7,6 @@
 //! Tuning that `fetch` exposes is matched to the other subjects (1 MiB initial h2 stream
 //! window); the connection window and max frame size cannot be set through `fetch`.
 
-use std::sync::Arc;
-
 use anyhow::Result;
 use fetch::{
     HttpClient,
@@ -16,11 +14,6 @@ use fetch::{
     tls::TlsOptions,
 };
 use http_body_util::BodyExt;
-use rustls::{
-    RootCertStore,
-    client::{WebPkiServerVerifier, danger::ServerCertVerifier},
-    pki_types::{CertificateDer, pem::PemObject},
-};
 
 use super::{BenchRequest, BenchResponse, H2_STREAM_WINDOW, Subject, SubjectConfig, read_ca};
 use crate::scenario::{PoolSelection, Protocol};
@@ -64,20 +57,18 @@ impl FetchSubject {
         }
         if cfg.tls {
             let pem = read_ca(cfg)?;
-            let mut roots = RootCertStore::empty();
-            for cert in CertificateDer::pem_slice_iter(&pem) {
-                roots.add(cert?)?;
+            let mut tls = native_tls::TlsConnector::builder();
+            tls.disable_built_in_roots(true)
+                .request_alpns(match cfg.protocol {
+                    Protocol::H1 => &["http/1.1"],
+                    Protocol::H2 => &["h2", "http/1.1"],
+                });
+            let roots = native_tls::Certificate::stack_from_pem(&pem)?;
+            anyhow::ensure!(!roots.is_empty(), "no certificates found in PEM");
+            for root in roots {
+                tls.add_root_certificate(root);
             }
-            let roots = Arc::new(roots);
-            let tls = TlsOptions::builder_rustls()
-                .server_certificate_verifier(move |provider| {
-                    let v = WebPkiServerVerifier::builder_with_provider(roots.clone(), provider)
-                        .build()
-                        .expect("valid root store");
-                    v as Arc<dyn ServerCertVerifier>
-                })
-                .build();
-            b = b.tls_options(tls);
+            b = b.tls_options(TlsOptions::from(tls.build()?));
         }
         Ok(Self {
             client: b.build(),

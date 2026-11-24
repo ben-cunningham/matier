@@ -118,7 +118,7 @@ when nothing is wrong; compare `service_time` for the pure client+server cost.
   `connect`); keep-alive reuse should avoid it, but a failing subject can trigger it.
   Windows loopback has a different fast path than Linux/macOS, and Defender real-time
   scanning can skew results: exclude the repo, `target\` and the binaries from scanning when
-  benchmarking. Building needs the MSVC toolchain plus NASM/cmake for aws-lc-sys.
+  benchmarking. Building needs the MSVC toolchain; AWS-LC/NASM/cmake are not required.
 
 - Loopback only measures client + kernel + server CPU; there is no real network. Absolute
   numbers are not comparable across machines; compare runs on the same host.

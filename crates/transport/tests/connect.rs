@@ -1,5 +1,4 @@
 use std::io::IoSlice;
-use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use matier_core::{
@@ -19,10 +18,6 @@ fn origin(scheme: Scheme, host: &str, port: u16) -> OriginKey {
     }
 }
 
-fn provider() -> Arc<rustls::crypto::CryptoProvider> {
-    matier_transport::tls::default_provider()
-}
-
 /// Spawns a TLS server offering `alpn`; returns port and root PEM. Each connection reports bytes it reads.
 async fn tls_server(
     alpn: &[&[u8]],
@@ -30,14 +25,16 @@ async fn tls_server(
     let ck = rcgen::generate_simple_self_signed(vec!["localhost".to_string()]).unwrap();
     let pem = ck.cert.pem();
     let key = PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(ck.signing_key.serialize_der()));
-    let mut cfg = rustls::ServerConfig::builder_with_provider(provider())
-        .with_safe_default_protocol_versions()
-        .unwrap()
-        .with_no_client_auth()
-        .with_single_cert(vec![ck.cert.der().clone()], key)
-        .unwrap();
+    let mut cfg = rustls::ServerConfig::builder_with_provider(
+        rustls::crypto::ring::default_provider().into(),
+    )
+    .with_safe_default_protocol_versions()
+    .unwrap()
+    .with_no_client_auth()
+    .with_single_cert(vec![ck.cert.der().clone()], key)
+    .unwrap();
     cfg.alpn_protocols = alpn.iter().map(|p| p.to_vec()).collect();
-    let acceptor = TlsAcceptor::from(Arc::new(cfg));
+    let acceptor = TlsAcceptor::from(std::sync::Arc::new(cfg));
     let l = TcpListener::bind("127.0.0.1:0").await.unwrap();
     let port = l.local_addr().unwrap().port();
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
@@ -161,7 +158,7 @@ async fn alpn_negotiates_h2_and_h1() {
     assert_eq!(c.io.alpn_protocol(), Some(&b"http/1.1"[..]));
 
     // Vectored write through TLS reaches the server intact.
-    assert!(tokio::io::AsyncWrite::is_write_vectored(&c.io));
+    assert!(!tokio::io::AsyncWrite::is_write_vectored(&c.io));
     let bufs = [
         IoSlice::new(b"hello "),
         IoSlice::new(b"tls"),
@@ -192,6 +189,109 @@ async fn server_without_h2_yields_http1() {
     .await
     .unwrap();
     assert_eq!(c.protocol, Protocol::Http1);
+}
+
+#[tokio::test]
+async fn server_without_alpn_yields_http1() {
+    let (port, pem, _rx) = tls_server(&[]).await;
+    let c = connect(
+        &origin(Scheme::Https, "localhost", port),
+        &tls_cfg(&pem),
+        &NoopObserver,
+    )
+    .await
+    .unwrap();
+    assert_eq!(c.protocol, Protocol::Http1);
+    assert_eq!(c.io.alpn_protocol(), None);
+}
+
+#[tokio::test]
+async fn root_pem_bundle_trusts_each_certificate() {
+    let (port_a, pem_a, _rx_a) = tls_server(&[b"h2"]).await;
+    let (port_b, pem_b, _rx_b) = tls_server(&[b"h2"]).await;
+    let cfg = tls_cfg(&format!("{pem_a}\n{pem_b}"));
+    for port in [port_a, port_b] {
+        let c = connect(
+            &origin(Scheme::Https, "localhost", port),
+            &cfg,
+            &NoopObserver,
+        )
+        .await
+        .unwrap();
+        assert_eq!(c.protocol, Protocol::Http2);
+    }
+}
+
+#[test]
+fn root_pem_rejects_empty_or_malformed_certificates() {
+    for pem in [
+        b"".as_slice(),
+        b"not a certificate",
+        b"-----BEGIN CERTIFICATE-----\ninvalid\n-----END CERTIFICATE-----",
+    ] {
+        let e = TlsConfig::with_root_pem(pem).unwrap_err();
+        assert_eq!(e.kind(), ErrorKind::Tls);
+        assert_eq!(e.recovery(), Recovery::Never);
+    }
+}
+
+#[tokio::test]
+async fn trusted_cert_with_wrong_hostname_is_tls_never() {
+    let (port, pem, _rx) = tls_server(&[b"h2"]).await;
+    // The certificate is trusted, but it contains only the DNS name localhost, not this IP.
+    let e = connect(
+        &origin(Scheme::Https, "127.0.0.1", port),
+        &tls_cfg(&pem),
+        &NoopObserver,
+    )
+    .await
+    .unwrap_err();
+    assert_eq!(e.kind(), ErrorKind::Tls);
+    assert_eq!(e.recovery(), Recovery::Never);
+}
+
+#[tokio::test]
+async fn native_builder_preserves_custom_roots_and_transport_owns_alpn() {
+    let (port, pem, _rx) = tls_server(&[b"h2", b"http/1.1"]).await;
+    let mut builder = native_tls::TlsConnector::builder();
+    builder
+        .disable_built_in_roots(true)
+        .add_root_certificate(native_tls::Certificate::from_pem(pem.as_bytes()).unwrap())
+        .request_alpns(&["not-http"]);
+    let tls = TlsConfig::from_native_tls(builder).unwrap();
+    for (alpn_h2, expected) in [(true, Protocol::Http2), (false, Protocol::Http1)] {
+        let cfg = ConnectConfig {
+            tls: Some(tls.clone()),
+            alpn_h2,
+            ..Default::default()
+        };
+        let c = connect(
+            &origin(Scheme::Https, "localhost", port),
+            &cfg,
+            &NoopObserver,
+        )
+        .await
+        .unwrap();
+        assert_eq!(c.protocol, expected);
+    }
+}
+
+#[tokio::test]
+async fn stalled_tls_handshake_is_unprocessed_timeout() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = listener.local_addr().unwrap().port();
+    let cfg = ConnectConfig {
+        connect_timeout: Duration::from_millis(100),
+        tls: Some(TlsConfig::with_platform_verifier().unwrap()),
+        ..Default::default()
+    };
+    // Keep the accepted socket alive, but never send a TLS handshake response.
+    let origin = origin(Scheme::Https, "127.0.0.1", port);
+    let (result, socket) = tokio::join!(connect(&origin, &cfg, &NoopObserver), listener.accept());
+    drop(socket.unwrap());
+    let e = result.unwrap_err();
+    assert_eq!(e.kind(), ErrorKind::Timeout);
+    assert_eq!(e.recovery(), Recovery::Unprocessed);
 }
 
 #[tokio::test]

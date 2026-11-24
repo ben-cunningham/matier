@@ -61,7 +61,7 @@ async fn h2c_server() -> u16 {
 }
 
 async fn tls_server() -> (u16, String) {
-    let provider = matier_transport::tls::default_provider();
+    let provider = rustls::crypto::ring::default_provider().into();
     let ck = rcgen::generate_simple_self_signed(vec!["localhost".to_string()]).unwrap();
     let pem = ck.cert.pem();
     let key = PrivateKeyDer::Pkcs8(PrivatePkcs8KeyDer::from(ck.signing_key.serialize_der()));
