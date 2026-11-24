@@ -1633,3 +1633,109 @@ async fn invalid_frame_on_unknown_stream_is_not_answered_with_rst() {
     assert!(!saw_rst);
     drop(h);
 }
+
+/// Duplex end whose next read blocks the reading thread once, for `delay`, when armed: models an
+/// actor tick that takes long (slow I/O, a large inbox batch, preemption) after it has stamped
+/// its tick time.
+struct StallingIo {
+    inner: DuplexStream,
+    stall: std::sync::Arc<std::sync::atomic::AtomicU64>,
+}
+
+impl AsyncRead for StallingIo {
+    fn poll_read(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        b: &mut ReadBuf<'_>,
+    ) -> Poll<io::Result<()>> {
+        let ms = self.stall.swap(0, std::sync::atomic::Ordering::SeqCst);
+        if ms > 0 {
+            std::thread::sleep(Duration::from_millis(ms));
+        }
+        Pin::new(&mut self.inner).poll_read(cx, b)
+    }
+}
+
+impl AsyncWrite for StallingIo {
+    fn poll_write(
+        mut self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        b: &[u8],
+    ) -> Poll<io::Result<usize>> {
+        Pin::new(&mut self.inner).poll_write(cx, b)
+    }
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.inner).poll_flush(cx)
+    }
+    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.inner).poll_shutdown(cx)
+    }
+}
+
+/// A response deadline that passes while a tick is running (after the tick stamped its time,
+/// before the deadline scan) must fail the stream with `Timeout`. The scan used the stale tick
+/// time, found the deadline still ahead, re-armed the timer at that (already elapsed) instant,
+/// saw it fire at once and looped forever inside one poll: the worker thread spun at 100%,
+/// mostly in the timer driver's lock, and the connection never made progress again.
+#[test]
+fn deadline_elapsing_during_a_tick_times_out_instead_of_spinning() {
+    let rt = tokio::runtime::Builder::new_multi_thread()
+        .worker_threads(2)
+        .enable_all()
+        .build()
+        .unwrap();
+    let (tx, rx) = std::sync::mpsc::channel();
+    rt.spawn(async move {
+        let stall = std::sync::Arc::new(std::sync::atomic::AtomicU64::new(0));
+        let (a, b) = tokio::io::duplex(1 << 20);
+        let io = StallingIo {
+            inner: a,
+            stall: std::sync::Arc::clone(&stall),
+        };
+        let mut peer = Peer {
+            io: b,
+            buf: Vec::new(),
+            enc: Encoder::new(4096),
+            dec: Decoder::new(4096),
+            log: Arc::new(Mutex::new(Vec::new())),
+        };
+        let server = async {
+            let mut pre = [0u8; 24];
+            peer.io.read_exact(&mut pre).await.unwrap();
+            let _ = peer.frame().await;
+            peer.send_settings(&[]).await;
+        };
+        let client =
+            super::actor::handshake_io(io, origin(), H2Config::default(), Arc::new(NoopObserver));
+        let (h, ()) = tokio::join!(client, server);
+        let h = h.expect("handshake");
+
+        let mut req = get("/slow");
+        req.extensions_mut()
+            .insert(matier_core::ResponseTimeout(Duration::from_millis(300)));
+        let fut = h.send(h.try_reserve().unwrap(), req);
+        let _ = peer.frame_skip_noise().await; // our HEADERS; never answered
+        // Other timers keep the runtime's timer wheel advancing with the clock, as in any busy
+        // process; the stalled actor's wheel insertions then land in the past.
+        tokio::spawn(async {
+            for _ in 0..200 {
+                tokio::time::sleep(Duration::from_millis(5)).await;
+            }
+        });
+        tokio::time::sleep(Duration::from_millis(150)).await;
+        // Wake the actor well before the deadline; its read then blocks past the deadline.
+        stall.store(400, std::sync::atomic::Ordering::SeqCst);
+        peer.send_window_update(0, 1).await;
+        let r = fut.await;
+        let _ = tx.send(r.err().map(|e| e.kind()));
+        drop(peer);
+    });
+    match rx.recv_timeout(Duration::from_secs(10)) {
+        Ok(kind) => assert_eq!(kind, Some(ErrorKind::Timeout)),
+        Err(_) => {
+            // The actor is stuck in its deadline loop: leak the runtime rather than hang on drop.
+            std::mem::forget(rt);
+            panic!("the response deadline never fired: the actor is spinning in its deadline loop");
+        }
+    }
+}
