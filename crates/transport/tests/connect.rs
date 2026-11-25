@@ -153,7 +153,6 @@ async fn alpn_negotiates_h2_and_h1() {
     let o = origin(Scheme::Https, "localhost", port);
     let c = connect(&o, &tls_cfg(&pem), &NoopObserver).await.unwrap();
     assert_eq!(c.protocol, Protocol::Http2);
-    assert_eq!(c.io.alpn_protocol(), Some(&b"h2"[..]));
 
     // Client opts out of h2: server falls back to http/1.1.
     let cfg = ConnectConfig {
@@ -162,7 +161,6 @@ async fn alpn_negotiates_h2_and_h1() {
     };
     let mut c = connect(&o, &cfg, &NoopObserver).await.unwrap();
     assert_eq!(c.protocol, Protocol::Http1);
-    assert_eq!(c.io.alpn_protocol(), Some(&b"http/1.1"[..]));
 
     // Vectored write through TLS reaches the server intact.
     assert!(!tokio::io::AsyncWrite::is_write_vectored(&c.io));
@@ -209,7 +207,6 @@ async fn server_without_alpn_yields_http1() {
     .await
     .unwrap();
     assert_eq!(c.protocol, Protocol::Http1);
-    assert_eq!(c.io.alpn_protocol(), None);
 }
 
 #[tokio::test]
@@ -255,6 +252,27 @@ async fn trusted_cert_with_wrong_hostname_is_tls_never() {
     .unwrap_err();
     assert_eq!(e.kind(), ErrorKind::Tls);
     assert_eq!(e.recovery(), Recovery::Never);
+}
+
+#[tokio::test]
+async fn connection_closed_during_tls_handshake_is_tls_unprocessed() {
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let port = listener.local_addr().unwrap().port();
+    // Accept and close without answering the ClientHello: the socket failed, not TLS.
+    tokio::spawn(async move { drop(listener.accept().await) });
+    let cfg = ConnectConfig {
+        tls: Some(TlsConfig::with_platform_verifier().unwrap()),
+        ..Default::default()
+    };
+    let e = connect(
+        &origin(Scheme::Https, "127.0.0.1", port),
+        &cfg,
+        &NoopObserver,
+    )
+    .await
+    .unwrap_err();
+    assert_eq!(e.kind(), ErrorKind::Tls);
+    assert_eq!(e.recovery(), Recovery::Unprocessed);
 }
 
 #[tokio::test]

@@ -532,13 +532,6 @@ impl Core {
         self.wq.commit(s);
     }
 
-    fn ctrl_rst(&mut self, id: u32, code: Reason, sent: bool) {
-        self.ctrl(|a| frame::encode_rst_stream(a, id, code));
-        if self.obs_on {
-            self.obs.h2_rst_stream(&self.origin, code.0, sent);
-        }
-    }
-
     /// Queue RST_STREAM(`code`) for stream `k` (which the caller then removes), keeping its slot until the frame
     /// has been written and flushed. A server may count a reset stream against SETTINGS_MAX_CONCURRENT_STREAMS
     /// until it has processed the RST: HTTP.sys defers that cleanup and aborts the connection, without GOAWAY,
@@ -546,21 +539,13 @@ impl Core {
     /// sends any replacement request in a later write than the RST.
     fn rst_stream(&mut self, k: usize, code: Reason) {
         let id = self.streams[k].id;
-        self.ctrl_rst(id, code, true);
-        let slot = self.streams[k].slot.take();
-        self.hold_slot(slot);
-    }
-
-    fn hold_slot(&mut self, slot: Option<StreamSlot>) {
-        if let Some(s) = slot {
-            self.reset_slots.push_back((self.wq.enqueued_total(), s));
+        self.ctrl(|a| frame::encode_rst_stream(a, id, code));
+        if self.obs_on {
+            self.obs.h2_rst_stream(&self.origin, code.0, true);
         }
-    }
-
-    /// A held slot's RST_STREAM has been written; a flush releases the slot.
-    fn reset_written(&self) -> bool {
-        let w = self.wq.written_total();
-        self.reset_slots.front().is_some_and(|&(off, _)| off <= w)
+        if let Some(slot) = self.streams[k].slot.take() {
+            self.reset_slots.push_back((self.wq.enqueued_total(), slot));
+        }
     }
 
     /// The transport was flushed: release the slots whose RST_STREAM has been written.
@@ -927,12 +912,12 @@ impl Core {
     }
 
     fn cancel_stream(&mut self, k: usize) {
-        let mut st = self.streams.remove(k);
-        self.by_id.remove(&st.id);
+        let st = &self.streams[k];
         if !(st.local_closed && st.remote_closed) {
-            self.ctrl_rst(st.id, Reason::CANCEL, true);
-            self.hold_slot(st.slot.take());
+            self.rst_stream(k, Reason::CANCEL);
         }
+        let st = self.streams.remove(k);
+        self.by_id.remove(&st.id);
         st.shared.drain_recv();
         st.shared.close_send();
         // The queue may have held the bytes that kept connection-window credit parked.
@@ -1946,12 +1931,11 @@ impl<T: AsyncRead + AsyncWrite + Unpin> Actor<T> {
                 }
             }
         }
-        if self.core.wq.is_empty() || self.core.reset_written() {
-            match self.core.wq.poll_flush(&mut self.io, cx) {
-                Poll::Ready(Ok(())) => self.core.release_reset_slots(),
-                Poll::Ready(Err(e)) => return Err(e),
-                Poll::Pending => {}
-            }
+        // No-op unless something was written since the last flush.
+        match self.core.wq.poll_flush(&mut self.io, cx) {
+            Poll::Ready(Ok(())) => self.core.release_reset_slots(),
+            Poll::Ready(Err(e)) => return Err(e),
+            Poll::Pending => {}
         }
         self.core.marks_flushed();
         Ok(more)
