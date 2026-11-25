@@ -11,8 +11,8 @@ readme.workspace = true
 description = "TCP, TLS and HTTP/1.1 and HTTP/2 connections for the Matier HTTP client"
 
 [dependencies]
-matier-core = { version = "0.2.1", path = "../core" }
-matier-h1 = { version = "0.2.1", path = "../h1" }
+matier-core = { version = "0.3.0", path = "../core" }
+matier-h1 = { version = "0.3.0", path = "../h1" }
 http = { workspace = true }
 http-body = { workspace = true }
 futures-util = { version = "0.3", default-features = false }
@@ -20,7 +20,7 @@ tokio = { workspace = true }
 native-tls = { workspace = true }
 tokio-native-tls = { workspace = true }
 socket2 = { workspace = true }
-matier-h2 = { version = "0.2.1", path = "../h2" }
+matier-h2 = { version = "0.3.0", path = "../h2" }
 bytes = { workspace = true }
 atomic-waker = "1.1"
 crossbeam-queue = "0.3"

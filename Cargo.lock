@@ -1527,7 +1527,7 @@ dependencies = [
 
 [[package]]
 name = "matier"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "futures-util",
  "http",
@@ -1585,7 +1585,7 @@ dependencies = [
 
 [[package]]
 name = "matier-core"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "bytes",
  "bytesbuf",
@@ -1597,7 +1597,7 @@ dependencies = [
 
 [[package]]
 name = "matier-h1"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "bytes",
  "criterion",
@@ -1608,7 +1608,7 @@ dependencies = [
 
 [[package]]
 name = "matier-h2"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "bytes",
  "criterion",
@@ -1618,7 +1618,7 @@ dependencies = [
 
 [[package]]
 name = "matier-otel"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "bytes",
  "criterion",
@@ -1637,7 +1637,7 @@ dependencies = [
 
 [[package]]
 name = "matier-pool"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "arc-swap",
  "bytes",
@@ -1658,7 +1658,7 @@ dependencies = [
 
 [[package]]
 name = "matier-transport"
-version = "0.2.1"
+version = "0.3.0"
 dependencies = [
  "atomic-waker",
  "bytes",

@@ -15,7 +15,7 @@ default = ["tracing"]
 tracing = []
 
 [dependencies]
-matier-core = { version = "0.2.1", path = "../core" }
+matier-core = { version = "0.3.0", path = "../core" }
 layered = { workspace = true }
 bytes = { workspace = true }
 http = { workspace = true }
