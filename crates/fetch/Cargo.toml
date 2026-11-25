@@ -1,5 +1,5 @@
 [package]
-name = "matier-fetch"
+name = "matier_fetch"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

@@ -197,9 +197,9 @@ rustls feature; these are not in the active client or workspace build trees (`ca
 
 ### fetch over Matier
 
-`matier-fetch` plugs Matier into Microsoft's [fetch](https://github.com/microsoft/oxidizer) as its transport
+`matier_fetch` plugs Matier into Microsoft's [fetch](https://github.com/microsoft/oxidizer) as its transport
 handler. fetch keeps its pipeline (retries, hedging, circuit breaker, timeouts, telemetry), and Matier sends
-the requests over HTTP/1.1 or HTTP/2, plain or TLS:
+the requests over HTTP/1.1 or HTTP/2, plain or TLS. Add `matier_fetch = "0.3"` alongside `matier`:
 
 ```rust
 let client = matier_fetch::builder(matier::Client::new()).build();
@@ -258,7 +258,7 @@ downloads and uploads) all three are within 3% of each other. The `fetch-matier`
 | `matier-transport` | TCP and TLS connect, the HTTP/1.1 connection and the HTTP/2 connection task. |
 | `matier-pool` | Per-origin pooling and HTTP/2 autoscaling. |
 | `matier-otel` | Optional OpenTelemetry metrics and tracing layers. |
-| `matier-fetch` | Matier as the transport handler for Microsoft's `fetch` client. |
+| `matier_fetch` | Matier as the transport handler for Microsoft's `fetch` client. |
 | `matier-bench`, `matier-bench-server` | Benchmark harness and its test server. |
 
 ## Status
@@ -275,7 +275,7 @@ Done:
 
 Not done yet:
 - Middleware for redirects, retries, hedging, circuit breaking and decompression, and a total request
-  timeout. `fetch` has these, and `matier-fetch` runs it over Matier.
+  timeout. `fetch` has these, and `matier_fetch` runs it over Matier.
 - Adaptive (BDP-based) HTTP/2 flow-control windows.
 - Proxies (HTTP CONNECT, SOCKS5).
 - Happy Eyeballs: connection attempts are sequential.
