@@ -223,8 +223,29 @@ brackets):
 | HTTP/1.1 + TLS | 1 KiB responses | 256 | 149,164 (111,436) · 28.8 µs | 109,430 (81,966) · 42.6 µs | 114,684 · 42.1 µs | 154,443 · 26.2 µs |
 
 fetch's Minimal pipeline over Matier costs 14–16 allocations per small request against 51–62 over hyper
-(309 against 16 for 1 MiB HTTP/2 downloads); the Standard pipeline adds about 19 more. The `fetch-matier` and `fetch-matier-standard` benchmark subjects
-reproduce these runs.
+(16 against 309 for 1 MiB HTTP/2 downloads).
+
+What fetch's pipeline costs on top of Matier, averaged over two runs of the full 16-scenario matrix (requests
+per second · CPU per request):
+
+| Protocol | Workload | c | Matier | fetch over Matier, Minimal | fetch over Matier, Standard |
+|---|---|--:|--:|--:|--:|
+| HTTP/2 | 1 KiB responses | 1 | 32,819 · 11.9 µs | 30,547 · 14.0 µs | 22,919 · 25.5 µs |
+| HTTP/2 | 1 KiB responses | 64 | 254,478 · 12.3 µs | 232,382 · 17.5 µs | 138,940 · 30.4 µs |
+| HTTP/2 | 1 KiB responses | 256 | 377,736 · 9.3 µs | 292,748 · 14.4 µs | 146,605 · 28.7 µs |
+| HTTP/2 + TLS | 1 KiB responses | 256 | 358,991 · 10.7 µs | 277,367 · 15.5 µs | 143,025 · 29.6 µs |
+| HTTP/1.1 | 1 KiB responses | 1 | 39,673 · 10.4 µs | 35,021 · 12.7 µs | 31,377 · 15.9 µs |
+| HTTP/1.1 | 1 KiB responses | 256 | 154,720 · 22.5 µs | 150,550 · 27.0 µs | 126,267 · 34.1 µs |
+| HTTP/1.1 + TLS | 1 KiB responses | 256 | 155,458 · 24.6 µs | 151,832 · 28.5 µs | 117,759 · 37.1 µs |
+| HTTP/2 | 1 MiB responses | 8 | 10,733 · 191 µs | 10,586 · 198 µs | 10,496 · 210 µs |
+| HTTP/2 | 1 MiB uploads | 16 | 9,790 · 210 µs | 9,688 · 219 µs | 9,710 · 226 µs |
+
+The Minimal pipeline adds about 2 µs of CPU per request one at a time and about 5 µs at high HTTP/2
+concurrency, plus 12 allocations (one of them the adapter boxing the response body into fetch's body type).
+The Standard pipeline adds 13–19 µs per small HTTP/2 request. On medium and large bodies (64 KiB to 8 MiB,
+downloads and uploads) all three are within 3% of each other. The `fetch-matier` and
+`fetch-matier-standard` benchmark subjects reproduce these runs; raw results are in
+`bench-results/baseline/`.
 
 ## Crates
 
