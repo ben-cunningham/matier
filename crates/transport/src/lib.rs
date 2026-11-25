@@ -12,7 +12,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 
 pub use connect::{ConnectConfig, Connected, connect};
-pub use io::Io;
+pub use io::{Io, TlsTcp};
 use matier_core::{BytesView, Error};
 pub use tls::TlsConfig;
 

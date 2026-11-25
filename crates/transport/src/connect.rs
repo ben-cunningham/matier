@@ -2,14 +2,15 @@
 
 use std::io;
 use std::net::{IpAddr, SocketAddr};
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
 use matier_core::{ConnectPhase, Error, ErrorKind, Observer, OriginKey, Protocol, Result};
 use tokio::net::{TcpSocket, TcpStream, lookup_host};
 use tokio::time::timeout;
-use tokio_native_tls::TlsConnector;
 
-use crate::io::Io;
+use crate::io::{Io, TlsTcp};
 use crate::tls::{ALPN_H2, TlsConfig};
 
 #[derive(Clone, Debug)]
@@ -58,7 +59,7 @@ pub struct Connected {
 }
 
 /// Resolves, connects and (for https) handshakes. Failures before any request byte is sent are
-/// `Recovery::Unprocessed`, except native TLS handshake/config errors which are `Never`.
+/// `Recovery::Unprocessed`, except a TLS rejection (certificate, hostname, protocol) which is `Never`.
 ///
 /// # Errors
 /// `Dns`, `Connect`, `Tls`, `Timeout` or `InvalidRequest` kinds.
@@ -134,10 +135,7 @@ pub async fn connect(
         _ => Protocol::Http1,
     };
     Ok(Connected {
-        io: Io::Tls {
-            stream: Box::new(stream),
-            alpn,
-        },
+        io: Io::Tls(Box::new(stream)),
         protocol,
     })
 }
@@ -203,13 +201,15 @@ async fn handshake(
     origin: &OriginKey,
     tls: &TlsConfig,
     cfg: &ConnectConfig,
-) -> Result<tokio_native_tls::TlsStream<TcpStream>> {
-    let native = if cfg.alpn_h2 {
+) -> Result<tokio_native_tls::TlsStream<TlsTcp>> {
+    let connector = if cfg.alpn_h2 {
         &tls.connector
     } else {
         &tls.connector_h1_only
     };
-    let connector = TlsConnector::from(native.clone());
+    // Native TLS errors do not say portably whether the socket or TLS failed, so the socket records it.
+    let socket_failed = Arc::new(AtomicBool::new(false));
+    let tcp = TlsTcp::new(tcp, Arc::clone(&socket_failed));
     match timeout(
         cfg.connect_timeout,
         connector.connect(origin.connect_host(), tcp),
@@ -217,8 +217,11 @@ async fn handshake(
     .await
     {
         Ok(Ok(s)) => Ok(s),
-        // Native TLS does not expose a portable distinction between certificate/protocol and
-        // underlying I/O errors. Do not retry an opaque failure that could be a bad certificate.
+        // The connection broke or closed mid-handshake: no request was sent and a new one may work.
+        Ok(Err(e)) if socket_failed.load(Ordering::Relaxed) => {
+            Err(Error::unprocessed(ErrorKind::Tls, e))
+        }
+        // TLS rejected the peer (certificate, hostname, protocol): that will not fix itself.
         Ok(Err(e)) => Err(Error::tls(e)),
         Err(_) => Err(Error::unprocessed(
             ErrorKind::Timeout,

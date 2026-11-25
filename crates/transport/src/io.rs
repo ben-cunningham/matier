@@ -2,9 +2,11 @@
 
 use std::io::{self, IoSlice};
 use std::pin::Pin;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::task::{Context, Poll};
 
-use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
+use tokio::io::{AsyncRead, AsyncWrite, BufReader, ReadBuf};
 use tokio::net::TcpStream;
 use tokio_native_tls::TlsStream;
 
@@ -12,11 +14,7 @@ use tokio_native_tls::TlsStream;
 #[derive(Debug)]
 pub enum Io {
     Tcp(TcpStream),
-    Tls {
-        stream: Box<TlsStream<TcpStream>>,
-        /// Cached once after the handshake so callers can borrow the negotiated protocol.
-        alpn: Option<Vec<u8>>,
-    },
+    Tls(Box<TlsStream<TlsTcp>>),
 }
 
 impl Io {
@@ -25,16 +23,7 @@ impl Io {
     pub fn tcp(&self) -> &TcpStream {
         match self {
             Self::Tcp(s) => s,
-            Self::Tls { stream, .. } => stream.get_ref().get_ref().get_ref(),
-        }
-    }
-
-    /// ALPN protocol negotiated on a TLS connection.
-    #[must_use]
-    pub fn alpn_protocol(&self) -> Option<&[u8]> {
-        match self {
-            Self::Tcp(_) => None,
-            Self::Tls { alpn, .. } => alpn.as_deref(),
+            Self::Tls(s) => s.get_ref().get_ref().get_ref().tcp.get_ref(),
         }
     }
 }
@@ -43,7 +32,7 @@ macro_rules! delegate {
     ($self:ident, $s:ident => $e:expr) => {
         match $self.get_mut() {
             Io::Tcp($s) => $e(Pin::new($s)),
-            Io::Tls { stream: $s, .. } => $e(Pin::new(&mut **$s)),
+            Io::Tls($s) => $e(Pin::new(&mut **$s)),
         }
     };
 }
@@ -78,7 +67,7 @@ impl AsyncWrite for Io {
     fn is_write_vectored(&self) -> bool {
         match self {
             Self::Tcp(s) => s.is_write_vectored(),
-            Self::Tls { stream, .. } => stream.is_write_vectored(),
+            Self::Tls(s) => s.is_write_vectored(),
         }
     }
 
@@ -88,5 +77,73 @@ impl AsyncWrite for Io {
 
     fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
         delegate!(self, s => |p: Pin<_>| AsyncWrite::poll_shutdown(p, cx))
+    }
+}
+
+/// Two full TLS records. Secure Transport and OpenSSL read each record from the socket as a 5-byte
+/// header and then its body; reading ahead turns those into one `recv` for several records.
+const TLS_READ_BUFFER: usize = 32 * 1024;
+
+/// The TCP socket under a TLS stream, with read-ahead. It also records when the socket itself fails
+/// or closes, which is how a broken connection during the handshake is told apart from a TLS rejection.
+#[derive(Debug)]
+pub struct TlsTcp {
+    tcp: BufReader<TcpStream>,
+    failed: Arc<AtomicBool>,
+}
+
+impl TlsTcp {
+    pub(crate) fn new(tcp: TcpStream, failed: Arc<AtomicBool>) -> Self {
+        Self {
+            tcp: BufReader::with_capacity(TLS_READ_BUFFER, tcp),
+            failed,
+        }
+    }
+
+    fn note<T>(&self, r: &Poll<io::Result<T>>) {
+        if matches!(r, Poll::Ready(Err(_))) {
+            self.failed.store(true, Ordering::Relaxed);
+        }
+    }
+}
+
+impl AsyncRead for TlsTcp {
+    fn poll_read(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &mut ReadBuf<'_>,
+    ) -> Poll<io::Result<()>> {
+        let me = self.get_mut();
+        let before = buf.filled().len();
+        let r = Pin::new(&mut me.tcp).poll_read(cx, buf);
+        me.note(&r);
+        if matches!(r, Poll::Ready(Ok(()))) && buf.filled().len() == before && buf.remaining() > 0 {
+            me.failed.store(true, Ordering::Relaxed); // end of stream
+        }
+        r
+    }
+}
+
+impl AsyncWrite for TlsTcp {
+    fn poll_write(
+        self: Pin<&mut Self>,
+        cx: &mut Context<'_>,
+        buf: &[u8],
+    ) -> Poll<io::Result<usize>> {
+        let me = self.get_mut();
+        let r = Pin::new(&mut me.tcp).poll_write(cx, buf);
+        me.note(&r);
+        r
+    }
+
+    fn poll_flush(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        let me = self.get_mut();
+        let r = Pin::new(&mut me.tcp).poll_flush(cx);
+        me.note(&r);
+        r
+    }
+
+    fn poll_shutdown(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<()>> {
+        Pin::new(&mut self.get_mut().tcp).poll_shutdown(cx)
     }
 }

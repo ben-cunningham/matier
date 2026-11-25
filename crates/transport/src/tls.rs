@@ -1,7 +1,8 @@
 //! TLS client configuration using the platform's native TLS implementation.
 
 use matier_core::{Error, Result};
-use native_tls::{Certificate, TlsConnector, TlsConnectorBuilder};
+use native_tls::{Certificate, TlsConnectorBuilder};
+use tokio_native_tls::TlsConnector;
 
 pub(crate) const ALPN_H2: &[u8] = b"h2";
 
@@ -30,8 +31,8 @@ impl TlsConfig {
             .build()
             .map_err(Error::tls)?;
         Ok(Self {
-            connector,
-            connector_h1_only,
+            connector: connector.into(),
+            connector_h1_only: connector_h1_only.into(),
         })
     }
 
@@ -40,7 +41,7 @@ impl TlsConfig {
     /// # Errors
     /// `Tls` if the platform TLS implementation cannot be initialized.
     pub fn with_platform_verifier() -> Result<Self> {
-        Self::from_native_tls(TlsConnector::builder())
+        Self::from_native_tls(native_tls::TlsConnector::builder())
     }
 
     /// Trusts exactly the certificates in `pem` (one or more `CERTIFICATE` blocks), without
@@ -53,7 +54,7 @@ impl TlsConfig {
         if roots.is_empty() {
             return Err(Error::tls("no certificates found in PEM"));
         }
-        let mut builder = TlsConnector::builder();
+        let mut builder = native_tls::TlsConnector::builder();
         builder.disable_built_in_roots(true);
         for root in roots {
             builder.add_root_certificate(root);

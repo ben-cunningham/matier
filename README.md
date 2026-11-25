@@ -180,10 +180,11 @@ connectors, the two ALPN configurations do not explicitly share a session cache.
 
 This is a breaking TLS API change: `from_rustls`, the public rustls configuration fields,
 `tls::default_provider`, `with_webpki_roots`, and the `aws-lc-rs`, `ring`, `symcrypt` and
-`webpki-roots` transport features are removed. `Io::Tls` now holds a native TLS stream and cached
-ALPN as named fields rather than a rustls stream tuple. Opaque native handshake errors are non-retryable
-(`Tls` / `Never`), because native TLS cannot portably distinguish certificate errors from socket
-failures; DNS/TCP failures and handshake timeouts retain their existing retry classification.
+`webpki-roots` transport features are removed. `Io::Tls` now holds a native TLS stream rather than a
+rustls stream tuple, and `Io::alpn_protocol` is removed (`Connected::protocol` has the result).
+Handshake failures keep their retry classification: a connection that breaks or closes during the
+handshake is retryable (`Tls` / `Unprocessed`), and a TLS rejection (certificate, hostname, protocol)
+is not (`Tls` / `Never`). DNS/TCP failures and handshake timeouts are unchanged.
 Native TLS uses scalar writes (including the standard vectored-write fallback); TCP keeps its
 real vectored writes. Independent test servers and the hyper/reqwest benchmark subjects still
 use rustls with Ring, and the fetch benchmark subject uses native TLS, so workspace builds do
