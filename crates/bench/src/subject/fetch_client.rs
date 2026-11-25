@@ -4,7 +4,7 @@
 //! - `fetch-standard`: default Standard pipeline (timeouts, retry, breaker, metrics, logging).
 //! - `fetch-pooled`: Minimal pipeline with `multiple_pools = (pool_size, selection)`.
 //! - `fetch-matier`, `fetch-matier-standard`: the Minimal / Standard pipeline over the Matier transport
-//!   (`matier-fetch`), with the same Matier client as the `matier` subject. fetch's transport tuning does not
+//!   (`matier_fetch`), with the same Matier client as the `matier` subject. fetch's transport tuning does not
 //!   apply to it.
 //!
 //! Tuning that `fetch` exposes is matched to the other subjects (1 MiB initial h2 stream
