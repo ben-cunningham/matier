@@ -112,14 +112,14 @@ Add the client to your dependencies:
 
 ```toml
 [dependencies]
-matier = "0.2"
+matier = "0.3"
 http = "1"
 http-body-util = "0.1"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 ```
 
 The client pulls in its internal Matier crates automatically. For OpenTelemetry instrumentation, also add
-`matier-otel = "0.2"`; otherwise it is not included.
+`matier-otel = "0.3"`; otherwise it is not included.
 
 ```rust
 use http_body_util::BodyExt;
