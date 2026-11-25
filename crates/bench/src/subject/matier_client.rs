@@ -41,36 +41,41 @@ pub struct MatierSubject {
 
 impl MatierSubject {
     pub fn new(cfg: &SubjectConfig) -> Result<Self> {
-        // Matier runs with its defaults; only the protocol, the HTTP/1 connection cap and the optional connection
-        // pin are set. The cap is lifted because hyper and reqwest have none (c=512 runs exceed the default 256).
-        let mut builder = Client::builder().http1_max_connections_per_origin(4096);
-        if cfg.protocol == Protocol::H1 {
-            builder = builder.http1_only(); // h1 benchmarks must not negotiate h2
-        } else if !cfg.tls {
-            builder = builder.http2_prior_knowledge();
-        }
-        if cfg.matier_min_conns.is_some() || cfg.matier_max_conns.is_some() {
-            let min = cfg.matier_min_conns.unwrap_or(1).max(1);
-            let max = cfg
-                .matier_max_conns
-                .unwrap_or(PoolConfig::default().h2_max_conns_per_origin)
-                .max(min);
-            builder = builder.http2_connections_per_origin(min, max);
-        }
-        if std::env::var_os("MATIER_BENCH_NO_COALESCE").is_some() {
-            builder = builder.http2_request_coalescing(false);
-        }
-        if std::env::var_os("MATIER_BENCH_TRACE_POOL").is_some() {
-            builder = builder.observer(Arc::new(PoolTrace(Instant::now())));
-        }
-        if cfg.tls {
-            let pem = read_ca(cfg)?;
-            builder = builder.tls(TlsConfig::with_root_pem(&pem).map_err(|e| anyhow!("{e}"))?);
-        }
         Ok(Self {
-            client: builder.build().map_err(|e| anyhow!("{e}"))?,
+            client: build_client(cfg)?,
         })
     }
+}
+
+/// The Matier client every Matier-backed subject uses (also the `fetch-matier` transport).
+pub fn build_client(cfg: &SubjectConfig) -> Result<Client> {
+    // Matier runs with its defaults; only the protocol, the HTTP/1 connection cap and the optional connection
+    // pin are set. The cap is lifted because hyper and reqwest have none (c=512 runs exceed the default 256).
+    let mut builder = Client::builder().http1_max_connections_per_origin(4096);
+    if cfg.protocol == Protocol::H1 {
+        builder = builder.http1_only(); // h1 benchmarks must not negotiate h2
+    } else if !cfg.tls {
+        builder = builder.http2_prior_knowledge();
+    }
+    if cfg.matier_min_conns.is_some() || cfg.matier_max_conns.is_some() {
+        let min = cfg.matier_min_conns.unwrap_or(1).max(1);
+        let max = cfg
+            .matier_max_conns
+            .unwrap_or(PoolConfig::default().h2_max_conns_per_origin)
+            .max(min);
+        builder = builder.http2_connections_per_origin(min, max);
+    }
+    if std::env::var_os("MATIER_BENCH_NO_COALESCE").is_some() {
+        builder = builder.http2_request_coalescing(false);
+    }
+    if std::env::var_os("MATIER_BENCH_TRACE_POOL").is_some() {
+        builder = builder.observer(Arc::new(PoolTrace(Instant::now())));
+    }
+    if cfg.tls {
+        let pem = read_ca(cfg)?;
+        builder = builder.tls(TlsConfig::with_root_pem(&pem).map_err(|e| anyhow!("{e}"))?);
+    }
+    builder.build().map_err(|e| anyhow!("{e}"))
 }
 
 impl Subject for MatierSubject {

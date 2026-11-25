@@ -195,6 +195,58 @@ not require AWS-LC either.
 Cargo can still retain AWS-LC entries in the workspace lockfile through fetch's weak optional
 rustls feature; these are not in the active client or workspace build trees (`cargo tree`).
 
+### fetch over Matier
+
+`matier-fetch` plugs Matier into Microsoft's [fetch](https://github.com/microsoft/oxidizer) as its transport
+handler. fetch keeps its pipeline (retries, hedging, circuit breaker, timeouts, telemetry), and Matier sends
+the requests over HTTP/1.1 or HTTP/2, plain or TLS:
+
+```rust
+let client = matier_fetch::builder(matier::Client::new()).build();
+let resp = client.get("https://example.com/").fetch().await?;
+```
+
+Configure connections, protocols and TLS on the `matier::Client`; fetch's own transport options (connection
+pool, HTTP/2 settings, supported versions, TLS) do not reach this transport. Every fetch pool slot shares the
+one Matier pool, so fetch's `multiple_pools` is not needed.
+
+Requests per second and CPU per request on the macOS machine above, fetch's Minimal pipeline (Standard in
+brackets):
+
+| Protocol | Workload | c | fetch over Matier | fetch over hyper | fetch ×4 over hyper | Matier alone |
+|---|---|--:|--:|--:|--:|--:|
+| HTTP/2 | 1 KiB responses | 256 | 291,820 (144,098) · 14.7 µs | 65,780 (63,048) · 52.0 µs | 124,014 · 34.8 µs | 378,654 · 9.9 µs |
+| HTTP/2 + TLS | 1 KiB responses | 256 | 274,442 (138,330) · 15.9 µs | 67,135 (64,623) · 53.6 µs | 108,148 · 40.7 µs | 357,496 · 11.2 µs |
+| HTTP/2 | 64 KiB responses | 64 | 122,648 (116,632) · 28.4 µs | 29,507 (29,418) · 91.3 µs | 66,522 · 65.1 µs | 124,140 · 23.6 µs |
+| HTTP/2 | 1 MiB responses | 8 | 10,262 (10,302) · 203 µs | 2,691 (2,684) · 703 µs | 4,704 · 539 µs | 10,469 · 195 µs |
+| HTTP/1.1 | 1 KiB responses | 256 | 151,747 (122,715) · 27.3 µs | 118,806 (89,185) · 38.9 µs | 132,077 · 36.8 µs | 156,463 · 22.0 µs |
+| HTTP/1.1 + TLS | 1 KiB responses | 256 | 149,164 (111,436) · 28.8 µs | 109,430 (81,966) · 42.6 µs | 114,684 · 42.1 µs | 154,443 · 26.2 µs |
+
+fetch's Minimal pipeline over Matier costs 14–16 allocations per small request against 51–62 over hyper
+(16 against 309 for 1 MiB HTTP/2 downloads).
+
+What fetch's pipeline costs on top of Matier, averaged over two runs of the full 16-scenario matrix (requests
+per second · CPU per request):
+
+| Protocol | Workload | c | Matier | fetch over Matier, Minimal | fetch over Matier, Standard |
+|---|---|--:|--:|--:|--:|
+| HTTP/2 | 1 KiB responses | 1 | 32,819 · 11.9 µs | 30,547 · 14.0 µs | 22,919 · 25.5 µs |
+| HTTP/2 | 1 KiB responses | 64 | 254,478 · 12.3 µs | 232,382 · 17.5 µs | 138,940 · 30.4 µs |
+| HTTP/2 | 1 KiB responses | 256 | 377,736 · 9.3 µs | 292,748 · 14.4 µs | 146,605 · 28.7 µs |
+| HTTP/2 + TLS | 1 KiB responses | 256 | 358,991 · 10.7 µs | 277,367 · 15.5 µs | 143,025 · 29.6 µs |
+| HTTP/1.1 | 1 KiB responses | 1 | 39,673 · 10.4 µs | 35,021 · 12.7 µs | 31,377 · 15.9 µs |
+| HTTP/1.1 | 1 KiB responses | 256 | 154,720 · 22.5 µs | 150,550 · 27.0 µs | 126,267 · 34.1 µs |
+| HTTP/1.1 + TLS | 1 KiB responses | 256 | 155,458 · 24.6 µs | 151,832 · 28.5 µs | 117,759 · 37.1 µs |
+| HTTP/2 | 1 MiB responses | 8 | 10,733 · 191 µs | 10,586 · 198 µs | 10,496 · 210 µs |
+| HTTP/2 | 1 MiB uploads | 16 | 9,790 · 210 µs | 9,688 · 219 µs | 9,710 · 226 µs |
+
+The Minimal pipeline adds about 2 µs of CPU per request one at a time and about 5 µs at high HTTP/2
+concurrency, plus 12 allocations (one of them the adapter boxing the response body into fetch's body type).
+The Standard pipeline adds 13–19 µs per small HTTP/2 request. On medium and large bodies (64 KiB to 8 MiB,
+downloads and uploads) all three are within 3% of each other. The `fetch-matier` and
+`fetch-matier-standard` benchmark subjects reproduce these runs; raw results are in
+`bench-results/baseline/`.
+
 ## Crates
 
 | Crate | Purpose |
@@ -206,6 +258,7 @@ rustls feature; these are not in the active client or workspace build trees (`ca
 | `matier-transport` | TCP and TLS connect, the HTTP/1.1 connection and the HTTP/2 connection task. |
 | `matier-pool` | Per-origin pooling and HTTP/2 autoscaling. |
 | `matier-otel` | Optional OpenTelemetry metrics and tracing layers. |
+| `matier-fetch` | Matier as the transport handler for Microsoft's `fetch` client. |
 | `matier-bench`, `matier-bench-server` | Benchmark harness and its test server. |
 
 ## Status
@@ -222,7 +275,7 @@ Done:
 
 Not done yet:
 - Middleware for redirects, retries, hedging, circuit breaking and decompression, and a total request
-  timeout. `fetch` has these.
+  timeout. `fetch` has these, and `matier-fetch` runs it over Matier.
 - Adaptive (BDP-based) HTTP/2 flow-control windows.
 - Proxies (HTTP CONNECT, SOCKS5).
 - Happy Eyeballs: connection attempts are sequential.

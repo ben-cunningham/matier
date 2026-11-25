@@ -20,8 +20,9 @@ default = ["hyper-legacy", "hyper-pooled", "reqwest", "fetch", "matier", "count-
 hyper-legacy = ["dep:hyper", "dep:hyper-util", "dep:http-body-util", "dep:hyper-rustls", "dep:rustls", "dep:tower-service"]
 hyper-pooled = ["hyper-legacy"]
 reqwest = ["dep:reqwest", "dep:rustls"]
-# Microsoft oxidizer `fetch` (subjects: fetch, fetch-standard, fetch-pooled).
-fetch = ["dep:fetch", "dep:http-body-util", "dep:native-tls"]
+# Microsoft oxidizer `fetch` (subjects: fetch, fetch-standard, fetch-pooled, and fetch-matier,
+# fetch-matier-standard: fetch's pipeline over the Matier transport).
+fetch = ["dep:fetch", "dep:http-body-util", "dep:native-tls", "matier", "dep:matier-fetch"]
 # The Matier client under development (this repo).
 matier = ["dep:matier", "dep:http-body"]
 # Install a counting global allocator in the binary (adds a few ns per allocation).
@@ -46,6 +47,7 @@ tower-service = { version = "0.3", optional = true }
 rustls = { workspace = true, optional = true }
 reqwest = { workspace = true, optional = true, features = ["rustls-no-provider", "http2"] }
 matier = { path = "../matier", optional = true }
+matier-fetch = { path = "../fetch", optional = true }
 http-body = { workspace = true, optional = true }
 fetch = { version = "0.21.0", optional = true, features = ["tokio", "native-tls"] }
 native-tls = { workspace = true, optional = true }

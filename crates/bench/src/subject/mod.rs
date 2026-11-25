@@ -45,7 +45,8 @@ pub trait Subject: Send + Sync + 'static {
 /// Options shared by all subject factories.
 #[derive(Clone, Debug)]
 pub struct SubjectConfig {
-    /// Subject name: `hyper-legacy`, `hyper-pooled`, `reqwest`, `fetch`, `fetch-standard`, `fetch-pooled`, `matier`.
+    /// Subject name: `hyper-legacy`, `hyper-pooled`, `reqwest`, `fetch`, `fetch-standard`, `fetch-pooled`,
+    /// `fetch-matier`, `fetch-matier-standard`, `matier`.
     pub name: String,
     pub protocol: Protocol,
     pub tls: bool,
@@ -85,7 +86,7 @@ pub fn build_subject(cfg: &SubjectConfig) -> Result<AnySubject> {
         #[cfg(feature = "reqwest")]
         "reqwest" => AnySubject::Reqwest(reqwest_client::ReqwestSubject::new(cfg)?),
         #[cfg(feature = "fetch")]
-        "fetch" | "fetch-standard" | "fetch-pooled" => {
+        "fetch" | "fetch-standard" | "fetch-pooled" | "fetch-matier" | "fetch-matier-standard" => {
             AnySubject::Fetch(fetch_client::FetchSubject::new(cfg)?)
         }
         #[cfg(feature = "matier")]
@@ -112,6 +113,10 @@ pub fn available() -> Vec<&'static str> {
         "fetch-standard",
         #[cfg(feature = "fetch")]
         "fetch-pooled",
+        #[cfg(feature = "fetch")]
+        "fetch-matier",
+        #[cfg(feature = "fetch")]
+        "fetch-matier-standard",
         #[cfg(feature = "matier")]
         "matier",
     ]

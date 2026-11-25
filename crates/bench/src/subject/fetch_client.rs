@@ -3,6 +3,9 @@
 //! - `fetch`: Minimal pipeline (Dispatch -> hyper transport only), single pool.
 //! - `fetch-standard`: default Standard pipeline (timeouts, retry, breaker, metrics, logging).
 //! - `fetch-pooled`: Minimal pipeline with `multiple_pools = (pool_size, selection)`.
+//! - `fetch-matier`, `fetch-matier-standard`: the Minimal / Standard pipeline over the Matier transport
+//!   (`matier-fetch`), with the same Matier client as the `matier` subject. fetch's transport tuning does not
+//!   apply to it.
 //!
 //! Tuning that `fetch` exposes is matched to the other subjects (1 MiB initial h2 stream
 //! window); the connection window and max frame size cannot be set through `fetch`.
@@ -31,8 +34,23 @@ impl FetchSubject {
         let name = match cfg.name.as_str() {
             "fetch" => "fetch",
             "fetch-standard" => "fetch-standard",
+            "fetch-matier" => "fetch-matier",
+            "fetch-matier-standard" => "fetch-matier-standard",
             _ => "fetch-pooled",
         };
+        if let Some(pipeline) = name.strip_prefix("fetch-matier") {
+            let b = matier_fetch::builder(super::matier_client::build_client(cfg)?)
+                .insecure_allow_http();
+            let b = if pipeline.is_empty() {
+                b.minimal_pipeline()
+            } else {
+                b
+            };
+            return Ok(Self {
+                client: b.build(),
+                name,
+            });
+        }
         let mut b = HttpClient::builder_tokio(fetch::tokio::TokioDeps::default())
             .insecure_allow_http() // fetch is HTTPS-only by default
             .supported_http_versions(&[match cfg.protocol {
