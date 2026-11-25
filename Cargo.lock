@@ -1556,6 +1556,7 @@ dependencies = [
  "hyper-util",
  "libc",
  "matier",
+ "matier-fetch",
  "native-tls",
  "reqwest",
  "rustls",
@@ -1592,6 +1593,27 @@ dependencies = [
  "http",
  "http-body",
  "layered",
+ "tokio",
+]
+
+[[package]]
+name = "matier-fetch"
+version = "0.3.0"
+dependencies = [
+ "bytes",
+ "bytesbuf",
+ "fetch",
+ "futures-util",
+ "http",
+ "http-body",
+ "http-body-util",
+ "http_extensions",
+ "hyper",
+ "hyper-util",
+ "layered",
+ "matier",
+ "thread_aware",
+ "tick",
  "tokio",
 ]
 

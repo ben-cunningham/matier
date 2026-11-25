@@ -1,0 +1,5018 @@
+[
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:45:16Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "matier/h1/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "matier",
+    "scenario": {
+      "subject": "matier",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 149536,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 37384.0,
+      "resp_bytes_per_sec": 38281216.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 26.543,
+      "p90_us": 30.015,
+      "p99_us": 44.479,
+      "p99_9_us": 79.295,
+      "p99_99_us": 115.775,
+      "max_us": 198.527,
+      "mean_us": 26.693739460731887
+    },
+    "service_time": {
+      "p50_us": 26.543,
+      "p90_us": 30.015,
+      "p99_us": 44.479,
+      "p99_9_us": 79.295,
+      "p99_99_us": 115.775,
+      "max_us": 198.527,
+      "mean_us": 26.693739460731887
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 0.518792,
+      "cpu_sys_secs": 1.070449,
+      "cpu_cores": 0.39731025,
+      "cpu_us_per_req": 10.627815375561738,
+      "peak_rss_bytes": 9748480,
+      "alloc_counting": true,
+      "allocs_per_req": 1.9996121335330623,
+      "alloc_bytes_per_req": 215.95811042157072,
+      "deallocs_per_req": 1.9996255082388188
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:45:22Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "matier/h1/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "matier",
+    "scenario": {
+      "subject": "matier",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 625851,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 156462.75,
+      "resp_bytes_per_sec": 160217856.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 1631.231,
+      "p90_us": 1786.879,
+      "p99_us": 1961.983,
+      "p99_9_us": 2150.399,
+      "p99_99_us": 2377.727,
+      "max_us": 11321.343,
+      "mean_us": 1636.0691770021933
+    },
+    "service_time": {
+      "p50_us": 1631.231,
+      "p90_us": 1786.879,
+      "p99_us": 1961.983,
+      "p99_9_us": 2150.399,
+      "p99_99_us": 2377.727,
+      "max_us": 11321.343,
+      "mean_us": 1636.0691770021933
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 2.693334,
+      "cpu_sys_secs": 11.058823,
+      "cpu_cores": 3.43803925,
+      "cpu_us_per_req": 21.973532038776003,
+      "peak_rss_bytes": 120553472,
+      "alloc_counting": true,
+      "allocs_per_req": 2.0000415434344596,
+      "alloc_bytes_per_req": 216.00686425363224,
+      "deallocs_per_req": 2.0000447390832643
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:45:27Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "matier/h2/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "matier",
+    "scenario": {
+      "subject": "matier",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 129623,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 32405.75,
+      "resp_bytes_per_sec": 33183488.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 30.383,
+      "p90_us": 34.687,
+      "p99_us": 49.343,
+      "p99_9_us": 89.087,
+      "p99_99_us": 126.015,
+      "max_us": 166.655,
+      "mean_us": 30.801566758985636
+    },
+    "service_time": {
+      "p50_us": 30.383,
+      "p90_us": 34.687,
+      "p99_us": 49.343,
+      "p99_9_us": 89.087,
+      "p99_99_us": 126.015,
+      "max_us": 166.655,
+      "mean_us": 30.801566758985636
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 0.592101,
+      "cpu_sys_secs": 0.975818,
+      "cpu_cores": 0.39197974999999996,
+      "cpu_us_per_req": 12.095993766538344,
+      "peak_rss_bytes": 120881152,
+      "alloc_counting": true,
+      "allocs_per_req": 3.9999768559592046,
+      "alloc_bytes_per_req": 2767.8443794696927,
+      "deallocs_per_req": 3.9999382825578795
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:45:33Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "matier/h2/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "matier",
+    "scenario": {
+      "subject": "matier",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 1514614,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 378653.5,
+      "resp_bytes_per_sec": 387741184.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 649.215,
+      "p90_us": 959.999,
+      "p99_us": 1287.167,
+      "p99_9_us": 1548.287,
+      "p99_99_us": 1815.551,
+      "max_us": 2140.159,
+      "mean_us": 675.9472001077527
+    },
+    "service_time": {
+      "p50_us": 649.215,
+      "p90_us": 959.999,
+      "p99_us": 1287.167,
+      "p99_9_us": 1548.287,
+      "p99_99_us": 1815.551,
+      "max_us": 2140.159,
+      "mean_us": 675.9472001077527
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 10.049109,
+      "cpu_sys_secs": 5.014258,
+      "cpu_cores": 3.76584175,
+      "cpu_us_per_req": 9.94535043251944,
+      "peak_rss_bytes": 128991232,
+      "alloc_counting": true,
+      "allocs_per_req": 4.001733775074046,
+      "alloc_bytes_per_req": 2771.5719298778436,
+      "deallocs_per_req": 4.001856578639838
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:45:38Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier/h1/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "fetch-matier",
+    "scenario": {
+      "subject": "fetch-matier",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 139064,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 34766.0,
+      "resp_bytes_per_sec": 35600384.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 28.303,
+      "p90_us": 31.887,
+      "p99_us": 46.751,
+      "p99_9_us": 78.335,
+      "p99_99_us": 117.247,
+      "max_us": 156.927,
+      "mean_us": 28.710476269918928
+    },
+    "service_time": {
+      "p50_us": 28.303,
+      "p90_us": 31.887,
+      "p99_us": 46.751,
+      "p99_9_us": 78.335,
+      "p99_99_us": 117.247,
+      "max_us": 156.927,
+      "mean_us": 28.710476269918928
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 0.715909,
+      "cpu_sys_secs": 1.012818,
+      "cpu_cores": 0.43218175000000003,
+      "cpu_us_per_req": 12.431161191969167,
+      "peak_rss_bytes": 129630208,
+      "alloc_counting": true,
+      "allocs_per_req": 13.997102053730657,
+      "alloc_bytes_per_req": 1706.646213254329,
+      "deallocs_per_req": 13.997181154001035
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:45:44Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier/h1/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-matier",
+    "scenario": {
+      "subject": "fetch-matier",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 606988,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 151747.0,
+      "resp_bytes_per_sec": 155388928.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 1677.311,
+      "p90_us": 1935.359,
+      "p99_us": 2283.519,
+      "p99_9_us": 2721.791,
+      "p99_99_us": 3180.543,
+      "max_us": 4927.487,
+      "mean_us": 1686.8684553632017
+    },
+    "service_time": {
+      "p50_us": 1677.311,
+      "p90_us": 1935.359,
+      "p99_us": 2283.519,
+      "p99_9_us": 2721.791,
+      "p99_99_us": 3180.543,
+      "max_us": 4927.487,
+      "mean_us": 1686.8684553632017
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 5.549746,
+      "cpu_sys_secs": 11.027421,
+      "cpu_cores": 4.14429175,
+      "cpu_us_per_req": 27.31053496938984,
+      "peak_rss_bytes": 141049856,
+      "alloc_counting": true,
+      "allocs_per_req": 13.997222350359479,
+      "alloc_bytes_per_req": 1706.6453801393109,
+      "deallocs_per_req": 14.000364092865098
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:45:49Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier/h2/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "fetch-matier",
+    "scenario": {
+      "subject": "fetch-matier",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 119606,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 29901.5,
+      "resp_bytes_per_sec": 30619136.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 32.591,
+      "p90_us": 37.151,
+      "p99_us": 52.767,
+      "p99_9_us": 95.615,
+      "p99_99_us": 127.679,
+      "max_us": 136.319,
+      "mean_us": 33.38103760680899
+    },
+    "service_time": {
+      "p50_us": 32.591,
+      "p90_us": 37.151,
+      "p99_us": 52.767,
+      "p99_9_us": 95.615,
+      "p99_99_us": 127.679,
+      "max_us": 136.319,
+      "mean_us": 33.38103760680899
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 0.759319,
+      "cpu_sys_secs": 0.949878,
+      "cpu_cores": 0.42729925,
+      "cpu_us_per_req": 14.290227914987543,
+      "peak_rss_bytes": 141328384,
+      "alloc_counting": true,
+      "allocs_per_req": 15.99930605488019,
+      "alloc_bytes_per_req": 4258.766357875023,
+      "deallocs_per_req": 15.999272611741885
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:45:55Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier/h2/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-matier",
+    "scenario": {
+      "subject": "fetch-matier",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 1167279,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 291819.75,
+      "resp_bytes_per_sec": 298823424.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 861.183,
+      "p90_us": 1201.151,
+      "p99_us": 1551.359,
+      "p99_9_us": 1857.535,
+      "p99_99_us": 2129.919,
+      "max_us": 2553.855,
+      "mean_us": 877.0919986190102
+    },
+    "service_time": {
+      "p50_us": 861.183,
+      "p90_us": 1201.151,
+      "p99_us": 1551.359,
+      "p99_9_us": 1857.535,
+      "p99_99_us": 2129.919,
+      "max_us": 2553.855,
+      "mean_us": 877.0919986190102
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 13.179161,
+      "cpu_sys_secs": 4.007168,
+      "cpu_cores": 4.29658225,
+      "cpu_us_per_req": 14.723411455187662,
+      "peak_rss_bytes": 146391040,
+      "alloc_counting": true,
+      "allocs_per_req": 16.000817285327674,
+      "alloc_bytes_per_req": 4262.557009935072,
+      "deallocs_per_req": 16.001191660262887
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:46:00Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier-standard/h1/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "fetch-matier-standard",
+    "scenario": {
+      "subject": "fetch-matier-standard",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 122999,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 30749.75,
+      "resp_bytes_per_sec": 31487744.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 32.015,
+      "p90_us": 36.351,
+      "p99_us": 52.223,
+      "p99_9_us": 89.151,
+      "p99_99_us": 121.343,
+      "max_us": 152.063,
+      "mean_us": 32.454516540784866
+    },
+    "service_time": {
+      "p50_us": 32.015,
+      "p90_us": 36.351,
+      "p99_us": 52.223,
+      "p99_9_us": 89.151,
+      "p99_99_us": 121.343,
+      "max_us": 152.063,
+      "mean_us": 32.454516540784866
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.052356,
+      "cpu_sys_secs": 0.932504,
+      "cpu_cores": 0.49621499999999996,
+      "cpu_us_per_req": 16.13720436751518,
+      "peak_rss_bytes": 146882560,
+      "alloc_counting": true,
+      "allocs_per_req": 32.99682924251417,
+      "alloc_bytes_per_req": 3034.707835023049,
+      "deallocs_per_req": 32.997032496199154
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:46:06Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier-standard/h1/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-matier-standard",
+    "scenario": {
+      "subject": "fetch-matier-standard",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 490860,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 122715.0,
+      "resp_bytes_per_sec": 125660160.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2056.191,
+      "p90_us": 3225.599,
+      "p99_us": 4155.391,
+      "p99_9_us": 5025.791,
+      "p99_99_us": 5779.455,
+      "max_us": 6103.039,
+      "mean_us": 2085.96420926537
+    },
+    "service_time": {
+      "p50_us": 2056.191,
+      "p90_us": 3225.599,
+      "p99_us": 4155.391,
+      "p99_9_us": 5025.791,
+      "p99_99_us": 5779.455,
+      "max_us": 6103.039,
+      "mean_us": 2085.96420926537
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 9.513659,
+      "cpu_sys_secs": 7.6753540000000005,
+      "cpu_cores": 4.29725325,
+      "cpu_us_per_req": 35.018157926903804,
+      "peak_rss_bytes": 152764416,
+      "alloc_counting": true,
+      "allocs_per_req": 33.30840158089883,
+      "alloc_bytes_per_req": 3178.8006132094692,
+      "deallocs_per_req": 33.31656480462861
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:46:11Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier-standard/h2/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "fetch-matier-standard",
+    "scenario": {
+      "subject": "fetch-matier-standard",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 92445,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 23111.25,
+      "resp_bytes_per_sec": 23665920.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 42.111,
+      "p90_us": 49.503,
+      "p99_us": 72.767,
+      "p99_9_us": 116.159,
+      "p99_99_us": 141.951,
+      "max_us": 177.151,
+      "mean_us": 43.19604763913685
+    },
+    "service_time": {
+      "p50_us": 42.111,
+      "p90_us": 49.503,
+      "p99_us": 72.767,
+      "p99_9_us": 116.159,
+      "p99_99_us": 141.951,
+      "max_us": 177.151,
+      "mean_us": 43.19604763913685
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.087202,
+      "cpu_sys_secs": 1.096575,
+      "cpu_cores": 0.54594425,
+      "cpu_us_per_req": 23.62244577857104,
+      "peak_rss_bytes": 152764416,
+      "alloc_counting": true,
+      "allocs_per_req": 34.99618151333225,
+      "alloc_bytes_per_req": 5586.357358429336,
+      "deallocs_per_req": 34.996300503001784
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:46:17Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier-standard/h2/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-matier-standard",
+    "scenario": {
+      "subject": "fetch-matier-standard",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 576392,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 144098.0,
+      "resp_bytes_per_sec": 147556352.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 1753.087,
+      "p90_us": 2467.839,
+      "p99_us": 3186.687,
+      "p99_9_us": 3737.599,
+      "p99_99_us": 4243.455,
+      "max_us": 4788.223,
+      "mean_us": 1776.48037319047
+    },
+    "service_time": {
+      "p50_us": 1753.087,
+      "p90_us": 2467.839,
+      "p99_us": 3186.687,
+      "p99_9_us": 3737.599,
+      "p99_99_us": 4243.455,
+      "max_us": 4788.223,
+      "mean_us": 1776.48037319047
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 12.373071,
+      "cpu_sys_secs": 4.347373,
+      "cpu_cores": 4.180111,
+      "cpu_us_per_req": 29.00880650668295,
+      "peak_rss_bytes": 153567232,
+      "alloc_counting": true,
+      "allocs_per_req": 35.31220245943733,
+      "alloc_bytes_per_req": 5737.522580119085,
+      "deallocs_per_req": 35.31963663617816
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:46:22Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch/h1/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "fetch",
+    "scenario": {
+      "subject": "fetch",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 123594,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 30898.5,
+      "resp_bytes_per_sec": 31640064.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 31.631,
+      "p90_us": 35.839,
+      "p99_us": 52.511,
+      "p99_9_us": 86.911,
+      "p99_99_us": 118.335,
+      "max_us": 195.839,
+      "mean_us": 32.30243973008395
+    },
+    "service_time": {
+      "p50_us": 31.631,
+      "p90_us": 35.839,
+      "p99_us": 52.511,
+      "p99_9_us": 86.911,
+      "p99_99_us": 118.335,
+      "max_us": 195.839,
+      "mean_us": 32.30243973008395
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.006604,
+      "cpu_sys_secs": 0.94612,
+      "cpu_cores": 0.488181,
+      "cpu_us_per_req": 15.79950483033157,
+      "peak_rss_bytes": 154075136,
+      "alloc_counting": true,
+      "allocs_per_req": 52.00009709209185,
+      "alloc_bytes_per_req": 18236.074469634448,
+      "deallocs_per_req": 52.00027509426024
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:46:28Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch/h1/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch",
+    "scenario": {
+      "subject": "fetch",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 475226,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 118806.5,
+      "resp_bytes_per_sec": 121657856.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2078.719,
+      "p90_us": 3504.127,
+      "p99_us": 5050.367,
+      "p99_9_us": 6389.759,
+      "p99_99_us": 7577.599,
+      "max_us": 8773.631,
+      "mean_us": 2154.5702493718777
+    },
+    "service_time": {
+      "p50_us": 2078.719,
+      "p90_us": 3504.127,
+      "p99_us": 5050.367,
+      "p99_9_us": 6389.759,
+      "p99_99_us": 7577.599,
+      "max_us": 8773.631,
+      "mean_us": 2154.5702493718777
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 12.329695,
+      "cpu_sys_secs": 6.147951,
+      "cpu_cores": 4.6194115,
+      "cpu_us_per_req": 38.88180781354556,
+      "peak_rss_bytes": 174538752,
+      "alloc_counting": true,
+      "allocs_per_req": 51.001220471943874,
+      "alloc_bytes_per_req": 17949.871587413145,
+      "deallocs_per_req": 51.00780681191686
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:46:33Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch/h2/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "fetch",
+    "scenario": {
+      "subject": "fetch",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 90254,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 22563.5,
+      "resp_bytes_per_sec": 23105024.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 43.071,
+      "p90_us": 50.975,
+      "p99_us": 73.983,
+      "p99_9_us": 120.191,
+      "p99_99_us": 143.231,
+      "max_us": 184.703,
+      "mean_us": 44.24707345934802
+    },
+    "service_time": {
+      "p50_us": 43.071,
+      "p90_us": 50.975,
+      "p99_us": 73.983,
+      "p99_9_us": 120.191,
+      "p99_99_us": 143.231,
+      "max_us": 184.703,
+      "mean_us": 44.24707345934802
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.116744,
+      "cpu_sys_secs": 1.161367,
+      "cpu_cores": 0.56952775,
+      "cpu_us_per_req": 25.24110842732732,
+      "peak_rss_bytes": 174768128,
+      "alloc_counting": true,
+      "allocs_per_req": 53.996620648392316,
+      "alloc_bytes_per_req": 12381.197199016111,
+      "deallocs_per_req": 53.99684224521905
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:46:39Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch/h2/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch",
+    "scenario": {
+      "subject": "fetch",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 263119,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 65779.75,
+      "resp_bytes_per_sec": 67358464.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 3889.151,
+      "p90_us": 4235.263,
+      "p99_us": 4554.751,
+      "p99_9_us": 4812.799,
+      "p99_99_us": 5062.655,
+      "max_us": 5496.831,
+      "mean_us": 3891.606098959028
+    },
+    "service_time": {
+      "p50_us": 3889.151,
+      "p90_us": 4235.263,
+      "p99_us": 4554.751,
+      "p99_9_us": 4812.799,
+      "p99_99_us": 5062.655,
+      "max_us": 5496.831,
+      "mean_us": 3891.606098959028
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 6.8767949999999995,
+      "cpu_sys_secs": 6.808641,
+      "cpu_cores": 3.421359,
+      "cpu_us_per_req": 52.01234422447638,
+      "peak_rss_bytes": 177520640,
+      "alloc_counting": true,
+      "allocs_per_req": 54.26802321383101,
+      "alloc_bytes_per_req": 13499.6025676595,
+      "deallocs_per_req": 54.267821784059684
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:46:44Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-standard/h1/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "fetch-standard",
+    "scenario": {
+      "subject": "fetch-standard",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 97434,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 24358.5,
+      "resp_bytes_per_sec": 24943104.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 39.295,
+      "p90_us": 48.031,
+      "p99_us": 69.375,
+      "p99_9_us": 114.943,
+      "p99_99_us": 143.615,
+      "max_us": 168.575,
+      "mean_us": 40.982526510253045
+    },
+    "service_time": {
+      "p50_us": 39.295,
+      "p90_us": 48.031,
+      "p99_us": 69.375,
+      "p99_9_us": 114.943,
+      "p99_99_us": 143.615,
+      "max_us": 168.575,
+      "mean_us": 40.982526510253045
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.304279,
+      "cpu_sys_secs": 1.100441,
+      "cpu_cores": 0.60118,
+      "cpu_us_per_req": 24.680501672927313,
+      "peak_rss_bytes": 177553408,
+      "alloc_counting": true,
+      "allocs_per_req": 68.98384547488557,
+      "alloc_bytes_per_req": 19531.482932036044,
+      "deallocs_per_req": 68.98420469240716
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:46:50Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-standard/h1/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-standard",
+    "scenario": {
+      "subject": "fetch-standard",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 356741,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 89185.25,
+      "resp_bytes_per_sec": 91325696.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2723.839,
+      "p90_us": 4861.951,
+      "p99_us": 7127.039,
+      "p99_9_us": 8790.015,
+      "p99_99_us": 10199.039,
+      "max_us": 12378.111,
+      "mean_us": 2870.381364003583
+    },
+    "service_time": {
+      "p50_us": 2723.839,
+      "p90_us": 4861.951,
+      "p99_us": 7127.039,
+      "p99_9_us": 8790.015,
+      "p99_99_us": 10199.039,
+      "max_us": 12378.111,
+      "mean_us": 2870.381364003583
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 13.214096,
+      "cpu_sys_secs": 4.8176120000000004,
+      "cpu_cores": 4.507927,
+      "cpu_us_per_req": 50.5456563725504,
+      "peak_rss_bytes": 180027392,
+      "alloc_counting": true,
+      "allocs_per_req": 68.31577811353334,
+      "alloc_bytes_per_req": 19399.075480530693,
+      "deallocs_per_req": 68.33360056735839
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:46:55Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-standard/h2/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "fetch-standard",
+    "scenario": {
+      "subject": "fetch-standard",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 82705,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 20676.25,
+      "resp_bytes_per_sec": 21172480.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 46.463,
+      "p90_us": 56.191,
+      "p99_us": 79.807,
+      "p99_9_us": 129.663,
+      "p99_99_us": 152.063,
+      "max_us": 225.663,
+      "mean_us": 48.29203815972413
+    },
+    "service_time": {
+      "p50_us": 46.463,
+      "p90_us": 56.191,
+      "p99_us": 79.807,
+      "p99_9_us": 129.663,
+      "p99_99_us": 152.063,
+      "max_us": 225.663,
+      "mean_us": 48.29203815972413
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.339417,
+      "cpu_sys_secs": 1.079868,
+      "cpu_cores": 0.60482125,
+      "cpu_us_per_req": 29.251979928662113,
+      "peak_rss_bytes": 180027392,
+      "alloc_counting": true,
+      "allocs_per_req": 69.99516353303912,
+      "alloc_bytes_per_req": 13265.059887552143,
+      "deallocs_per_req": 69.99556254156339
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:47:01Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-standard/h2/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-standard",
+    "scenario": {
+      "subject": "fetch-standard",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 252191,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 63047.75,
+      "resp_bytes_per_sec": 64560896.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 3971.071,
+      "p90_us": 4472.831,
+      "p99_us": 5099.519,
+      "p99_9_us": 39616.511,
+      "p99_99_us": 71958.527,
+      "max_us": 72417.279,
+      "mean_us": 4059.934115079433
+    },
+    "service_time": {
+      "p50_us": 3971.071,
+      "p90_us": 4472.831,
+      "p99_us": 5099.519,
+      "p99_9_us": 39616.511,
+      "p99_99_us": 71958.527,
+      "max_us": 72417.279,
+      "mean_us": 4059.934115079433
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 9.009099,
+      "cpu_sys_secs": 5.455958,
+      "cpu_cores": 3.61626425,
+      "cpu_us_per_req": 57.35754646280002,
+      "peak_rss_bytes": 183222272,
+      "alloc_counting": true,
+      "allocs_per_req": 70.57291893842365,
+      "alloc_bytes_per_req": 14584.002220539194,
+      "deallocs_per_req": 70.57679298626834
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:47:07Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-pooled(pool=4)/h1/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "fetch-pooled",
+    "scenario": {
+      "subject": "fetch-pooled",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 103619,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 25904.75,
+      "resp_bytes_per_sec": 26526464.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 37.759,
+      "p90_us": 45.439,
+      "p99_us": 65.919,
+      "p99_9_us": 106.495,
+      "p99_99_us": 141.439,
+      "max_us": 180.991,
+      "mean_us": 38.528188305233705
+    },
+    "service_time": {
+      "p50_us": 37.759,
+      "p90_us": 45.439,
+      "p99_us": 65.919,
+      "p99_9_us": 106.495,
+      "p99_99_us": 141.439,
+      "max_us": 180.991,
+      "mean_us": 38.528188305233705
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.100938,
+      "cpu_sys_secs": 1.253309,
+      "cpu_cores": 0.58856175,
+      "cpu_us_per_req": 22.720225055250484,
+      "peak_rss_bytes": 183222272,
+      "alloc_counting": true,
+      "allocs_per_req": 51.99660293961532,
+      "alloc_bytes_per_req": 18234.856889180555,
+      "deallocs_per_req": 51.996815255889366
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:47:12Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-pooled(pool=4)/h1/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-pooled",
+    "scenario": {
+      "subject": "fetch-pooled",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 528307,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 132076.75,
+      "resp_bytes_per_sec": 135246592.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 1867.775,
+      "p90_us": 3096.575,
+      "p99_us": 4403.199,
+      "p99_9_us": 5476.351,
+      "p99_99_us": 6246.399,
+      "max_us": 7598.079,
+      "mean_us": 1938.0466954252015
+    },
+    "service_time": {
+      "p50_us": 1867.775,
+      "p90_us": 3096.575,
+      "p99_us": 4403.199,
+      "p99_9_us": 5476.351,
+      "p99_99_us": 6246.399,
+      "max_us": 7598.079,
+      "mean_us": 1938.0466954252015
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 12.764768,
+      "cpu_sys_secs": 6.667037,
+      "cpu_cores": 4.85795125,
+      "cpu_us_per_req": 36.78127490266076,
+      "peak_rss_bytes": 197165056,
+      "alloc_counting": true,
+      "allocs_per_req": 50.992608464396646,
+      "alloc_bytes_per_req": 17947.96848612644,
+      "deallocs_per_req": 51.00345443085176
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:47:18Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-pooled(pool=4)/h2/plain/closed-c1/GET /bytes/1024 req0",
+    "subject": "fetch-pooled",
+    "scenario": {
+      "subject": "fetch-pooled",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 1
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 88492,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 22123.0,
+      "resp_bytes_per_sec": 22653952.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 43.583,
+      "p90_us": 52.959,
+      "p99_us": 76.607,
+      "p99_9_us": 118.719,
+      "p99_99_us": 139.263,
+      "max_us": 158.079,
+      "mean_us": 45.12858925100568
+    },
+    "service_time": {
+      "p50_us": 43.583,
+      "p90_us": 52.959,
+      "p99_us": 76.607,
+      "p99_9_us": 118.719,
+      "p99_99_us": 139.263,
+      "max_us": 158.079,
+      "mean_us": 45.12858925100568
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.148155,
+      "cpu_sys_secs": 1.163116,
+      "cpu_cores": 0.57781775,
+      "cpu_us_per_req": 26.118417484066356,
+      "peak_rss_bytes": 197181440,
+      "alloc_counting": true,
+      "allocs_per_req": 53.99380734981693,
+      "alloc_bytes_per_req": 12380.508317136013,
+      "deallocs_per_req": 53.99376214799078
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:47:23Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-pooled(pool=4)/h2/plain/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-pooled",
+    "scenario": {
+      "subject": "fetch-pooled",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 496054,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 124013.5,
+      "resp_bytes_per_sec": 126989824.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2029.567,
+      "p90_us": 2885.631,
+      "p99_us": 3743.743,
+      "p99_9_us": 4395.007,
+      "p99_99_us": 5005.311,
+      "max_us": 5640.191,
+      "mean_us": 2064.080745660757
+    },
+    "service_time": {
+      "p50_us": 2029.567,
+      "p90_us": 2885.631,
+      "p99_us": 3743.743,
+      "p99_9_us": 4395.007,
+      "p99_99_us": 5005.311,
+      "max_us": 5640.191,
+      "mean_us": 2064.080745660757
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 14.15046,
+      "cpu_sys_secs": 3.108103,
+      "cpu_cores": 4.31464075,
+      "cpu_us_per_req": 34.7917021130764,
+      "peak_rss_bytes": 198033408,
+      "alloc_counting": true,
+      "allocs_per_req": 54.27432900450354,
+      "alloc_bytes_per_req": 13528.355737480193,
+      "deallocs_per_req": 54.28778116898563
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:47:29Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "matier/h2/plain/closed-c64/GET /bytes/65536 req0",
+    "subject": "matier",
+    "scenario": {
+      "subject": "matier",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/65536",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 64
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 496558,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 124139.5,
+      "resp_bytes_per_sec": 8135606272.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 513.535,
+      "p90_us": 629.247,
+      "p99_us": 761.343,
+      "p99_9_us": 891.903,
+      "p99_99_us": 1018.879,
+      "max_us": 1215.487,
+      "mean_us": 515.3997510220364
+    },
+    "service_time": {
+      "p50_us": 513.535,
+      "p90_us": 629.247,
+      "p99_us": 761.343,
+      "p99_9_us": 891.903,
+      "p99_99_us": 1018.879,
+      "max_us": 1215.487,
+      "mean_us": 515.3997510220364
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 4.100393,
+      "cpu_sys_secs": 7.618777,
+      "cpu_cores": 2.9297925,
+      "cpu_us_per_req": 23.60080796201048,
+      "peak_rss_bytes": 198082560,
+      "alloc_counting": true,
+      "allocs_per_req": 4.001677548242099,
+      "alloc_bytes_per_req": 2771.077255829128,
+      "deallocs_per_req": 4.001699700739893
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:47:34Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier/h2/plain/closed-c64/GET /bytes/65536 req0",
+    "subject": "fetch-matier",
+    "scenario": {
+      "subject": "fetch-matier",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/65536",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 64
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 490593,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 122648.25,
+      "resp_bytes_per_sec": 8037875712.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 518.911,
+      "p90_us": 643.583,
+      "p99_us": 785.919,
+      "p99_9_us": 928.767,
+      "p99_99_us": 1065.983,
+      "max_us": 1466.367,
+      "mean_us": 521.6753216128233
+    },
+    "service_time": {
+      "p50_us": 518.911,
+      "p90_us": 643.583,
+      "p99_us": 785.919,
+      "p99_9_us": 928.767,
+      "p99_99_us": 1065.983,
+      "max_us": 1466.367,
+      "mean_us": 521.6753216128233
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 6.125145,
+      "cpu_sys_secs": 7.799495,
+      "cpu_cores": 3.48116,
+      "cpu_us_per_req": 28.38328308801797,
+      "peak_rss_bytes": 198098944,
+      "alloc_counting": true,
+      "allocs_per_req": 15.999761513107606,
+      "alloc_bytes_per_req": 4261.712156512629,
+      "deallocs_per_req": 16.00007745728129
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:47:40Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier-standard/h2/plain/closed-c64/GET /bytes/65536 req0",
+    "subject": "fetch-matier-standard",
+    "scenario": {
+      "subject": "fetch-matier-standard",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/65536",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 64
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 466529,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 116632.25,
+      "resp_bytes_per_sec": 7643611136.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 542.207,
+      "p90_us": 771.583,
+      "p99_us": 967.167,
+      "p99_9_us": 1123.327,
+      "p99_99_us": 1245.183,
+      "max_us": 1598.463,
+      "mean_us": 548.5604165914647
+    },
+    "service_time": {
+      "p50_us": 542.207,
+      "p90_us": 771.583,
+      "p99_us": 967.167,
+      "p99_9_us": 1123.327,
+      "p99_99_us": 1245.183,
+      "max_us": 1598.463,
+      "mean_us": 548.5604165914647
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 10.475635,
+      "cpu_sys_secs": 6.982141,
+      "cpu_cores": 4.364444,
+      "cpu_us_per_req": 37.420559064924156,
+      "peak_rss_bytes": 202375168,
+      "alloc_counting": true,
+      "allocs_per_req": 35.267436750984395,
+      "alloc_bytes_per_req": 5716.663217077609,
+      "deallocs_per_req": 35.26977315450915
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:47:45Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch/h2/plain/closed-c64/GET /bytes/65536 req0",
+    "subject": "fetch",
+    "scenario": {
+      "subject": "fetch",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/65536",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 64
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 118027,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 29506.75,
+      "resp_bytes_per_sec": 1933754368.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2156.543,
+      "p90_us": 2684.927,
+      "p99_us": 3272.703,
+      "p99_9_us": 3704.831,
+      "p99_99_us": 4210.687,
+      "max_us": 4485.119,
+      "mean_us": 2168.9240597490375
+    },
+    "service_time": {
+      "p50_us": 2156.543,
+      "p90_us": 2684.927,
+      "p99_us": 3272.703,
+      "p99_9_us": 3704.831,
+      "p99_99_us": 4210.687,
+      "max_us": 4485.119,
+      "mean_us": 2168.9240597490375
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 4.405743,
+      "cpu_sys_secs": 6.375424,
+      "cpu_cores": 2.69529175,
+      "cpu_us_per_req": 91.3449210773806,
+      "peak_rss_bytes": 202981376,
+      "alloc_counting": true,
+      "allocs_per_req": 68.99785642268294,
+      "alloc_bytes_per_req": 111030.22505867302,
+      "deallocs_per_req": 69.0019148161014
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:47:51Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-standard/h2/plain/closed-c64/GET /bytes/65536 req0",
+    "subject": "fetch-standard",
+    "scenario": {
+      "subject": "fetch-standard",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/65536",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 64
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 117674,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 29418.5,
+      "resp_bytes_per_sec": 1927970816.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2164.735,
+      "p90_us": 2676.735,
+      "p99_us": 3287.039,
+      "p99_9_us": 3710.975,
+      "p99_99_us": 4190.207,
+      "max_us": 4542.463,
+      "mean_us": 2175.2967935142838
+    },
+    "service_time": {
+      "p50_us": 2164.735,
+      "p90_us": 2676.735,
+      "p99_us": 3287.039,
+      "p99_9_us": 3710.975,
+      "p99_99_us": 4190.207,
+      "max_us": 4542.463,
+      "mean_us": 2175.2967935142838
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 5.426625,
+      "cpu_sys_secs": 6.106813,
+      "cpu_cores": 2.8833595,
+      "cpu_us_per_req": 98.01177830276866,
+      "peak_rss_bytes": 203243520,
+      "alloc_counting": true,
+      "allocs_per_req": 85.32376735727519,
+      "alloc_bytes_per_req": 112063.92586297738,
+      "deallocs_per_req": 85.32780393289937
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:47:56Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-pooled(pool=4)/h2/plain/closed-c64/GET /bytes/65536 req0",
+    "subject": "fetch-pooled",
+    "scenario": {
+      "subject": "fetch-pooled",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/65536",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 64
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 266087,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 66521.75,
+      "resp_bytes_per_sec": 4359569408.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 937.471,
+      "p90_us": 1323.007,
+      "p99_us": 1692.671,
+      "p99_9_us": 1986.559,
+      "p99_99_us": 2359.295,
+      "max_us": 2732.031,
+      "mean_us": 961.9569419024589
+    },
+    "service_time": {
+      "p50_us": 937.471,
+      "p90_us": 1323.007,
+      "p99_us": 1692.671,
+      "p99_9_us": 1986.559,
+      "p99_99_us": 2359.295,
+      "max_us": 2732.031,
+      "mean_us": 961.9569419024589
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 9.991637,
+      "cpu_sys_secs": 7.318722,
+      "cpu_cores": 4.32758975,
+      "cpu_us_per_req": 65.05526012168953,
+      "peak_rss_bytes": 208486400,
+      "alloc_counting": true,
+      "allocs_per_req": 68.9904204264019,
+      "alloc_bytes_per_req": 111018.74351621838,
+      "deallocs_per_req": 68.99642222280683
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:48:02Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "matier/h1/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "matier",
+    "scenario": {
+      "subject": "matier",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 42719,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 10679.75,
+      "resp_bytes_per_sec": 11198529536.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 750.591,
+      "p90_us": 942.079,
+      "p99_us": 1124.351,
+      "p99_9_us": 1225.727,
+      "p99_99_us": 1334.271,
+      "max_us": 1446.911,
+      "mean_us": 748.918970575154
+    },
+    "service_time": {
+      "p50_us": 750.591,
+      "p90_us": 942.079,
+      "p99_us": 1124.351,
+      "p99_9_us": 1225.727,
+      "p99_99_us": 1334.271,
+      "max_us": 1446.911,
+      "mean_us": 748.918970575154
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.156921,
+      "cpu_sys_secs": 6.5936900000000005,
+      "cpu_cores": 1.93765275,
+      "cpu_us_per_req": 181.43240712563497,
+      "peak_rss_bytes": 208486400,
+      "alloc_counting": true,
+      "allocs_per_req": 1.999765912123411,
+      "alloc_bytes_per_req": 215.9747185093284,
+      "deallocs_per_req": 1.999765912123411
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:48:07Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "matier/h2/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "matier",
+    "scenario": {
+      "subject": "matier",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 41876,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 10469.0,
+      "resp_bytes_per_sec": 10977542144.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 744.959,
+      "p90_us": 999.423,
+      "p99_us": 1229.823,
+      "p99_9_us": 1371.135,
+      "p99_99_us": 1459.199,
+      "max_us": 1652.735,
+      "mean_us": 764.0654381507317
+    },
+    "service_time": {
+      "p50_us": 744.959,
+      "p90_us": 999.423,
+      "p99_us": 1229.823,
+      "p99_9_us": 1371.135,
+      "p99_99_us": 1459.199,
+      "max_us": 1652.735,
+      "mean_us": 764.0654381507317
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.360095,
+      "cpu_sys_secs": 6.804177,
+      "cpu_cores": 2.041068,
+      "cpu_us_per_req": 194.96303371859776,
+      "peak_rss_bytes": 208502784,
+      "alloc_counting": true,
+      "allocs_per_req": 4.0015760817652115,
+      "alloc_bytes_per_req": 2769.0900754608847,
+      "deallocs_per_req": 4.00076416085586
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:48:13Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier/h1/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "fetch-matier",
+    "scenario": {
+      "subject": "fetch-matier",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 43336,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 10834.0,
+      "resp_bytes_per_sec": 11360272384.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 739.327,
+      "p90_us": 929.791,
+      "p99_us": 1104.895,
+      "p99_9_us": 1214.463,
+      "p99_99_us": 1299.455,
+      "max_us": 1330.175,
+      "mean_us": 738.18142292782
+    },
+    "service_time": {
+      "p50_us": 739.327,
+      "p90_us": 929.791,
+      "p99_us": 1104.895,
+      "p99_9_us": 1214.463,
+      "p99_99_us": 1299.455,
+      "max_us": 1330.175,
+      "mean_us": 738.18142292782
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.39904,
+      "cpu_sys_secs": 6.693124,
+      "cpu_cores": 2.023041,
+      "cpu_us_per_req": 186.73075503045968,
+      "peak_rss_bytes": 208502784,
+      "alloc_counting": true,
+      "allocs_per_req": 14.000138453018275,
+      "alloc_bytes_per_req": 1707.0140299058519,
+      "deallocs_per_req": 14.000507661067012
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:48:18Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier/h2/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "fetch-matier",
+    "scenario": {
+      "subject": "fetch-matier",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 41049,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 10262.25,
+      "resp_bytes_per_sec": 10760749056.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 761.343,
+      "p90_us": 1019.903,
+      "p99_us": 1244.159,
+      "p99_9_us": 1423.359,
+      "p99_99_us": 1633.279,
+      "max_us": 2003.967,
+      "mean_us": 779.3796315622785
+    },
+    "service_time": {
+      "p50_us": 761.343,
+      "p90_us": 1019.903,
+      "p99_us": 1244.159,
+      "p99_9_us": 1423.359,
+      "p99_99_us": 1633.279,
+      "max_us": 2003.967,
+      "mean_us": 779.3796315622785
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.517542,
+      "cpu_sys_secs": 6.805839,
+      "cpu_cores": 2.08084525,
+      "cpu_us_per_req": 202.76696143633217,
+      "peak_rss_bytes": 208502784,
+      "alloc_counting": true,
+      "allocs_per_req": 15.998708860142756,
+      "alloc_bytes_per_req": 4259.257959999026,
+      "deallocs_per_req": 15.998708860142756
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:48:24Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier-standard/h1/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "fetch-matier-standard",
+    "scenario": {
+      "subject": "fetch-matier-standard",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 43289,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 10822.25,
+      "resp_bytes_per_sec": 11347951616.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 740.863,
+      "p90_us": 931.839,
+      "p99_us": 1105.919,
+      "p99_9_us": 1219.583,
+      "p99_99_us": 1287.167,
+      "max_us": 1380.351,
+      "mean_us": 739.0322167756249
+    },
+    "service_time": {
+      "p50_us": 740.863,
+      "p90_us": 931.839,
+      "p99_us": 1105.919,
+      "p99_9_us": 1219.583,
+      "p99_99_us": 1287.167,
+      "max_us": 1380.351,
+      "mean_us": 739.0322167756249
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.735926,
+      "cpu_sys_secs": 6.678134,
+      "cpu_cores": 2.103515,
+      "cpu_us_per_req": 194.36947030423434,
+      "peak_rss_bytes": 208502784,
+      "alloc_counting": true,
+      "allocs_per_req": 33.30698329829749,
+      "alloc_bytes_per_req": 3201.044514772806,
+      "deallocs_per_req": 33.308900644505535
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:48:29Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier-standard/h2/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "fetch-matier-standard",
+    "scenario": {
+      "subject": "fetch-matier-standard",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 41209,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 10302.25,
+      "resp_bytes_per_sec": 10802692096.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 755.711,
+      "p90_us": 1012.735,
+      "p99_us": 1246.207,
+      "p99_9_us": 1388.543,
+      "p99_99_us": 1462.271,
+      "max_us": 1576.959,
+      "mean_us": 776.3522927515808
+    },
+    "service_time": {
+      "p50_us": 755.711,
+      "p90_us": 1012.735,
+      "p99_us": 1246.207,
+      "p99_9_us": 1388.543,
+      "p99_99_us": 1462.271,
+      "max_us": 1576.959,
+      "mean_us": 776.3522927515808
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.8497059999999999,
+      "cpu_sys_secs": 6.901707,
+      "cpu_cores": 2.18785325,
+      "cpu_us_per_req": 212.36654614283287,
+      "peak_rss_bytes": 208502784,
+      "alloc_counting": true,
+      "allocs_per_req": 35.37341357470456,
+      "alloc_bytes_per_req": 5786.086243296368,
+      "deallocs_per_req": 35.37559756363901
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:48:35Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch/h1/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "fetch",
+    "scenario": {
+      "subject": "fetch",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 42109,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 10527.25,
+      "resp_bytes_per_sec": 11038621696.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 759.807,
+      "p90_us": 966.143,
+      "p99_us": 1141.759,
+      "p99_9_us": 1254.399,
+      "p99_99_us": 1337.343,
+      "max_us": 1410.047,
+      "mean_us": 759.7622550998605
+    },
+    "service_time": {
+      "p50_us": 759.807,
+      "p90_us": 966.143,
+      "p99_us": 1141.759,
+      "p99_9_us": 1254.399,
+      "p99_99_us": 1337.343,
+      "max_us": 1410.047,
+      "mean_us": 759.7622550998605
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 2.037497,
+      "cpu_sys_secs": 7.960173,
+      "cpu_cores": 2.4994175,
+      "cpu_us_per_req": 237.42359115628489,
+      "peak_rss_bytes": 208601088,
+      "alloc_counting": true,
+      "allocs_per_req": 60.069557576765064,
+      "alloc_bytes_per_req": 301385.4516374172,
+      "deallocs_per_req": 60.07022251775155
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:48:40Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch/h2/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "fetch",
+    "scenario": {
+      "subject": "fetch",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 10764,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 2691.0,
+      "resp_bytes_per_sec": 2821718016.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2965.503,
+      "p90_us": 3815.423,
+      "p99_us": 4677.631,
+      "p99_9_us": 5251.071,
+      "p99_99_us": 5910.527,
+      "max_us": 6045.695,
+      "mean_us": 2972.0723597175797
+    },
+    "service_time": {
+      "p50_us": 2965.503,
+      "p90_us": 3815.423,
+      "p99_us": 4677.631,
+      "p99_9_us": 5251.071,
+      "p99_99_us": 5910.527,
+      "max_us": 6045.695,
+      "mean_us": 2972.0723597175797
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 2.105569,
+      "cpu_sys_secs": 5.456491,
+      "cpu_cores": 1.890515,
+      "cpu_us_per_req": 702.5325157933854,
+      "peak_rss_bytes": 208601088,
+      "alloc_counting": true,
+      "allocs_per_req": 309.2245447788926,
+      "alloc_bytes_per_req": 1591306.3664065404,
+      "deallocs_per_req": 309.2282608695652
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:48:46Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-standard/h1/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "fetch-standard",
+    "scenario": {
+      "subject": "fetch-standard",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 41990,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 10497.5,
+      "resp_bytes_per_sec": 11007426560.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 760.319,
+      "p90_us": 969.215,
+      "p99_us": 1142.783,
+      "p99_9_us": 1267.711,
+      "p99_99_us": 1354.751,
+      "max_us": 1394.687,
+      "mean_us": 761.8839563705641
+    },
+    "service_time": {
+      "p50_us": 760.319,
+      "p90_us": 969.215,
+      "p99_us": 1142.783,
+      "p99_9_us": 1267.711,
+      "p99_99_us": 1354.751,
+      "max_us": 1394.687,
+      "mean_us": 761.8839563705641
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 2.375695,
+      "cpu_sys_secs": 7.926074,
+      "cpu_cores": 2.57544225,
+      "cpu_us_per_req": 245.3386282448202,
+      "peak_rss_bytes": 208617472,
+      "alloc_counting": true,
+      "allocs_per_req": 77.28925934746368,
+      "alloc_bytes_per_req": 307275.87825672777,
+      "deallocs_per_req": 77.29566563467492
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:48:51Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-standard/h2/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "fetch-standard",
+    "scenario": {
+      "subject": "fetch-standard",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 10738,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 2684.5,
+      "resp_bytes_per_sec": 2814902272.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2988.031,
+      "p90_us": 3803.135,
+      "p99_us": 4718.591,
+      "p99_9_us": 5287.935,
+      "p99_99_us": 5488.639,
+      "max_us": 5746.687,
+      "mean_us": 2979.711594710376
+    },
+    "service_time": {
+      "p50_us": 2988.031,
+      "p90_us": 3803.135,
+      "p99_us": 4718.591,
+      "p99_9_us": 5287.935,
+      "p99_99_us": 5488.639,
+      "max_us": 5746.687,
+      "mean_us": 2979.711594710376
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 2.176958,
+      "cpu_sys_secs": 5.44965,
+      "cpu_cores": 1.906652,
+      "cpu_us_per_req": 710.2447383125349,
+      "peak_rss_bytes": 208617472,
+      "alloc_counting": true,
+      "allocs_per_req": 325.42130750605327,
+      "alloc_bytes_per_req": 1592010.1311231141,
+      "deallocs_per_req": 325.4238219407711
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:48:57Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-pooled(pool=4)/h1/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "fetch-pooled",
+    "scenario": {
+      "subject": "fetch-pooled",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 42087,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 10521.75,
+      "resp_bytes_per_sec": 11032854528.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 758.271,
+      "p90_us": 967.167,
+      "p99_us": 1135.615,
+      "p99_9_us": 1250.303,
+      "p99_99_us": 1342.463,
+      "max_us": 1417.215,
+      "mean_us": 760.112402594627
+    },
+    "service_time": {
+      "p50_us": 758.271,
+      "p90_us": 967.167,
+      "p99_us": 1135.615,
+      "p99_9_us": 1250.303,
+      "p99_99_us": 1342.463,
+      "max_us": 1417.215,
+      "mean_us": 760.112402594627
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 2.053035,
+      "cpu_sys_secs": 7.997437,
+      "cpu_cores": 2.512618,
+      "cpu_us_per_req": 238.80229049350154,
+      "peak_rss_bytes": 208650240,
+      "alloc_counting": true,
+      "allocs_per_req": 60.01696485850738,
+      "alloc_bytes_per_req": 303740.2359398389,
+      "deallocs_per_req": 60.019958657067505
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:49:02Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-pooled(pool=4)/h2/plain/closed-c8/GET /bytes/1048576 req0",
+    "subject": "fetch-pooled",
+    "scenario": {
+      "subject": "fetch-pooled",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "GET",
+      "path": "/bytes/1048576",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 8
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 18816,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 4704.0,
+      "resp_bytes_per_sec": 4932501504.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 1671.167,
+      "p90_us": 2094.079,
+      "p99_us": 2723.839,
+      "p99_9_us": 2996.223,
+      "p99_99_us": 3420.159,
+      "max_us": 3487.743,
+      "mean_us": 1700.330000000001
+    },
+    "service_time": {
+      "p50_us": 1671.167,
+      "p90_us": 2094.079,
+      "p99_us": 2723.839,
+      "p99_9_us": 2996.223,
+      "p99_99_us": 3420.159,
+      "max_us": 3487.743,
+      "mean_us": 1700.330000000001
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 3.140044,
+      "cpu_sys_secs": 7.002269,
+      "cpu_cores": 2.53557825,
+      "cpu_us_per_req": 539.0259885204082,
+      "peak_rss_bytes": 209829888,
+      "alloc_counting": true,
+      "allocs_per_req": 309.0142431972789,
+      "alloc_bytes_per_req": 1591045.5355017006,
+      "deallocs_per_req": 309.0233843537415
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:49:08Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "matier/h1/plain/closed-c16/POST /echo req1048576",
+    "subject": "matier",
+    "scenario": {
+      "subject": "matier",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 45648,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 11412.0,
+      "resp_bytes_per_sec": 79884.0,
+      "req_bytes_per_sec": 11966349312.0
+    },
+    "latency": {
+      "p50_us": 1410.047,
+      "p90_us": 1588.223,
+      "p99_us": 1794.047,
+      "p99_9_us": 1956.863,
+      "p99_99_us": 2113.535,
+      "max_us": 2211.839,
+      "mean_us": 1401.847817735717
+    },
+    "service_time": {
+      "p50_us": 1410.047,
+      "p90_us": 1588.223,
+      "p99_us": 1794.047,
+      "p99_9_us": 1956.863,
+      "p99_99_us": 2113.535,
+      "max_us": 2211.839,
+      "mean_us": 1401.847817735717
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 0.355628,
+      "cpu_sys_secs": 9.684706,
+      "cpu_cores": 2.5100835,
+      "cpu_us_per_req": 219.95123554153523,
+      "peak_rss_bytes": 209829888,
+      "alloc_counting": true,
+      "allocs_per_req": 2.999956186470382,
+      "alloc_bytes_per_req": 256.00665965650194,
+      "deallocs_per_req": 3.000197160883281
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:49:14Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "matier/h2/plain/closed-c16/POST /echo req1048576",
+    "subject": "matier",
+    "scenario": {
+      "subject": "matier",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 38936,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 9734.0,
+      "resp_bytes_per_sec": 68138.0,
+      "req_bytes_per_sec": 10206838784.0
+    },
+    "latency": {
+      "p50_us": 1614.847,
+      "p90_us": 1923.071,
+      "p99_us": 2349.055,
+      "p99_9_us": 2676.735,
+      "p99_99_us": 2932.735,
+      "max_us": 3035.135,
+      "mean_us": 1643.6325424285994
+    },
+    "service_time": {
+      "p50_us": 1614.847,
+      "p90_us": 1923.071,
+      "p99_us": 2349.055,
+      "p99_9_us": 2676.735,
+      "p99_99_us": 2932.735,
+      "max_us": 3035.135,
+      "mean_us": 1643.6325424285994
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 0.798828,
+      "cpu_sys_secs": 7.291429,
+      "cpu_cores": 2.02256425,
+      "cpu_us_per_req": 207.78346517361823,
+      "peak_rss_bytes": 209829888,
+      "alloc_counting": true,
+      "allocs_per_req": 8.003210396548182,
+      "alloc_bytes_per_req": 2878.99601910828,
+      "deallocs_per_req": 8.002619683583315
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:49:19Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier/h1/plain/closed-c16/POST /echo req1048576",
+    "subject": "fetch-matier",
+    "scenario": {
+      "subject": "fetch-matier",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 45452,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 11363.0,
+      "resp_bytes_per_sec": 79541.0,
+      "req_bytes_per_sec": 11914969088.0
+    },
+    "latency": {
+      "p50_us": 1415.167,
+      "p90_us": 1600.511,
+      "p99_us": 1819.647,
+      "p99_9_us": 1988.607,
+      "p99_99_us": 2146.303,
+      "max_us": 2375.679,
+      "mean_us": 1407.8393438352539
+    },
+    "service_time": {
+      "p50_us": 1415.167,
+      "p90_us": 1600.511,
+      "p99_us": 1819.647,
+      "p99_9_us": 1988.607,
+      "p99_99_us": 2146.303,
+      "max_us": 2375.679,
+      "mean_us": 1407.8393438352539
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 0.555008,
+      "cpu_sys_secs": 9.554667,
+      "cpu_cores": 2.52741875,
+      "cpu_us_per_req": 222.42530581712575,
+      "peak_rss_bytes": 209829888,
+      "alloc_counting": true,
+      "allocs_per_req": 16.997931884185515,
+      "alloc_bytes_per_req": 1790.7790856287952,
+      "deallocs_per_req": 17.000066003696208
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:49:25Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier/h2/plain/closed-c16/POST /echo req1048576",
+    "subject": "fetch-matier",
+    "scenario": {
+      "subject": "fetch-matier",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 39012,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 9753.0,
+      "resp_bytes_per_sec": 68271.0,
+      "req_bytes_per_sec": 10226761728.0
+    },
+    "latency": {
+      "p50_us": 1610.751,
+      "p90_us": 1912.831,
+      "p99_us": 2324.479,
+      "p99_9_us": 2686.975,
+      "p99_99_us": 2912.255,
+      "max_us": 3284.991,
+      "mean_us": 1640.2734813903423
+    },
+    "service_time": {
+      "p50_us": 1610.751,
+      "p90_us": 1912.831,
+      "p99_us": 2324.479,
+      "p99_9_us": 2686.975,
+      "p99_99_us": 2912.255,
+      "max_us": 3284.991,
+      "mean_us": 1640.2734813903423
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 0.946928,
+      "cpu_sys_secs": 7.347012,
+      "cpu_cores": 2.073485,
+      "cpu_us_per_req": 212.59971290884855,
+      "peak_rss_bytes": 209829888,
+      "alloc_counting": true,
+      "allocs_per_req": 22.002025017943197,
+      "alloc_bytes_per_req": 4414.467676612325,
+      "deallocs_per_req": 22.00102532554086
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:49:30Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier-standard/h1/plain/closed-c16/POST /echo req1048576",
+    "subject": "fetch-matier-standard",
+    "scenario": {
+      "subject": "fetch-matier-standard",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 45412,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 11353.0,
+      "resp_bytes_per_sec": 79471.0,
+      "req_bytes_per_sec": 11904483328.0
+    },
+    "latency": {
+      "p50_us": 1416.191,
+      "p90_us": 1605.631,
+      "p99_us": 1815.551,
+      "p99_9_us": 1982.463,
+      "p99_99_us": 2086.911,
+      "max_us": 2199.551,
+      "mean_us": 1409.0860213159542
+    },
+    "service_time": {
+      "p50_us": 1416.191,
+      "p90_us": 1605.631,
+      "p99_us": 1815.551,
+      "p99_9_us": 1982.463,
+      "p99_99_us": 2086.911,
+      "max_us": 2199.551,
+      "mean_us": 1409.0860213159542
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 0.834123,
+      "cpu_sys_secs": 9.449013,
+      "cpu_cores": 2.570784,
+      "cpu_us_per_req": 226.4409407205144,
+      "peak_rss_bytes": 209829888,
+      "alloc_counting": true,
+      "allocs_per_req": 31.171474500132124,
+      "alloc_bytes_per_req": 2411.9823835109664,
+      "deallocs_per_req": 31.178609178190786
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:49:36Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier-standard/h2/plain/closed-c16/POST /echo req1048576",
+    "subject": "fetch-matier-standard",
+    "scenario": {
+      "subject": "fetch-matier-standard",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 38617,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 9654.25,
+      "resp_bytes_per_sec": 67579.75,
+      "req_bytes_per_sec": 10123214848.0
+    },
+    "latency": {
+      "p50_us": 1629.183,
+      "p90_us": 1932.287,
+      "p99_us": 2336.767,
+      "p99_9_us": 2686.975,
+      "p99_99_us": 3006.463,
+      "max_us": 3053.567,
+      "mean_us": 1657.020425201334
+    },
+    "service_time": {
+      "p50_us": 1629.183,
+      "p90_us": 1932.287,
+      "p99_us": 2336.767,
+      "p99_9_us": 2686.975,
+      "p99_99_us": 3006.463,
+      "max_us": 3053.567,
+      "mean_us": 1657.020425201334
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.171374,
+      "cpu_sys_secs": 7.367532,
+      "cpu_cores": 2.1347265,
+      "cpu_us_per_req": 221.11779786104566,
+      "peak_rss_bytes": 209829888,
+      "alloc_counting": true,
+      "allocs_per_req": 36.15374058057332,
+      "alloc_bytes_per_req": 5024.8454825594945,
+      "deallocs_per_req": 36.152886034647956
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:49:41Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch/h1/plain/closed-c16/POST /echo req1048576",
+    "subject": "fetch",
+    "scenario": {
+      "subject": "fetch",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 45533,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 11383.25,
+      "resp_bytes_per_sec": 79682.75,
+      "req_bytes_per_sec": 11936202752.0
+    },
+    "latency": {
+      "p50_us": 1411.071,
+      "p90_us": 1607.679,
+      "p99_us": 1822.719,
+      "p99_9_us": 1987.583,
+      "p99_99_us": 2125.823,
+      "max_us": 2203.647,
+      "mean_us": 1405.4709788505074
+    },
+    "service_time": {
+      "p50_us": 1411.071,
+      "p90_us": 1607.679,
+      "p99_us": 1822.719,
+      "p99_9_us": 1987.583,
+      "p99_99_us": 2125.823,
+      "max_us": 2203.647,
+      "mean_us": 1405.4709788505074
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 0.909106,
+      "cpu_sys_secs": 9.464145,
+      "cpu_cores": 2.59331275,
+      "cpu_us_per_req": 227.81830760108053,
+      "peak_rss_bytes": 209846272,
+      "alloc_counting": true,
+      "allocs_per_req": 54.844200909230665,
+      "alloc_bytes_per_req": 18274.76491775196,
+      "deallocs_per_req": 54.84507939296774
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:49:47Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch/h2/plain/closed-c16/POST /echo req1048576",
+    "subject": "fetch",
+    "scenario": {
+      "subject": "fetch",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 25922,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 6480.5,
+      "resp_bytes_per_sec": 45363.5,
+      "req_bytes_per_sec": 6795296768.0
+    },
+    "latency": {
+      "p50_us": 2445.311,
+      "p90_us": 3543.039,
+      "p99_us": 4378.623,
+      "p99_9_us": 4898.815,
+      "p99_99_us": 5599.231,
+      "max_us": 5951.487,
+      "mean_us": 2468.5251915747212
+    },
+    "service_time": {
+      "p50_us": 2445.311,
+      "p90_us": 3543.039,
+      "p99_us": 4378.623,
+      "p99_9_us": 4898.815,
+      "p99_99_us": 5599.231,
+      "max_us": 5951.487,
+      "mean_us": 2468.5251915747212
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 0.873147,
+      "cpu_sys_secs": 4.711246,
+      "cpu_cores": 1.39609825,
+      "cpu_us_per_req": 215.4306380680503,
+      "peak_rss_bytes": 209846272,
+      "alloc_counting": true,
+      "allocs_per_req": 59.81475194815215,
+      "alloc_bytes_per_req": 14613.771622559987,
+      "deallocs_per_req": 59.82690378828794
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:49:52Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-standard/h1/plain/closed-c16/POST /echo req1048576",
+    "subject": "fetch-standard",
+    "scenario": {
+      "subject": "fetch-standard",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 44820,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 11205.0,
+      "resp_bytes_per_sec": 78435.0,
+      "req_bytes_per_sec": 11749294080.0
+    },
+    "latency": {
+      "p50_us": 1433.599,
+      "p90_us": 1643.519,
+      "p99_us": 1874.943,
+      "p99_9_us": 2113.535,
+      "p99_99_us": 2263.039,
+      "max_us": 2480.127,
+      "mean_us": 1427.6653351182517
+    },
+    "service_time": {
+      "p50_us": 1433.599,
+      "p90_us": 1643.519,
+      "p99_us": 1874.943,
+      "p99_9_us": 2113.535,
+      "p99_99_us": 2263.039,
+      "max_us": 2480.127,
+      "mean_us": 1427.6653351182517
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.230754,
+      "cpu_sys_secs": 9.348182,
+      "cpu_cores": 2.644734,
+      "cpu_us_per_req": 236.03159303882197,
+      "peak_rss_bytes": 209846272,
+      "alloc_counting": true,
+      "allocs_per_req": 65.90843373493976,
+      "alloc_bytes_per_req": 18420.192124051762,
+      "deallocs_per_req": 65.91894243641232
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:49:58Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-standard/h2/plain/closed-c16/POST /echo req1048576",
+    "subject": "fetch-standard",
+    "scenario": {
+      "subject": "fetch-standard",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 24995,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 6248.75,
+      "resp_bytes_per_sec": 43741.25,
+      "req_bytes_per_sec": 6552289280.0
+    },
+    "latency": {
+      "p50_us": 2521.087,
+      "p90_us": 3612.671,
+      "p99_us": 4603.903,
+      "p99_9_us": 5263.359,
+      "p99_99_us": 5943.295,
+      "max_us": 6074.367,
+      "mean_us": 2560.520168033605
+    },
+    "service_time": {
+      "p50_us": 2521.087,
+      "p90_us": 3612.671,
+      "p99_us": 4603.903,
+      "p99_9_us": 5263.359,
+      "p99_99_us": 5943.295,
+      "max_us": 6074.367,
+      "mean_us": 2560.520168033605
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.090803,
+      "cpu_sys_secs": 4.625642,
+      "cpu_cores": 1.42911125,
+      "cpu_us_per_req": 228.70354070814162,
+      "peak_rss_bytes": 209846272,
+      "alloc_counting": true,
+      "allocs_per_req": 71.03204640928186,
+      "alloc_bytes_per_req": 14803.690618123625,
+      "deallocs_per_req": 71.0366473294659
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:50:03Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-pooled(pool=4)/h1/plain/closed-c16/POST /echo req1048576",
+    "subject": "fetch-pooled",
+    "scenario": {
+      "subject": "fetch-pooled",
+      "protocol": "h1",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 46485,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 11621.25,
+      "resp_bytes_per_sec": 81348.75,
+      "req_bytes_per_sec": 12185763840.0
+    },
+    "latency": {
+      "p50_us": 1377.279,
+      "p90_us": 1595.391,
+      "p99_us": 1845.247,
+      "p99_9_us": 2105.343,
+      "p99_99_us": 2512.895,
+      "max_us": 4239.359,
+      "mean_us": 1376.5575056039563
+    },
+    "service_time": {
+      "p50_us": 1377.279,
+      "p90_us": 1595.391,
+      "p99_us": 1845.247,
+      "p99_9_us": 2105.343,
+      "p99_99_us": 2512.895,
+      "max_us": 4239.359,
+      "mean_us": 1376.5575056039563
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.239279,
+      "cpu_sys_secs": 10.47766,
+      "cpu_cores": 2.92923475,
+      "cpu_us_per_req": 252.05849198666237,
+      "peak_rss_bytes": 209862656,
+      "alloc_counting": true,
+      "allocs_per_req": 53.999569753683986,
+      "alloc_bytes_per_req": 18033.484909110466,
+      "deallocs_per_req": 54.00301172421211
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:50:09Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-pooled(pool=4)/h2/plain/closed-c16/POST /echo req1048576",
+    "subject": "fetch-pooled",
+    "scenario": {
+      "subject": "fetch-pooled",
+      "protocol": "h2",
+      "tls": false,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "http://127.0.0.1:8080",
+      "method": "POST",
+      "path": "/echo",
+      "req_body_size": 1048576,
+      "load": {
+        "model": "closed",
+        "concurrency": 16
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 36773,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 9193.25,
+      "resp_bytes_per_sec": 64352.75,
+      "req_bytes_per_sec": 9639821312.0
+    },
+    "latency": {
+      "p50_us": 1718.271,
+      "p90_us": 2019.327,
+      "p99_us": 2351.103,
+      "p99_9_us": 2623.487,
+      "p99_99_us": 2906.111,
+      "max_us": 3284.991,
+      "mean_us": 1740.068872270416
+    },
+    "service_time": {
+      "p50_us": 1718.271,
+      "p90_us": 2019.327,
+      "p99_us": 2351.103,
+      "p99_9_us": 2623.487,
+      "p99_99_us": 2906.111,
+      "max_us": 3284.991,
+      "mean_us": 1740.068872270416
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 1.3645559999999999,
+      "cpu_sys_secs": 7.607267,
+      "cpu_cores": 2.24295575,
+      "cpu_us_per_req": 243.97854404046447,
+      "peak_rss_bytes": 209862656,
+      "alloc_counting": true,
+      "allocs_per_req": 59.98607674108721,
+      "alloc_bytes_per_req": 14703.115546732657,
+      "deallocs_per_req": 59.990237402442006
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:50:14Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "matier/h1/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "matier",
+    "scenario": {
+      "subject": "matier",
+      "protocol": "h1",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 617771,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 154442.75,
+      "resp_bytes_per_sec": 158149376.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 1632.255,
+      "p90_us": 2047.999,
+      "p99_us": 2732.031,
+      "p99_9_us": 3618.815,
+      "p99_99_us": 5128.191,
+      "max_us": 11878.399,
+      "mean_us": 1657.2831883659185
+    },
+    "service_time": {
+      "p50_us": 1632.255,
+      "p90_us": 2047.999,
+      "p99_us": 2732.031,
+      "p99_9_us": 3618.815,
+      "p99_99_us": 5128.191,
+      "max_us": 11878.399,
+      "mean_us": 1657.2831883659185
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 5.124692,
+      "cpu_sys_secs": 11.064236,
+      "cpu_cores": 4.047232,
+      "cpu_us_per_req": 26.205386785718332,
+      "peak_rss_bytes": 228294656,
+      "alloc_counting": true,
+      "allocs_per_req": 2.000134353992013,
+      "alloc_bytes_per_req": 216.02005921287986,
+      "deallocs_per_req": 2.0001440663287853
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:50:20Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "matier/h2/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "matier",
+    "scenario": {
+      "subject": "matier",
+      "protocol": "h2",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 1429982,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 357495.5,
+      "resp_bytes_per_sec": 366075392.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 678.911,
+      "p90_us": 1047.551,
+      "p99_us": 1451.007,
+      "p99_9_us": 1756.159,
+      "p99_99_us": 2101.247,
+      "max_us": 2455.551,
+      "mean_us": 715.9030770457244
+    },
+    "service_time": {
+      "p50_us": 678.911,
+      "p90_us": 1047.551,
+      "p99_us": 1451.007,
+      "p99_9_us": 1756.159,
+      "p99_99_us": 2101.247,
+      "max_us": 2455.551,
+      "mean_us": 715.9030770457244
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 11.942945,
+      "cpu_sys_secs": 4.028375,
+      "cpu_cores": 3.99283,
+      "cpu_us_per_req": 11.168895832255231,
+      "peak_rss_bytes": 228474880,
+      "alloc_counting": true,
+      "allocs_per_req": 4.001748273754495,
+      "alloc_bytes_per_req": 2771.5496810449363,
+      "deallocs_per_req": 4.001806316443144
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:50:25Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier/h1/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-matier",
+    "scenario": {
+      "subject": "fetch-matier",
+      "protocol": "h1",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 596655,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 149163.75,
+      "resp_bytes_per_sec": 152743680.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 1679.359,
+      "p90_us": 2559.999,
+      "p99_us": 3391.487,
+      "p99_9_us": 4179.967,
+      "p99_99_us": 7274.495,
+      "max_us": 9699.327,
+      "mean_us": 1716.079558847236
+    },
+    "service_time": {
+      "p50_us": 1679.359,
+      "p90_us": 2559.999,
+      "p99_us": 3391.487,
+      "p99_9_us": 4179.967,
+      "p99_99_us": 7274.495,
+      "max_us": 9699.327,
+      "mean_us": 1716.079558847236
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 7.6146840000000005,
+      "cpu_sys_secs": 9.591922,
+      "cpu_cores": 4.3016515,
+      "cpu_us_per_req": 28.838451031165413,
+      "peak_rss_bytes": 228687872,
+      "alloc_counting": true,
+      "allocs_per_req": 13.998117840292966,
+      "alloc_bytes_per_req": 1709.76445014288,
+      "deallocs_per_req": 13.999282667538193
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:50:31Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier/h2/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-matier",
+    "scenario": {
+      "subject": "fetch-matier",
+      "protocol": "h2",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 1097768,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 274442.0,
+      "resp_bytes_per_sec": 281028608.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 910.847,
+      "p90_us": 1291.263,
+      "p99_us": 1668.095,
+      "p99_9_us": 1989.631,
+      "p99_99_us": 2271.231,
+      "max_us": 2670.591,
+      "mean_us": 932.6026148767316
+    },
+    "service_time": {
+      "p50_us": 910.847,
+      "p90_us": 1291.263,
+      "p99_us": 1668.095,
+      "p99_9_us": 1989.631,
+      "p99_99_us": 2271.231,
+      "max_us": 2670.591,
+      "mean_us": 932.6026148767316
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 14.274602,
+      "cpu_sys_secs": 3.1743959999999998,
+      "cpu_cores": 4.3622495,
+      "cpu_us_per_req": 15.89497780951895,
+      "peak_rss_bytes": 235667456,
+      "alloc_counting": true,
+      "allocs_per_req": 16.001391004292344,
+      "alloc_bytes_per_req": 4265.720609454821,
+      "deallocs_per_req": 16.002039593065202
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:50:36Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier-standard/h1/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-matier-standard",
+    "scenario": {
+      "subject": "fetch-matier-standard",
+      "protocol": "h1",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 445742,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 111435.5,
+      "resp_bytes_per_sec": 114109952.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2254.847,
+      "p90_us": 3579.903,
+      "p99_us": 4710.399,
+      "p99_9_us": 5677.055,
+      "p99_99_us": 6901.759,
+      "max_us": 13418.495,
+      "mean_us": 2297.011095745976
+    },
+    "service_time": {
+      "p50_us": 2254.847,
+      "p90_us": 3579.903,
+      "p99_us": 4710.399,
+      "p99_9_us": 5677.055,
+      "p99_99_us": 6901.759,
+      "max_us": 13418.495,
+      "mean_us": 2297.011095745976
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 10.590014,
+      "cpu_sys_secs": 6.997234,
+      "cpu_cores": 4.396812,
+      "cpu_us_per_req": 39.45611586971836,
+      "peak_rss_bytes": 239517696,
+      "alloc_counting": true,
+      "allocs_per_req": 33.30574413001243,
+      "alloc_bytes_per_req": 3182.8185093619177,
+      "deallocs_per_req": 33.31259338361653
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:50:42Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-matier-standard/h2/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-matier-standard",
+    "scenario": {
+      "subject": "fetch-matier-standard",
+      "protocol": "h2",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 553320,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 138330.0,
+      "resp_bytes_per_sec": 141649920.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 1833.983,
+      "p90_us": 2527.231,
+      "p99_us": 3246.079,
+      "p99_9_us": 3833.855,
+      "p99_99_us": 4366.335,
+      "max_us": 5091.327,
+      "mean_us": 1850.421462762957
+    },
+    "service_time": {
+      "p50_us": 1833.983,
+      "p90_us": 2527.231,
+      "p99_us": 3246.079,
+      "p99_9_us": 3833.855,
+      "p99_99_us": 4366.335,
+      "max_us": 5091.327,
+      "mean_us": 1850.421462762957
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 12.950061,
+      "cpu_sys_secs": 4.028948,
+      "cpu_cores": 4.24475225,
+      "cpu_us_per_req": 30.6856954384443,
+      "peak_rss_bytes": 256049152,
+      "alloc_counting": true,
+      "allocs_per_req": 35.31117617291983,
+      "alloc_bytes_per_req": 5741.1958613460565,
+      "deallocs_per_req": 35.32009686980409
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:50:48Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch/h1/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch",
+    "scenario": {
+      "subject": "fetch",
+      "protocol": "h1",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 437720,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 109430.0,
+      "resp_bytes_per_sec": 112056320.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2248.703,
+      "p90_us": 3837.951,
+      "p99_us": 5599.231,
+      "p99_9_us": 7012.351,
+      "p99_99_us": 8179.711,
+      "max_us": 9265.151,
+      "mean_us": 2339.228769880289
+    },
+    "service_time": {
+      "p50_us": 2248.703,
+      "p90_us": 3837.951,
+      "p99_us": 5599.231,
+      "p99_9_us": 7012.351,
+      "p99_99_us": 8179.711,
+      "max_us": 9265.151,
+      "mean_us": 2339.228769880289
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 12.731044,
+      "cpu_sys_secs": 5.907157,
+      "cpu_cores": 4.65955025,
+      "cpu_us_per_req": 42.58019053276067,
+      "peak_rss_bytes": 275841024,
+      "alloc_counting": true,
+      "allocs_per_req": 54.978282920588505,
+      "alloc_bytes_per_req": 17976.988871881567,
+      "deallocs_per_req": 54.98302110938499
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:50:53Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch/h2/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch",
+    "scenario": {
+      "subject": "fetch",
+      "protocol": "h2",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 268539,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 67134.75,
+      "resp_bytes_per_sec": 68745984.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 3803.135,
+      "p90_us": 4345.855,
+      "p99_us": 4845.567,
+      "p99_9_us": 5787.647,
+      "p99_99_us": 8261.631,
+      "max_us": 8732.671,
+      "mean_us": 3813.2263327710384
+    },
+    "service_time": {
+      "p50_us": 3803.135,
+      "p90_us": 4345.855,
+      "p99_us": 4845.567,
+      "p99_9_us": 5787.647,
+      "p99_99_us": 8261.631,
+      "max_us": 8732.671,
+      "mean_us": 3813.2263327710384
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 7.456889,
+      "cpu_sys_secs": 6.92507,
+      "cpu_cores": 3.59548975,
+      "cpu_us_per_req": 53.556313980464665,
+      "peak_rss_bytes": 275906560,
+      "alloc_counting": true,
+      "allocs_per_req": 62.26418509043379,
+      "alloc_bytes_per_req": 13692.061302082751,
+      "deallocs_per_req": 62.2655294016884
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:50:59Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-standard/h1/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-standard",
+    "scenario": {
+      "subject": "fetch-standard",
+      "protocol": "h1",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 327866,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 81966.5,
+      "resp_bytes_per_sec": 83933696.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2947.071,
+      "p90_us": 5320.703,
+      "p99_us": 7897.087,
+      "p99_9_us": 10043.391,
+      "p99_99_us": 11829.247,
+      "max_us": 13189.119,
+      "mean_us": 3122.8506781185015
+    },
+    "service_time": {
+      "p50_us": 2947.071,
+      "p90_us": 5320.703,
+      "p99_us": 7897.087,
+      "p99_9_us": 10043.391,
+      "p99_99_us": 11829.247,
+      "max_us": 13189.119,
+      "mean_us": 3122.8506781185015
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 13.448141,
+      "cpu_sys_secs": 4.88675,
+      "cpu_cores": 4.58372275,
+      "cpu_us_per_req": 55.92190407056541,
+      "peak_rss_bytes": 282394624,
+      "alloc_counting": true,
+      "allocs_per_req": 72.3116700115291,
+      "alloc_bytes_per_req": 19433.27444138764,
+      "deallocs_per_req": 72.3237725168209
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:51:04Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-standard/h2/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-standard",
+    "scenario": {
+      "subject": "fetch-standard",
+      "protocol": "h2",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 258491,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 64622.75,
+      "resp_bytes_per_sec": 66173696.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 3946.495,
+      "p90_us": 4526.079,
+      "p99_us": 5148.671,
+      "p99_9_us": 5873.663,
+      "p99_99_us": 6791.167,
+      "max_us": 7233.535,
+      "mean_us": 3961.3617869248787
+    },
+    "service_time": {
+      "p50_us": 3946.495,
+      "p90_us": 4526.079,
+      "p99_us": 5148.671,
+      "p99_9_us": 5873.663,
+      "p99_99_us": 6791.167,
+      "max_us": 7233.535,
+      "mean_us": 3961.3617869248787
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 9.744593,
+      "cpu_sys_secs": 5.7781590000000005,
+      "cpu_cores": 3.880688,
+      "cpu_us_per_req": 60.051421519511315,
+      "peak_rss_bytes": 282476544,
+      "alloc_counting": true,
+      "allocs_per_req": 78.57675509011919,
+      "alloc_bytes_per_req": 14734.655841015741,
+      "deallocs_per_req": 78.59407484206413
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:51:10Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-pooled(pool=4)/h1/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-pooled",
+    "scenario": {
+      "subject": "fetch-pooled",
+      "protocol": "h1",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 458736,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 114684.0,
+      "resp_bytes_per_sec": 117436416.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2127.871,
+      "p90_us": 3657.727,
+      "p99_us": 5287.935,
+      "p99_9_us": 6615.039,
+      "p99_99_us": 7749.631,
+      "max_us": 8855.551,
+      "mean_us": 2232.066810854167
+    },
+    "service_time": {
+      "p50_us": 2127.871,
+      "p90_us": 3657.727,
+      "p99_us": 5287.935,
+      "p99_9_us": 6615.039,
+      "p99_99_us": 7749.631,
+      "max_us": 8855.551,
+      "mean_us": 2232.066810854167
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 13.30668,
+      "cpu_sys_secs": 6.009316,
+      "cpu_cores": 4.828999,
+      "cpu_us_per_req": 42.106998360712915,
+      "peak_rss_bytes": 284180480,
+      "alloc_counting": true,
+      "allocs_per_req": 54.99021441526281,
+      "alloc_bytes_per_req": 17981.519549370445,
+      "deallocs_per_req": 54.997737260646645
+    }
+  },
+  {
+    "schema_version": 1,
+    "timestamp": "2026-11-25T19:51:15Z",
+    "git_commit": "8fef09ad144e333e0f03c1c868d40b496bd07b4a",
+    "host": {
+      "os": "macos",
+      "arch": "aarch64",
+      "cpus": 10
+    },
+    "scenario_id": "fetch-pooled(pool=4)/h2/tls/closed-c256/GET /bytes/1024 req0",
+    "subject": "fetch-pooled",
+    "scenario": {
+      "subject": "fetch-pooled",
+      "protocol": "h2",
+      "tls": true,
+      "ca_cert": "target/bench-server-cert.pem",
+      "pool_size": 4,
+      "pool_selection": "round-robin",
+      "matier_min_conns": null,
+      "matier_max_conns": null,
+      "url": "https://127.0.0.1:8443",
+      "method": "GET",
+      "path": "/bytes/1024",
+      "req_body_size": 0,
+      "load": {
+        "model": "closed",
+        "concurrency": 256
+      },
+      "warmup_secs": 1.0,
+      "duration_secs": 4.0,
+      "timeout_secs": 30.0,
+      "worker_threads": 5
+    },
+    "totals": {
+      "requests": 432591,
+      "errors": 0,
+      "errors_by_kind": {},
+      "drops": 0,
+      "duration_secs": 4.0
+    },
+    "throughput": {
+      "req_per_sec": 108147.75,
+      "resp_bytes_per_sec": 110743296.0,
+      "req_bytes_per_sec": 0.0
+    },
+    "latency": {
+      "p50_us": 2322.431,
+      "p90_us": 3317.759,
+      "p99_us": 4341.759,
+      "p99_9_us": 5308.415,
+      "p99_99_us": 6041.599,
+      "max_us": 6533.119,
+      "mean_us": 2366.9224493343686
+    },
+    "service_time": {
+      "p50_us": 2322.431,
+      "p90_us": 3317.759,
+      "p99_us": 4341.759,
+      "p99_9_us": 5308.415,
+      "p99_99_us": 6041.599,
+      "max_us": 6533.119,
+      "mean_us": 2366.9224493343686
+    },
+    "schedule_lag": null,
+    "resources": {
+      "cpu_user_secs": 14.29873,
+      "cpu_sys_secs": 3.3144,
+      "cpu_cores": 4.4032824999999995,
+      "cpu_us_per_req": 40.71543328455747,
+      "peak_rss_bytes": 284246016,
+      "alloc_counting": true,
+      "allocs_per_req": 62.27350314731467,
+      "alloc_bytes_per_req": 13661.181737484136,
+      "deallocs_per_req": 62.2783460589795
+    }
+  }
+]
